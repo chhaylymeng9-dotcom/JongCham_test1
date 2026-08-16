@@ -1,0 +1,334 @@
+/* ---------- JongCham upgrade / plans page ----------
+Ported from a supplied mockup, same treatment as the rest of this design
+system (authPanel.css / dashboard.css / profile.css), scoped under
+.jpl-root. The plan tiers themselves are decorative — see Profile.jsx's
+"Plan and billing" panel: this store sells one-time printed decks, not a
+subscription, so there's no real Free/Pro/Max tier system or billing
+cycle. But "Upgrade" now runs a real payment simulation — the same KHQR/
+card flow Checkout.jsx uses for real deck orders (see
+data/cardValidation.js) — because a fake "success" with no interaction
+behind it is worse than reusing the store's existing, already-safe demo
+payment pattern. Nothing is charged and no card data is stored either
+way; a successful "payment" here just saves a cosmetic session.plan so
+the profile page can reflect it.
+--------------------------------- */
+
+.jpl-root {
+  --paper: #FAF8F3;
+  --sheet: #FFFFFF;
+  --ink: #221F1A;
+  --body: #4A473F;
+  --muted: #8A857A;
+  --faint: #AFAA9E;
+  --hair: #E5E0D5;
+  --hair-2: #D5CFC1;
+
+  --green: #2C4032;
+  --green-soft: #E7EEE7;
+  --green-line: #B5CCBA;
+  --sage: #9FC1AA;
+  --amber-soft: #F5EEDD;
+  --amber-line: #E4D5AE;
+  --rose: #A6485A;
+
+  --type: "Courier Prime", "American Typewriter", "Courier New", monospace;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --e: cubic-bezier(.2, .7, .2, 1);
+}
+
+.jpl-root, .jpl-root *{ box-sizing: border-box; }
+.jpl-root button:focus-visible, .jpl-root a:focus-visible{ outline: 2px solid var(--green); outline-offset: 2px; }
+
+.jpl-root{
+  background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  padding: 28px 0 70px;
+}
+
+.jpl-wrap{ max-width: 1060px; margin: 0 auto; padding: 0 26px; }
+
+.jpl-back{
+  background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
+  font-size: 13.5px; color: var(--muted); text-decoration: underline;
+  text-decoration-color: var(--hair-2); text-underline-offset: 4px;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: color .16s var(--e);
+}
+.jpl-back:hover{ color: var(--ink); }
+
+.jpl-label{
+  font-family: var(--type); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--faint);
+}
+
+.jpl-head{ text-align: center; padding: 30px 0 26px; }
+.jpl-head h1{
+  font-family: var(--type); font-weight: 700; font-size: clamp(28px, 4.4vw, 40px);
+  letter-spacing: -.035em; margin: 10px 0 8px;
+}
+.jpl-head p{ color: var(--muted); margin: 0 auto; max-width: 44ch; font-size: 15px; }
+
+/* billing toggle — a sliding pill behind the buttons, not a background swap,
+   so switching monthly/yearly reads as one continuous motion. */
+.jpl-toggle{ display: flex; justify-content: center; align-items: center; gap: 12px; margin: 26px 0 34px; flex-wrap: wrap; }
+.jpl-seg{ position: relative; display: flex; gap: 3px; background: #F1EDE4; border: 1px solid var(--hair); border-radius: 999px; padding: 3px; }
+.jpl-seg-indicator{
+  position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px);
+  background: var(--sheet); border-radius: 999px; box-shadow: 0 1px 2px rgba(34,31,26,.08);
+  transition: transform .34s var(--e); z-index: 0;
+}
+.jpl-seg.jpl-y .jpl-seg-indicator{ transform: translateX(100%); }
+.jpl-seg button{
+  position: relative; z-index: 1;
+  border: 0; background: none; border-radius: 999px; height: 38px; padding: 0 20px; cursor: pointer;
+  font: inherit; font-size: 13.5px; font-weight: 600; color: var(--muted); transition: color .2s var(--e);
+}
+.jpl-seg button.jpl-on{ color: var(--ink); }
+.jpl-save{
+  font-family: var(--type); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  background: var(--green-soft); color: var(--green); border: 1px solid var(--green-line);
+  border-radius: 999px; padding: 5px 11px;
+}
+
+/* plans — hovering one card lifts it and settles its neighbours back, the
+   same "which one has my attention" cue as the reference pricing page. */
+.jpl-plans{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; perspective: 1400px; }
+.jpl-plans:hover .jpl-plan:not(:hover){ transform: scale(.975); opacity: .8; }
+.jpl-plans:hover .jpl-plan.jpl-best:not(:hover){ transform: translateY(-8px) scale(.975); opacity: .8; }
+.jpl-plan{
+  background: var(--sheet); border: 1px solid var(--hair); border-radius: 20px;
+  display: flex; flex-direction: column; overflow: hidden; position: relative;
+  transition: transform .35s var(--e), box-shadow .35s var(--e), border-color .3s var(--e), opacity .3s var(--e);
+}
+.jpl-plan:hover{
+  transform: translateY(-10px) scale(1.03); border-color: var(--green-line);
+  box-shadow: 0 30px 56px rgba(34,31,26,.16); z-index: 5;
+}
+/* a soft light that follows the cursor — position comes from the
+   pointermove handler in Plans.jsx, which sets --mx/--my on the card. */
+.jpl-glow{
+  position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 0;
+  border-radius: 20px; transition: opacity .35s var(--e);
+  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 50%), rgba(44,64,50,.09), transparent 62%);
+}
+.jpl-plan:hover .jpl-glow{ opacity: 1; }
+.jpl-plan.jpl-best .jpl-glow{
+  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 50%), rgba(224,207,164,.16), transparent 62%);
+}
+/* a line that draws in across the top on hover */
+.jpl-plan::before{
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--green);
+  transform: scaleX(0); transform-origin: left; transition: transform .45s var(--e); z-index: 2;
+}
+.jpl-plan:hover::before{ transform: scaleX(1); }
+.jpl-plan.jpl-best::before{ background: var(--sage); }
+.jpl-plan.jpl-best{
+  background: var(--green); color: #EFEDE6; border-color: var(--green);
+  box-shadow: 0 18px 44px rgba(34,31,26,.14);
+  transform: translateY(-8px);
+}
+.jpl-plan.jpl-best:hover{
+  transform: translateY(-20px) scale(1.045); box-shadow: 0 40px 74px rgba(34,31,26,.3); z-index: 6;
+}
+.jpl-flag{
+  position: absolute; top: 16px; right: 16px; z-index: 2;
+  font-family: var(--type); font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  background: var(--sage); color: var(--green); border-radius: 999px; padding: 4px 10px;
+}
+.jpl-plan .jpl-top{ position: relative; z-index: 1; padding: 26px 24px 22px; }
+.jpl-mark{ width: 34px; height: 34px; margin-bottom: 16px; color: var(--green); }
+.jpl-plan.jpl-best .jpl-mark{ color: var(--sage); }
+.jpl-plan h2{ font-family: var(--type); font-size: 23px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 4px; }
+.jpl-plan .jpl-tag{ font-size: 13.5px; color: var(--muted); margin: 0 0 22px; }
+.jpl-plan.jpl-best .jpl-tag{ color: rgba(239,237,230,.6); }
+
+.jpl-price{ display: flex; align-items: flex-end; gap: 10px; min-height: 52px; animation: jpl-flipin .34s var(--e); }
+@keyframes jpl-flipin{ from{ opacity: 0; transform: translateY(6px); } to{ opacity: 1; transform: none; } }
+.jpl-price .jpl-amt{ font-family: var(--type); font-size: 38px; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
+.jpl-price .jpl-per{ font-size: 12.5px; color: var(--muted); line-height: 1.35; padding-bottom: 3px; }
+.jpl-plan.jpl-best .jpl-price .jpl-per{ color: rgba(239,237,230,.6); }
+.jpl-price .jpl-per b{ display: block; font-weight: 500; }
+
+.jpl-note{
+  display: flex; gap: 10px; align-items: flex-start; margin-top: 18px; padding: 12px 14px; border-radius: 11px;
+  background: var(--paper); border: 1px solid var(--hair); font-size: 12.5px; color: var(--body);
+}
+.jpl-plan.jpl-best .jpl-note{ background: rgba(239,237,230,.08); border-color: rgba(239,237,230,.16); color: rgba(239,237,230,.8); }
+.jpl-note b{ display: block; font-weight: 600; color: var(--ink); }
+.jpl-plan.jpl-best .jpl-note b{ color: #fff; }
+.jpl-note svg{ flex: none; margin-top: 1px; color: var(--muted); }
+.jpl-plan.jpl-best .jpl-note svg{ color: var(--sage); }
+
+.jpl-cta{
+  width: 100%; height: 48px; margin-top: 18px; border-radius: 12px; cursor: pointer;
+  font: inherit; font-size: 14.5px; font-weight: 600;
+  background: var(--sheet); border: 1.5px solid var(--hair-2); color: var(--ink);
+  transition: all .18s var(--e);
+}
+.jpl-cta:hover{ background: #FCFBF7; border-color: var(--ink); }
+.jpl-plan.jpl-best .jpl-cta{ background: #F5F2EB; border-color: #F5F2EB; color: var(--green); }
+.jpl-plan.jpl-best .jpl-cta:hover{ background: #fff; }
+.jpl-cta.jpl-current{ background: transparent; border-style: dashed; color: var(--muted); cursor: default; }
+.jpl-cta.jpl-current:hover{ background: transparent; border-color: var(--hair-2); }
+.jpl-cta.jpl-solid{ background: var(--green); border-color: var(--green); color: #fff; }
+.jpl-cta.jpl-solid:hover{ background: #1B291F; border-color: #1B291F; }
+.jpl-fine{ text-align: center; font-size: 11.5px; color: var(--faint); margin: 9px 0 0; }
+.jpl-plan.jpl-best .jpl-fine{ color: rgba(239,237,230,.45); }
+
+.jpl-feats{ position: relative; z-index: 1; padding: 22px 24px 26px; border-top: 1px solid var(--hair); flex: 1; display: flex; flex-direction: column; }
+.jpl-plan.jpl-best .jpl-feats{ border-color: rgba(239,237,230,.14); }
+.jpl-feats h3{ font-size: 13.5px; font-weight: 600; margin: 0 0 14px; }
+.jpl-plan.jpl-best .jpl-feats h3{ color: #fff; }
+.jpl-feats ul{ list-style: none; margin: 0; padding: 0; display: grid; gap: 11px; }
+.jpl-feats li{
+  display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--body);
+  transition: transform .3s var(--e);
+}
+.jpl-plan.jpl-best .jpl-feats li{ color: rgba(239,237,230,.85); }
+.jpl-feats li svg{ flex: none; margin-top: 3px; color: var(--green-line); transition: transform .3s var(--e); }
+.jpl-plan.jpl-best .jpl-feats li svg{ color: var(--sage); }
+/* each row slides in a beat after the one before it, so the hover reveal
+   reads as a ripple down the list rather than everything moving at once. */
+.jpl-plan:hover .jpl-feats li{ transform: translateX(4px); }
+.jpl-plan:hover .jpl-feats li svg{ transform: scale(1.15); }
+.jpl-feats li:nth-child(1){ transition-delay: 0ms; }
+.jpl-feats li:nth-child(2){ transition-delay: 25ms; }
+.jpl-feats li:nth-child(3){ transition-delay: 50ms; }
+.jpl-feats li:nth-child(4){ transition-delay: 75ms; }
+.jpl-feats li:nth-child(5){ transition-delay: 100ms; }
+.jpl-feats li:nth-child(6){ transition-delay: 125ms; }
+.jpl-feats li:nth-child(7){ transition-delay: 150ms; }
+.jpl-feats li:nth-child(8){ transition-delay: 175ms; }
+.jpl-feats li:nth-child(9){ transition-delay: 200ms; }
+.jpl-feats li:nth-child(10){ transition-delay: 225ms; }
+
+/* compare table */
+.jpl-compare{ margin-top: 56px; }
+.jpl-compare h2{ font-family: var(--type); font-size: 20px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 16px; text-align: center; }
+.jpl-compare-scroll{ overflow-x: auto; }
+.jpl-root table{
+  width: 100%; border-collapse: collapse; background: var(--sheet);
+  border: 1px solid var(--hair); border-radius: 16px; overflow: hidden;
+}
+.jpl-root th, .jpl-root td{ padding: 13px 16px; text-align: left; font-size: 13.5px; border-bottom: 1px solid var(--hair); white-space: nowrap; }
+.jpl-root thead th{
+  font-family: var(--type); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); background: var(--paper); font-weight: 700;
+}
+.jpl-root tbody th{ font-weight: 500; color: var(--body); }
+.jpl-root td{ text-align: center; font-family: var(--type); font-size: 13px; color: var(--ink); }
+.jpl-root tr:last-child th, .jpl-root tr:last-child td{ border-bottom: 0; }
+.jpl-yes{ color: var(--green); }
+.jpl-no{ color: var(--faint); }
+.jpl-root th.jpl-hl, .jpl-root td.jpl-hl{ background: #F6F4EE; }
+
+/* faq */
+.jpl-faq{ margin-top: 48px; max-width: 720px; margin-inline: auto; }
+.jpl-faq h2{ font-family: var(--type); font-size: 20px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 14px; text-align: center; }
+.jpl-q{ background: var(--sheet); border: 1px solid var(--hair); border-radius: 13px; margin-bottom: 9px; overflow: hidden; }
+.jpl-q summary{
+  list-style: none; cursor: pointer; padding: 15px 18px; font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+}
+.jpl-q summary::-webkit-details-marker{ display: none; }
+.jpl-q summary::after{ content: "+"; font-family: var(--type); font-size: 17px; color: var(--muted); }
+.jpl-q[open] summary::after{ content: "\2013"; }
+.jpl-q p{ margin: 0; padding: 0 18px 17px; font-size: 13.5px; color: var(--body); }
+
+/* ---------- payment step ---------- */
+.jpl-pay{ max-width: 640px; margin: 0 auto; }
+.jpl-pay-head{ margin-bottom: 22px; }
+.jpl-pay-head h1{ font-family: var(--type); font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin: 8px 0 4px; }
+.jpl-pay-head p{ color: var(--muted); margin: 0; }
+
+.jpl-methods{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.jpl-method{
+  border: 1px solid var(--hair); border-radius: 14px; padding: 15px; text-align: left; cursor: pointer;
+  background: var(--sheet); display: flex; align-items: flex-start; gap: 11px; font: inherit;
+  transition: all .18s var(--e);
+}
+.jpl-method:hover{ border-color: var(--hair-2); }
+.jpl-method.jpl-mon{ border-color: var(--green); box-shadow: 0 0 0 1px var(--green); background: rgba(44,64,50,.05); }
+.jpl-method b{ display: block; font-size: 13.5px; font-weight: 600; }
+.jpl-method span{ display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.jpl-method .jpl-dot{ margin-left: auto; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--hair-2); margin-top: 2px; }
+.jpl-method.jpl-mon .jpl-dot{ border-color: var(--green); background: var(--green); }
+
+.jpl-paybox{ background: var(--sheet); border: 1px solid var(--hair); border-radius: 16px; padding: 22px; }
+.jpl-qr{ display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+.jpl-qr img{ width: 190px; height: auto; border: 1px solid var(--hair); border-radius: 12px; padding: 8px; background: var(--paper); flex: none; }
+.jpl-qr-rows{ display: grid; gap: 8px; margin-top: 14px; }
+.jpl-qr-row{ display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+.jpl-qr-row span:first-child{ color: var(--muted); }
+.jpl-qr-row span:last-child{ font-family: var(--type); }
+
+.jpl-field{ margin-bottom: 14px; }
+.jpl-field label{ display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+.jpl-field input{
+  width: 100%; height: 44px; padding: 0 14px; border: 1.5px solid var(--hair); border-radius: 11px;
+  font: inherit; font-size: 14.5px; color: var(--ink); background: var(--sheet); transition: all .18s var(--e);
+}
+.jpl-field input:focus{ outline: none; border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.jpl-field input.jpl-bad{ border-color: var(--rose); }
+.jpl-fieldrow{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.jpl-err{ font-size: 12px; color: var(--rose); margin: 5px 0 0; }
+
+.jpl-demo{
+  display: flex; gap: 10px; margin-top: 18px; padding: 12px 14px; border-radius: 11px;
+  background: var(--amber-soft); border: 1px solid var(--amber-line); font-size: 12.5px; color: #6E5720;
+}
+
+.jpl-payactions{ display: flex; align-items: center; gap: 16px; margin-top: 20px; }
+.jpl-cta:disabled{ opacity: .6; cursor: default; }
+.jpl-spin{ animation: jpl-spin 0.8s linear infinite; }
+@keyframes jpl-spin{ to{ transform: rotate(360deg); } }
+
+/* ---------- confirmed ---------- */
+.jpl-done{ text-align: center; padding: 60px 0; max-width: 480px; margin: 0 auto; }
+.jpl-doneseal{
+  width: 58px; height: 58px; border-radius: 50%; margin: 0 auto 18px; display: grid; place-items: center;
+  background: var(--green-soft); border: 1.5px solid var(--green-line); color: var(--green);
+}
+.jpl-done h2{ font-family: var(--type); font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 8px; }
+.jpl-done p{ color: var(--muted); margin: 0 auto 22px; }
+.jpl-done .jpl-fine{ margin: 18px 0 0; }
+
+/* feature-row tooltip — a single floating element the whole page shares,
+   positioned in JS (Plans.jsx) from the hovered <li>'s own bounding box. */
+.jpl-feats li{ cursor: help; }
+.jpl-pop{
+  position: fixed; z-index: 80; pointer-events: none; max-width: 240px;
+  transform: translate(-50%, calc(-100% - 10px));
+  background: var(--ink); color: #F0EDE4; border-radius: 10px; padding: 11px 13px;
+  box-shadow: 0 14px 32px rgba(28,26,21,.28);
+  animation: jpl-pop-in .16s var(--e) both;
+}
+@keyframes jpl-pop-in{ from{ opacity: 0; transform: translate(-50%, calc(-100% - 4px)) scale(.96); } }
+.jpl-pop b{
+  display: block; font-family: var(--type); font-size: 9px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--sage); margin-bottom: 4px;
+}
+.jpl-pop span{ font-size: 12px; line-height: 1.5; color: rgba(240,237,228,.85); }
+.jpl-pop::after{
+  content: ""; position: absolute; left: 50%; bottom: -4px; width: 9px; height: 9px;
+  background: var(--ink); transform: translateX(-50%) rotate(45deg); border-radius: 2px;
+}
+
+@media (max-width: 900px){
+  .jpl-plans{ grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
+  .jpl-plan.jpl-best{ transform: none; }
+  .jpl-plan.jpl-best:hover{ transform: translateY(-8px) scale(1.02); }
+}
+@media (max-width: 560px){
+  .jpl-methods{ grid-template-columns: 1fr; }
+  .jpl-fieldrow{ grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce){
+  .jpl-root *{ transition: none !important; }
+  /* the spinner still communicates real "payment processing" state, so it's
+     left running — only the decorative price/card entrance is muted. */
+  .jpl-price{ animation: none !important; }
+  .jpl-pop{ animation: none !important; }
+  .jpl-plan:hover, .jpl-plan.jpl-best:hover, .jpl-plans:hover .jpl-plan:not(:hover){ transform: none !important; }
+}

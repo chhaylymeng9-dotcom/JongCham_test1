@@ -1,0 +1,244 @@
+/* ---------- JongCham sign-in / create-account panel ----------
+Ported 1:1 from the supplied static mockup. Every selector is scoped under
+.ja-root so it can't leak onto the rest of the app, which uses Tailwind
+utility classes instead of bespoke CSS like this.
+--------------------------------- */
+
+.ja-root {
+  --paper: #FAF8F3;
+  --sheet: #FFFFFF;
+  --ink: #221F1A;
+  --muted: #8A857A;
+  --faint: #AFAA9E;
+  --hair: #E5E0D5;
+  --hair-2: #D5CFC1;
+
+  --green: #2C4032;
+  --green-dark: #1B291F;
+  --green-soft: #E7EEE7;
+  --green-line: #B5CCBA;
+  --rose: #A6485A;
+  --rose-soft: #F8E7EA;
+  --amber: #9A7B32;
+
+  --type: "Courier Prime", "American Typewriter", "Courier New", monospace;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --e: cubic-bezier(.2, .7, .2, 1);
+}
+
+.ja-root, .ja-root *{ box-sizing: border-box; }
+
+.ja-root{
+  background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  display: grid; grid-template-columns: 1fr 1fr;
+  min-height: calc(100vh - 4rem);
+}
+.ja-label{
+  font-family: var(--type); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--faint);
+}
+
+/* ---------------- left panel ---------------- */
+.ja-aside{
+  position: relative; overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 12% 0%, #3A5240 0%, rgba(58,82,64,0) 55%),
+    linear-gradient(175deg, #2E432F 0%, #223327 100%);
+  color: #F1EEE7;
+  display: grid; grid-template-rows: auto 1fr auto;
+  padding: 38px 48px 34px;
+}
+.ja-aside::before{
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(241,238,231,.16) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(80% 70% at 30% 35%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(80% 70% at 30% 35%, #000 0%, transparent 75%);
+  opacity: .5;
+}
+.ja-aside > *{ position: relative; z-index: 1; }
+
+.ja-logo{ font-family: var(--type); font-weight: 700; font-size: 16px; letter-spacing: -.02em; }
+.ja-logo b{ color: #9FC1AA; font-weight: 700; }
+
+.ja-pitch{ align-self: center; max-width: 430px; padding: 34px 0; }
+.ja-pitch .ja-label{ color: #8FA894; letter-spacing: .2em; }
+.ja-pitch h1{
+  font-family: var(--type); font-weight: 700;
+  font-size: clamp(28px, 2.9vw, 36px); line-height: 1.18; letter-spacing: -.045em;
+  margin: 16px 0 14px; color: #fff;
+}
+.ja-pitch h1 em{ font-style: normal; color: #9FC1AA; }
+.ja-pitch .ja-intro{ color: rgba(241,238,231,.62); font-size: 14.5px; line-height: 1.6; margin: 0 0 26px; max-width: 38ch; }
+
+.ja-feats{ list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.ja-feats li{
+  display: flex; gap: 13px; align-items: center;
+  font-size: 14px; color: rgba(241,238,231,.9);
+  padding: 9px 0; border-bottom: 1px solid rgba(241,238,231,.08);
+}
+.ja-feats li:last-child{ border-bottom: 0; }
+.ja-feats .ja-ic{
+  flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center;
+  background: rgba(159,193,170,.12); border: 1px solid rgba(159,193,170,.22); color: #9FC1AA;
+}
+
+/* card stack */
+.ja-stack{ position: relative; margin-top: 34px; width: 230px; height: 158px; }
+.ja-stack .ja-c{
+  position: absolute; inset: 0; border-radius: 14px;
+  background: #F6F3EC; color: #221F1A;
+  box-shadow: 0 18px 36px rgba(0,0,0,.28);
+}
+.ja-stack .ja-c.ja-back2{ transform: rotate(7deg) translate(14px,6px); background: #E8E3D8; box-shadow: 0 10px 22px rgba(0,0,0,.2); }
+.ja-stack .ja-c.ja-back1{ transform: rotate(3.5deg) translate(7px,3px); background: #EFEBE0; box-shadow: 0 12px 26px rgba(0,0,0,.22); }
+.ja-stack .ja-c.ja-front{ transform: rotate(-2.5deg); padding: 20px 20px 16px; display: flex; flex-direction: column; }
+.ja-stack .ja-hz{ font-family: var(--type); font-size: 32px; font-weight: 700; color: #221F1A; margin: 0 0 3px; line-height: 1.1; }
+.ja-stack .ja-py{ font-size: 12px; color: #8A857A; letter-spacing: .1em; margin: 0; }
+.ja-stack .ja-en{ font-size: 13px; color: #4A473F; margin: auto 0 0; border-top: 1px solid #E5E0D5; padding-top: 10px; }
+.ja-stamp{
+  position: absolute; right: -14px; bottom: -12px; z-index: 2;
+  font-family: var(--type); font-size: 10px; font-weight: 700; letter-spacing: .18em;
+  color: #2C4032; background: #9FC1AA; border-radius: 6px; padding: 5px 10px;
+  transform: rotate(-8deg); box-shadow: 0 6px 14px rgba(0,0,0,.25);
+}
+
+/* bottom strip */
+.ja-foot{
+  border-top: 1px solid rgba(241,238,231,.1); padding-top: 18px;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+}
+.ja-figs{ display: flex; gap: 30px; }
+.ja-figs div{ font-size: 11.5px; color: rgba(241,238,231,.45); line-height: 1.4; }
+.ja-figs b{
+  display: block; font-family: var(--type); font-size: 17px; font-weight: 700; color: #F1EEE7;
+  letter-spacing: -.02em; margin-bottom: 1px;
+}
+.ja-copy{ font-size: 11.5px; color: rgba(241,238,231,.35); }
+
+/* ---------------- right / form ---------------- */
+.ja-main{ display: flex; align-items: center; justify-content: center; padding: 40px 32px; }
+.ja-form{ width: 100%; max-width: 392px; }
+
+.ja-tabs{
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+  background: #F1EDE4; border: 1px solid var(--hair); border-radius: 12px; padding: 3px; margin-bottom: 32px;
+}
+.ja-tabs button{
+  border: 0; background: none; border-radius: 9px; height: 38px; cursor: pointer;
+  font: inherit; font-size: 13.5px; font-weight: 600; color: var(--muted);
+  transition: all .2s var(--e);
+}
+.ja-tabs button.ja-on{ background: var(--sheet); color: var(--ink); box-shadow: 0 1px 2px rgba(34,31,26,.08); }
+
+.ja-head h2{ font-family: var(--type); font-weight: 700; font-size: 29px; letter-spacing: -.02em; margin: 0 0 6px; }
+.ja-head p{ color: var(--muted); font-size: 14px; margin: 0 0 26px; }
+
+.ja-field{ margin-bottom: 16px; }
+.ja-field > label{
+  display: flex; align-items: baseline; justify-content: space-between;
+  font-size: 12.5px; font-weight: 600; margin-bottom: 7px;
+}
+.ja-field .ja-hintlink{ font-size: 12px; font-weight: 500; color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--hair-2); }
+.ja-field .ja-hintlink:hover{ color: var(--ink); border-color: var(--ink); }
+.ja-field .ja-optional{ font-family: var(--type); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); font-weight: 400; }
+
+.ja-input{ position: relative; display: flex; align-items: center; }
+.ja-input input{
+  width: 100%; height: 48px; padding: 0 15px;
+  background: var(--sheet); border: 1.5px solid var(--hair); border-radius: 11px;
+  font: inherit; font-size: 15px; color: var(--ink);
+  transition: border-color .18s var(--e), box-shadow .18s var(--e), background-color .18s var(--e);
+}
+.ja-input input::placeholder{ color: var(--faint); }
+.ja-input input:hover{ border-color: var(--hair-2); }
+.ja-input input:focus{ outline: none; border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.ja-input.ja-has-btn input{ padding-right: 46px; }
+.ja-peek{
+  position: absolute; right: 6px; width: 36px; height: 36px; border: 0; background: none;
+  border-radius: 8px; display: grid; place-items: center; cursor: pointer; color: var(--faint);
+  transition: color .18s var(--e), background-color .18s var(--e);
+}
+.ja-peek:hover{ color: var(--ink); background: var(--paper); }
+
+.ja-field.ja-bad input{ border-color: var(--rose); background: #FFFCFC; }
+.ja-field.ja-bad input:focus{ box-shadow: 0 0 0 3px var(--rose-soft); }
+.ja-field.ja-good input{ border-color: var(--green-line); }
+.ja-msg{ display: none; align-items: center; gap: 6px; margin-top: 7px; font-size: 12.5px; color: var(--rose); font-weight: 500; }
+.ja-field.ja-bad .ja-msg{ display: flex; }
+
+/* password strength */
+.ja-strength{ display: none; margin-top: 9px; }
+.ja-strength.ja-show{ display: block; }
+.ja-strength .ja-bars{ display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; }
+.ja-strength .ja-bars i{ height: 3px; border-radius: 99px; background: #EBE6DB; transition: background-color .25s var(--e); display: block; }
+.ja-strength .ja-txt{ font-size: 11.5px; color: var(--muted); margin-top: 6px; font-family: var(--type); letter-spacing: .06em; }
+
+.ja-row{ display: flex; align-items: center; justify-content: space-between; margin: 20px 0 22px; gap: 12px; }
+.ja-check{ display: flex; align-items: flex-start; gap: 9px; cursor: pointer; font-size: 13px; color: #4A473F; line-height: 1.45; }
+.ja-check input{ position: absolute; opacity: 0; pointer-events: none; }
+.ja-box{
+  width: 18px; height: 18px; flex: none; margin-top: 1px; border-radius: 5px;
+  border: 1.5px solid var(--hair-2); background: var(--sheet);
+  display: grid; place-items: center; color: #fff;
+  transition: all .18s var(--e);
+}
+.ja-box svg{ opacity: 0; transform: scale(.6); transition: all .18s var(--e); }
+.ja-check input:checked + .ja-box{ background: var(--green); border-color: var(--green); }
+.ja-check input:checked + .ja-box svg{ opacity: 1; transform: scale(1); }
+.ja-check input:focus-visible + .ja-box{ box-shadow: 0 0 0 3px var(--green-soft); }
+.ja-check a{ color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--hair-2); }
+
+.ja-submit{
+  width: 100%; height: 50px; border: 0; border-radius: 12px;
+  background: var(--green); color: #fff; cursor: pointer;
+  font: inherit; font-size: 15px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  transition: background-color .18s var(--e), transform .14s var(--e);
+}
+.ja-submit:hover{ background: var(--green-dark); }
+.ja-submit:active{ transform: scale(.99); }
+.ja-submit:disabled{ background: #C8C2B5; cursor: default; transform: none; }
+.ja-spinner{
+  width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
+  border-radius: 50%; display: none; animation: ja-spin .7s linear infinite;
+}
+.ja-submit.ja-loading .ja-spinner{ display: block; }
+@keyframes ja-spin{ to{ transform: rotate(360deg); } }
+
+.ja-or{
+  display: flex; align-items: center; gap: 14px; margin: 22px 0;
+  font-family: var(--type); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint);
+}
+.ja-or::before, .ja-or::after{ content: ""; flex: 1; height: 1px; background: var(--hair); }
+
+.ja-alt{
+  width: 100%; height: 48px; border: 1.5px solid var(--hair); border-radius: 12px; background: var(--sheet);
+  cursor: pointer; font: inherit; font-size: 14px; font-weight: 500; color: var(--ink);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all .18s var(--e);
+}
+.ja-alt:hover{ border-color: var(--hair-2); background: #FCFBF7; }
+
+.ja-swap{ margin-top: 24px; text-align: center; font-size: 13.5px; color: var(--muted); }
+.ja-swap button{
+  background: none; border: 0; padding: 0; cursor: pointer; font: inherit; font-weight: 600; color: var(--ink);
+  border-bottom: 1px solid var(--hair-2);
+}
+.ja-swap button:hover{ border-color: var(--ink); }
+
+.ja-pane{ display: none; animation: ja-rise .32s var(--e); }
+.ja-pane.ja-on{ display: block; }
+@keyframes ja-rise{ from{ opacity: 0; transform: translateY(8px); } to{ opacity: 1; transform: none; } }
+
+@media (max-width: 900px){
+  .ja-root{ grid-template-columns: 1fr; min-height: auto; }
+  .ja-aside{ display: none; }
+  .ja-main{ padding: 32px 22px 48px; align-items: flex-start; }
+  .ja-form{ margin-top: 8px; }
+}
+@media (prefers-reduced-motion: reduce){
+  .ja-root *{ animation: none !important; transition: none !important; }
+}

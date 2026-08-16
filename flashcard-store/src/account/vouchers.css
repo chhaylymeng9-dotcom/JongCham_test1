@@ -1,0 +1,183 @@
+/* ---------- Vouchers page ----------
+Same design system as dashboard.css / profile.css (same variable names,
+same "scoped under one root class" convention) — this just adds the
+ticket-card look this page needs on top.
+--------------------------------- */
+
+.jv-root {
+  --paper: #FAF8F3;
+  --sheet: #FFFFFF;
+  --ink: #221F1A;
+  --muted: #8A857A;
+  --faint: #AFAA9E;
+  --hair: #E5E0D5;
+  --hair-2: #D5CFC1;
+  --track: #EFEBE1;
+
+  --green: #2C4032;
+  --green-dark: #1B291F;
+  --green-soft: #E7EEE7;
+  --green-line: #B5CCBA;
+
+  /* apple/grease accent — same red the tree's fruit and the store's
+     accent buttons use elsewhere in the app */
+  --apple: #B94A30;
+  --apple-soft: #F7E9E7;
+  --apple-line: #E8C9C6;
+  --amber: #9A7B32;
+  --amber-soft: #F5EEDD;
+  --amber-line: #E4D5AE;
+  --blue: #3F5C6B;
+  --blue-soft: #EAF0F3;
+  --blue-line: #C7D8E0;
+
+  --type: "Courier Prime", "American Typewriter", "Courier New", monospace;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --e: cubic-bezier(.2, .7, .2, 1);
+  --pop: cubic-bezier(.34, 1.45, .4, 1);
+}
+
+.jv-root, .jv-root *{ box-sizing: border-box; }
+.jv-root button:focus-visible{ outline: 2px solid var(--green); outline-offset: 2px; }
+.jv-root{
+  background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased; padding: 0 0 40px;
+}
+.jv-wrap{ max-width: 640px; margin: 0 auto; padding: 0 24px; }
+
+.jv-bar{ display: flex; align-items: center; gap: 14px; padding: 28px 0 20px; }
+.jv-close{
+  width: 36px; height: 36px; border: 1px solid var(--hair); background: var(--sheet); cursor: pointer;
+  display: grid; place-items: center; color: var(--ink); border-radius: 10px;
+  transition: all .18s var(--e);
+}
+.jv-close:hover{ border-color: var(--hair-2); background: #FCFBF7; }
+.jv-bar h1{ font-family: var(--type); font-size: 21px; font-weight: 700; letter-spacing: -.03em; margin: 0; }
+
+/* ---------------- apples available ---------------- */
+.jv-summary{
+  background: var(--sheet); border: 1px solid var(--hair); border-radius: 16px;
+  padding: 18px 20px; margin-bottom: 18px; display: flex; align-items: baseline; gap: 10px;
+}
+.jv-summary b{ font-family: var(--type); font-size: 26px; font-weight: 700; letter-spacing: -.03em; }
+.jv-summary span{ font-size: 13px; color: var(--muted); }
+
+/* ---------------- filters ---------------- */
+.jv-filters{ display: flex; gap: 8px; margin-bottom: 18px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.jv-filters::-webkit-scrollbar{ display: none; }
+.jv-filters button{
+  flex: none; display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 15px;
+  border: 1.5px solid var(--hair); background: var(--sheet); border-radius: 999px; cursor: pointer;
+  font: inherit; font-size: 13.5px; font-weight: 500; color: var(--ink); transition: all .18s var(--e);
+}
+.jv-filters button:hover{ border-color: var(--hair-2); }
+.jv-filters button.on{ background: var(--green); border-color: var(--green); color: #fff; font-weight: 600; }
+.jv-filters button em{ font-style: normal; font-family: var(--type); font-size: 11px; opacity: .65; }
+
+/* ---------------- the ticket list ---------------- */
+.jv-list{ display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px; }
+.jv-v{
+  position: relative; background: var(--sheet); border: 1px solid var(--hair); border-radius: 16px;
+  overflow: hidden; transition: transform .2s var(--e), box-shadow .2s var(--e);
+}
+.jv-v:hover{ transform: translateY(-2px); box-shadow: 0 12px 26px rgba(28,26,21,.09); }
+.jv-v.jv-used{ opacity: .6; }
+
+.jv-top{ display: flex; gap: 15px; padding: 17px 17px 15px; }
+.jv-stub{
+  width: 44px; height: 44px; flex: none; border-radius: 12px; display: grid; place-items: center;
+  background: var(--apple-soft); border: 1px solid var(--apple-line); color: var(--apple);
+}
+.jv-v.jv-free .jv-stub{ background: var(--green-soft); border-color: var(--green-line); color: var(--green); }
+.jv-v.jv-ship .jv-stub{ background: var(--amber-soft); border-color: var(--amber-line); color: var(--amber); }
+.jv-v.jv-print .jv-stub{ background: var(--blue-soft); border-color: var(--blue-line); color: var(--blue); }
+
+.jv-t{ flex: 1; min-width: 0; }
+.jv-t > b{ display: block; font-size: 14.5px; font-weight: 600; line-height: 1.4; margin-bottom: 6px; }
+.jv-valline{ display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.jv-val{ font-family: var(--type); font-size: 19px; font-weight: 700; letter-spacing: -.03em; color: var(--apple); }
+.jv-v.jv-free .jv-val{ color: var(--green); }
+.jv-v.jv-ship .jv-val{ color: var(--amber); }
+.jv-v.jv-print .jv-val{ color: var(--blue); }
+.jv-info{ width: 17px; height: 17px; border: 0; background: none; padding: 0; cursor: pointer; color: var(--faint); display: grid; place-items: center; }
+.jv-info:hover{ color: var(--ink); }
+.jv-cost{ font-family: var(--type); font-size: 12px; letter-spacing: .04em; color: var(--muted); }
+
+.jv-rip{ position: relative; height: 0; border-top: 1.5px dashed var(--hair-2); margin: 0 17px; }
+.jv-rip::before, .jv-rip::after{
+  content: ""; position: absolute; top: -9px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--paper); border: 1px solid var(--hair);
+}
+.jv-rip::before{ left: -26px; }
+.jv-rip::after{ right: -26px; }
+
+.jv-bot{ display: flex; align-items: center; gap: 12px; padding: 14px 17px 16px; }
+.jv-track{ flex: 1; display: block; height: 5px; background: var(--track); border-radius: 99px; overflow: hidden; }
+.jv-track i{ display: block; height: 100%; background: var(--apple); border-radius: 99px; transition: width .5s var(--e); }
+.jv-code{ flex: 1; min-width: 0; font-family: var(--type); font-size: 12.5px; letter-spacing: .1em; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jv-use{
+  flex: none; height: 38px; padding: 0 16px; border: 1.5px solid var(--green); border-radius: 10px;
+  background: var(--green); color: #fff; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  transition: all .2s var(--e);
+}
+.jv-use:hover:not(:disabled){ background: var(--green-dark); border-color: var(--green-dark); }
+.jv-use:disabled{ background: var(--track); border-color: var(--hair); color: var(--faint); cursor: not-allowed; }
+
+.jv-tag{
+  position: absolute; top: 0; right: 0; font-family: var(--type); font-size: 9px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; padding: 5px 11px; border-bottom-left-radius: 11px;
+  color: #fff; background: var(--muted);
+}
+
+/* ---------------- empty state ---------------- */
+.jv-empty{ background: var(--sheet); border: 1px dashed var(--hair-2); border-radius: 16px; padding: 38px 22px; text-align: center; margin-bottom: 22px; }
+.jv-eic{ width: 52px; height: 52px; border-radius: 16px; margin: 0 auto 14px; display: grid; place-items: center; background: var(--green-soft); border: 1px solid var(--green-line); color: var(--green); }
+.jv-empty b{ display: block; font-family: var(--type); font-size: 16px; margin-bottom: 5px; }
+.jv-empty p{ margin: 0 auto; font-size: 13px; color: var(--muted); max-width: 30ch; }
+
+/* ---------------- earn more ---------------- */
+.jv-earn{ background: var(--green); color: #F1EEE7; border-radius: 16px; padding: 20px; position: relative; overflow: hidden; }
+.jv-earn::after{ content: ""; position: absolute; right: -60px; top: -70px; width: 190px; height: 190px; border: 1px solid rgba(241,238,231,.12); border-radius: 50%; }
+.jv-earn b{ display: block; font-family: var(--type); font-size: 15px; color: #fff; margin-bottom: 5px; position: relative; }
+.jv-earn p{ margin: 0 0 16px; font-size: 13px; color: rgba(241,238,231,.7); position: relative; line-height: 1.55; }
+.jv-go{
+  display: inline-flex; align-items: center; gap: 8px; background: #F3F0E7; color: var(--green); border: 0;
+  border-radius: 10px; height: 42px; padding: 0 17px; cursor: pointer; font: inherit; font-size: 13.5px;
+  font-weight: 600; position: relative;
+}
+
+/* ---------------- details sheet ---------------- */
+.jv-scrim{ position: fixed; inset: 0; background: rgba(28,26,21,.5); opacity: 0; pointer-events: none; transition: opacity .3s var(--e); z-index: 60; }
+.jv-scrim.jv-show{ opacity: 1; pointer-events: auto; }
+.jv-sheet{
+  position: fixed; left: 50%; bottom: 0; width: min(480px, 100%); transform: translate(-50%, 105%);
+  background: var(--sheet); border-radius: 22px 22px 0 0; padding: 24px; z-index: 61;
+  transition: transform .38s var(--pop);
+}
+.jv-sheet.jv-show{ transform: translate(-50%, 0); }
+.jv-grab{ width: 44px; height: 4px; border-radius: 99px; background: var(--hair-2); margin: 0 auto 18px; }
+.jv-sheet h2{ font-family: var(--type); font-size: 18px; letter-spacing: -.03em; margin: 0 0 6px; }
+.jv-big{ font-family: var(--type); font-size: 14px; color: var(--apple); margin: 0 0 12px; }
+.jv-desc{ margin: 0 0 18px; font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+.jv-codebox{
+  display: flex; align-items: center; gap: 12px; background: var(--paper); border: 1.5px dashed var(--hair-2);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+}
+.jv-codebox b{ flex: 1; font-family: var(--type); font-size: 16px; letter-spacing: .14em; }
+.jv-copy{ height: 36px; padding: 0 14px; border: 1.5px solid var(--hair); border-radius: 9px; background: var(--sheet); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.jv-copy:hover{ border-color: var(--hair-2); }
+.jv-claimedat{ margin: 0; font-size: 12.5px; color: var(--muted); }
+.jv-sheetbtn{ width: 100%; height: 48px; font-size: 14.5px; }
+
+.jv-toast{
+  position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 120px); z-index: 80;
+  background: var(--ink); color: #F2EFE6; border-radius: 12px; padding: 13px 19px; font-size: 13.5px;
+  box-shadow: 0 16px 34px rgba(28,26,21,.3); transition: transform .34s var(--pop); pointer-events: none;
+}
+.jv-toast.jv-show{ transform: translate(-50%, 0); }
+
+@media (max-width: 560px){
+  .jv-wrap{ padding: 0 16px; }
+}
+@media (prefers-reduced-motion: reduce){ .jv-root *{ transition: none !important; } }

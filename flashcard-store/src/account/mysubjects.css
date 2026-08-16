@@ -1,0 +1,215 @@
+/* ---------- My subjects ----------
+Ported from the supplied "My subjects" mockup — the panel that replaces
+Home's old six-card .jmd-deck strip. Header with the deck-count pill and
+"Build a deck" button, filter chips + search toolbar, and the responsive
+deck-card grid (status pills, animated progress fills, actions row, the
+gold certificate strip and the dashed add-deck card), plus the
+no-matches empty state.
+
+Everything is scoped under .ms-root and every keyframe is ms-prefixed so
+nothing leaks onto dashboard.css / mydecks.css, which Home also loads.
+The mockup's shipping card was NOT ported — the app has no "on the way"
+deck state (Account.jsx's summarizeDeck only derives now/done/new), so
+the chips and statuses follow what the data actually has.
+--------------------------------- */
+
+.ms-root{
+  --ms-paper: #EDF4F2;
+  --ms-card: #FFFFFF;
+  --ms-line: #E8E3D7;
+  --ms-line-soft: #F0ECE3;
+  --ms-ink: #16130F;
+  --ms-body: #5F6672;
+  --ms-dim: #8E8877;
+  --ms-rust: #B4573D;
+  --ms-green: #2E9B70;
+  --ms-gold: #D9A441;
+  --ms-blue: #5B7CFA;
+  --ms-violet: #8B6BD6;
+
+  /* Special Elite for the small titles (like the mockup), the site's IBM
+     Plex Mono where the mockup used Courier New, Inter for everything
+     else — Noto Sans Khmer sits in each stack so km text falls back
+     per-glyph */
+  --ms-type: "Special Elite", "Noto Sans Khmer", "Courier New", monospace;
+  --ms-mono: "IBM Plex Mono", "Noto Sans Khmer", ui-monospace, monospace;
+  --ms-sans: "Inter", "Noto Sans Khmer", -apple-system, "Segoe UI", sans-serif;
+
+  font-family: var(--ms-sans); color: var(--ms-ink);
+}
+.ms-root, .ms-root *{ box-sizing: border-box; margin: 0; padding: 0; }
+
+.ms-panel{
+  max-width: 1080px; margin: 0 auto; background: var(--ms-card);
+  border: 1px solid var(--ms-line); border-radius: 20px; overflow: hidden;
+  box-shadow: 0 2px 10px rgba(90, 70, 40, .04);
+}
+
+/* ---------- header ---------- */
+.ms-phead{ padding: 20px 24px 0; }
+.ms-ptop{ display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.ms-ptitle{ display: flex; align-items: center; gap: 11px; }
+.ms-ptitle h2{ font-family: var(--ms-type); font-size: 19px; font-weight: 400; }
+.ms-count{
+  font-size: 11.5px; font-weight: 700; color: var(--ms-dim); background: #F5F2EA;
+  border: 1px solid var(--ms-line-soft); padding: 3px 9px; border-radius: 999px;
+}
+.ms-ptop p{ font-size: 13.5px; color: var(--ms-body); margin-top: 5px; }
+
+.ms-btn{
+  display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer;
+  font-family: inherit; font-size: 13.5px; font-weight: 600; padding: 10px 17px;
+  border-radius: 10px; background: var(--ms-ink); color: #fff;
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+.ms-btn:hover{ transform: translateY(-1px); box-shadow: 0 8px 18px rgba(20, 20, 20, .18); }
+.ms-btn.ms-sm{ padding: 8px 14px; font-size: 12.5px; border-radius: 9px; }
+.ms-btn.ms-ghost{ background: #fff; color: var(--ms-ink); border: 1.5px solid var(--ms-line); }
+.ms-btn.ms-ghost:hover{ border-color: #D8D1C2; box-shadow: none; }
+
+/* toolbar */
+.ms-tools{
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex-wrap: wrap; padding: 18px 0 16px; margin-top: 14px;
+  border-bottom: 1px solid var(--ms-line-soft);
+}
+.ms-chips{ display: flex; gap: 6px; background: #F6F4EE; padding: 4px; border-radius: 11px; flex-wrap: wrap; }
+.ms-chip{
+  border: none; background: transparent; font-family: inherit; font-size: 12.5px;
+  font-weight: 600; color: #7C8290; padding: 7px 13px; border-radius: 8px;
+  cursor: pointer; transition: all .18s;
+}
+.ms-chip.ms-on{ background: #fff; color: var(--ms-ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .09); }
+.ms-chip .ms-n{ opacity: .55; margin-left: 4px; font-size: 11px; }
+.ms-search{ position: relative; }
+.ms-search input{
+  font-family: inherit; font-size: 13px; padding: 9px 12px 9px 34px; width: 210px;
+  border: 1.5px solid var(--ms-line); border-radius: 10px; background: #FCFBF8;
+  outline: none; transition: all .16s; color: var(--ms-ink);
+}
+.ms-search input:focus{ border-color: var(--ms-ink); box-shadow: 0 0 0 3px rgba(20, 20, 20, .06); background: #fff; }
+.ms-search svg{ position: absolute; left: 11px; top: 10px; opacity: .4; }
+
+/* ---------- grid ---------- */
+.ms-grid{
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(252px, 1fr));
+  gap: 16px; padding: 20px 24px 24px;
+}
+
+.ms-deck{
+  position: relative; border: 1px solid var(--ms-line); border-radius: 15px;
+  background: #fff; overflow: hidden; display: flex; flex-direction: column; text-align: left;
+  transition: transform .28s cubic-bezier(.2, .8, .25, 1), box-shadow .28s, border-color .28s;
+}
+.ms-deck:hover{ transform: translateY(-4px); box-shadow: 0 14px 30px rgba(90, 70, 40, .12); border-color: #DDD6C6; }
+/* the top spine takes the deck's subject colour as a custom property and
+   lightens the right end of the gradient with color-mix */
+.ms-spine{ height: 5px; background: linear-gradient(90deg, var(--ms-c), color-mix(in srgb, var(--ms-c) 55%, #fff)); }
+.ms-deck-in{ padding: 16px 16px 14px; display: flex; flex-direction: column; flex: 1; }
+
+.ms-dhead{ display: flex; align-items: flex-start; gap: 11px; margin-bottom: 12px; }
+.ms-icon{ width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex: none; }
+.ms-dname{ flex: 1; min-width: 0; }
+.ms-dname h3{ font-family: var(--ms-type); font-weight: 400; font-size: 15.5px; line-height: 1.28; margin-bottom: 5px; }
+.ms-dmeta{ font-size: 12px; color: var(--ms-dim); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ms-dmeta .ms-code{
+  font-family: var(--ms-mono); font-size: 10.5px; letter-spacing: .06em; color: #9C957F;
+  background: #F7F5EF; border: 1px solid var(--ms-line-soft); padding: 1.5px 6px; border-radius: 5px;
+}
+
+.ms-status{
+  display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
+  letter-spacing: .03em; padding: 4px 9px; border-radius: 999px; white-space: nowrap;
+  align-self: flex-start; text-transform: uppercase;
+}
+.ms-status .ms-d{ width: 6px; height: 6px; border-radius: 50%; }
+.ms-s-live{ background: #EAF7F1; color: #1B7A55; }
+.ms-s-live .ms-d{ background: var(--ms-green); box-shadow: 0 0 0 0 rgba(46, 155, 112, .55); animation: ms-pulse 2.2s infinite; }
+@keyframes ms-pulse{
+  70%{ box-shadow: 0 0 0 6px rgba(46, 155, 112, 0); }
+  100%{ box-shadow: 0 0 0 0 rgba(46, 155, 112, 0); }
+}
+.ms-s-done{ background: #FBF1DC; color: #96690F; }
+.ms-s-done .ms-d{ background: var(--ms-gold); }
+.ms-s-new{ background: #F3F1EB; color: #7A7464; }
+.ms-s-new .ms-d{ background: #B9B2A0; }
+
+/* progress */
+.ms-prog{ margin-top: auto; padding-top: 14px; }
+.ms-prow{
+  display: flex; align-items: baseline; justify-content: space-between;
+  font-size: 11.5px; color: var(--ms-dim); margin-bottom: 6px; gap: 8px;
+}
+.ms-prow b{ font-size: 13px; color: var(--ms-ink); font-family: var(--ms-mono); }
+.ms-bar{ height: 7px; border-radius: 99px; background: #F1EEE5; overflow: hidden; }
+/* the fill starts at width 0 and eases out to its real percentage shortly
+   after mount — see MySubjects' fillsOn timeout in Home.jsx */
+.ms-fill{ display: block; height: 100%; border-radius: 99px; width: 0; transition: width 1.2s cubic-bezier(.2, .8, .25, 1); }
+.ms-fill.ms-g{ background: linear-gradient(90deg, #4FB98C, #2E9B70); }
+.ms-fill.ms-y{ background: linear-gradient(90deg, #EBBE6A, #D9A441); }
+.ms-fill.ms-b{ background: linear-gradient(90deg, #7E99FB, #5B7CFA); }
+.ms-hint{ font-size: 11.5px; color: #A29B87; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
+
+/* actions */
+.ms-acts{ display: flex; gap: 7px; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--ms-line-soft); }
+.ms-acts .ms-btn{ flex: 1; justify-content: center; }
+.ms-iconbtn{
+  width: 36px; height: 34px; border: 1.5px solid var(--ms-line); background: #fff;
+  border-radius: 9px; cursor: pointer; display: grid; place-items: center; flex: none;
+  transition: all .16s; position: relative;
+}
+.ms-iconbtn:hover{ border-color: #CFC7B4; background: #FCFBF8; transform: translateY(-1px); }
+/* hover tooltip, fed by the data-tip attribute like the mockup */
+.ms-iconbtn[data-tip]:hover::after{
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 7px); left: 50%;
+  transform: translateX(-50%); background: var(--ms-ink); color: #fff; font-size: 11px;
+  font-weight: 600; padding: 5px 8px; border-radius: 6px; white-space: nowrap; z-index: 5;
+}
+
+/* certificate strip — the gold band finished decks with a certificate get */
+.ms-cert{
+  display: flex; align-items: center; gap: 9px;
+  background: linear-gradient(100deg, #FDF6E6, #FBF1DC);
+  border: 1px solid #F0E1BE; border-radius: 10px; padding: 9px 11px; margin-top: 14px;
+}
+.ms-cert .ms-sl{
+  width: 24px; height: 24px; border-radius: 50%; background: var(--ms-gold);
+  display: grid; place-items: center; flex: none;
+}
+.ms-cert > span{ font-size: 12px; color: #8A6410; font-weight: 600; line-height: 1.35; }
+.ms-cert button{
+  margin-left: auto; font-size: 11.5px; font-weight: 700; color: #8A6410;
+  background: none; border: none; cursor: pointer; font-family: inherit; white-space: nowrap;
+}
+.ms-cert button:hover{ text-decoration: underline; }
+
+/* add-deck ghost card — the dashed grid cell that jumps to the Customize page */
+.ms-add{
+  border: 1.5px dashed #D9D2C1; border-radius: 15px; background: transparent; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 11px; padding: 30px 20px; min-height: 230px; font-family: inherit;
+  transition: all .25s cubic-bezier(.2, .8, .25, 1);
+}
+.ms-add:hover{ border-color: var(--ms-ink); background: #FCFBF8; transform: translateY(-4px); }
+.ms-add .ms-plus{
+  width: 42px; height: 42px; border-radius: 13px; background: #F5F2EA;
+  display: grid; place-items: center; transition: all .25s;
+}
+.ms-add:hover .ms-plus{ background: var(--ms-ink); transform: rotate(90deg); }
+.ms-add:hover .ms-plus svg path{ stroke: #fff; }
+.ms-add b{ font-family: var(--ms-type); font-weight: 400; font-size: 14.5px; }
+.ms-add small{ font-size: 12px; color: var(--ms-dim); text-align: center; line-height: 1.5; max-width: 22ch; }
+
+/* empty state — shown when the filter + search combo matches nothing */
+.ms-empty{ padding: 56px 24px 64px; text-align: center; }
+.ms-empty b{ display: block; font-family: var(--ms-type); font-weight: 400; font-size: 17px; margin: 14px 0 6px; }
+.ms-empty p{ font-size: 13.5px; color: var(--ms-body); }
+
+@media (max-width: 560px){
+  .ms-search{ width: 100%; }
+  .ms-search input{ width: 100%; }
+  .ms-tools{ flex-direction: column; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce){
+  .ms-root *{ animation: none !important; transition-duration: .01ms !important; }
+}

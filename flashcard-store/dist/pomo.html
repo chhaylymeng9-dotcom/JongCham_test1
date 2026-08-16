@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus journey — JongCham</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F4ED; --sheet:#FFFFFF; --ink:#1C1A15; --body:#4A473F;
+    --muted:#857F73; --faint:#AEA89A; --hair:#E1DBCC; --hair-2:#CFC8B6; --track:#E8E2D5;
+    --green:#243529; --green-mid:#3E5F48; --green-dark:#16211A;
+    --green-soft:#E5EBE4; --green-line:#B2C6B4; --sage:#9CBFA3;
+    --brass:#8E6F2A; --brass-soft:#F3EBD8; --brass-line:#E0CFA4; --brass-mid:#C9A44B;
+    --apple:#B8433F;
+    --type:"Courier Prime","American Typewriter","Courier New",monospace;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    --e:cubic-bezier(.2,.7,.2,1);
+    --pop:cubic-bezier(.34,1.5,.4,1);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+       font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow:hidden;}
+  h1,h2,h3{font-family:var(--type);font-weight:700;letter-spacing:-.03em;margin:0}
+  button{font:inherit}
+
+  /* ---------- shell ---------- */
+  .app{max-width:520px;margin:0 auto;height:100vh;background:var(--paper);
+       position:relative;padding-bottom:20px;overflow:hidden;}
+  .top{position:sticky;top:0;z-index:30;background:var(--green);color:#F1EEE7;
+       border-bottom-left-radius:20px;border-bottom-right-radius:20px}
+  .top .row{display:flex;align-items:center;gap:14px;padding:16px 20px}
+  .top .back{width:38px;height:38px;border:0;background:rgba(241,238,231,.1);border-radius:10px;
+             color:#F1EEE7;cursor:pointer;display:grid;place-items:center;flex:none}
+  .top .back:disabled{opacity:.3;cursor:default}
+  .top .t{flex:1;min-width:0}
+  .top .lab{font-family:var(--type);font-size:9px;font-weight:700;letter-spacing:.2em;
+            text-transform:uppercase;color:rgba(241,238,231,.45);display:block}
+  .top h1{font-size:19px;color:#fff;margin-top:3px}
+  /* the four step pips */
+  .steps{display:flex;gap:6px;padding:0 20px 14px}
+  .steps i{flex:1;height:4px;border-radius:999px;background:rgba(241,238,231,.18)}
+  .steps i.on{background:var(--sage)}
+  .back { cursor:pointer; opacity: 1; transition: background 0.2s; border-radius: 50%; padding: 6px; border:none; background:transparent; display:grid; place-items:center; color:white; }
+  .back:hover { background:rgba(241,238,231,.2); }
+
+  .screen{display:none;padding:20px}
+  .screen.live{display:block;animation:in .32s var(--e)}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---------- the map ---------- */
+  .map-wrap{position:relative;border-radius:22px;overflow:hidden;background:#F2EFE6;
+            border:1px solid var(--hair);box-shadow:0 4px 0 var(--hair)}
+  .map-wrap svg{display:block;width:100%;height:auto}
+  .prov{fill:#7FA97E;stroke:#FFFFFF;stroke-width:2;stroke-linejoin:round;
+        transition:fill .15s var(--e)}
+  .prov:hover{fill:#93BB8F}
+  .prov.dim{fill:#C2C9BA}
+  .prov.from{fill:#E2C86B}
+  .prov.to{fill:#C9A44B}
+  .lake{fill:#8FCBD6;stroke:#6FAFBC;stroke-width:1.5;pointer-events:none}
+  .road{fill:none;stroke:#FFFFFF;stroke-width:3;stroke-linecap:round;opacity:.55;
+        pointer-events:none}
+  .scenery{pointer-events:none}
+  .pin{cursor:pointer}
+  .pin circle.dot{fill:#FFFFFF;stroke:#2F4A38;stroke-width:2.5;
+                  transition:fill .15s var(--e)}
+  .pin circle.halo{fill:#F5C93F;opacity:0;pointer-events:none}
+  .pin text{font-family:var(--sans);font-size:22px;font-weight:700;fill:#24221C;
+            paint-order:stroke;stroke:rgba(255,255,255,.92);stroke-width:6px}
+  .pin.dim{opacity:.35}
+  .pin.sel circle.dot{fill:#F5C93F;stroke:#2F4A38;stroke-width:3}
+  .pin.sel circle.halo{opacity:.18}
+  .pin.home circle.dot{fill:#F5C93F;stroke:#1C3326;stroke-width:3.5}
+  .pin:hover circle.dot{stroke-width:3.5}
+  .route{fill:none;stroke:var(--green);stroke-width:3.5;stroke-linecap:round;
+         stroke-dasharray:1 11;opacity:.95;pointer-events:none}
+
+  /* ---------- cards + controls ---------- */
+  .card{background:var(--sheet);border:1px solid var(--hair);border-radius:20px;
+        padding:18px 20px;box-shadow:0 4px 0 var(--hair);margin-top:16px}
+  .k{font-family:var(--type);font-size:10px;font-weight:700;letter-spacing:.18em;
+     text-transform:uppercase;color:var(--faint)}
+  .big{font-family:var(--type);font-size:27px;letter-spacing:-.04em;color:var(--green);
+       margin-top:6px;line-height:1.15}
+  .sub{font-size:13.5px;color:var(--body);margin:6px 0 0}
+  .big .arrow{color:var(--brass-mid);margin:0 4px}
+
+  .btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;height:56px;
+       border:0;border-radius:999px;cursor:pointer;font-size:15px;font-weight:700;
+       letter-spacing:.07em;text-transform:uppercase;transition:all .12s var(--e)}
+  .btn.primary{background:linear-gradient(#3E8F52,#2C6E3D);color:#fff;
+               box-shadow:0 5px 0 #234F30}
+  .btn.primary:hover{filter:brightness(1.05)}
+  .btn.ghost{background:var(--sheet);color:var(--green);border:1px solid var(--hair-2);
+             box-shadow:0 4px 0 var(--hair)}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.15)}
+  .btn:disabled{background:var(--track);color:var(--faint);box-shadow:0 4px 0 var(--hair-2);
+                cursor:not-allowed;transform:none}
+  .stack{display:grid;gap:11px;margin-top:16px}
+
+  /* chips */
+  .chips{display:flex;gap:9px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;padding:10px 17px;border-radius:999px;background:var(--sheet);
+        border:1px solid var(--hair-2);cursor:pointer;font-family:var(--type);
+        font-size:13px;font-weight:700;color:var(--body);box-shadow:0 3px 0 var(--hair);
+        transition:all .12s var(--e)}
+  .chip.on{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 3px 0 #16211A}
+  .chip:active{transform:translateY(2px);box-shadow:none}
+
+  .sec{font-family:var(--type);font-size:11px;font-weight:700;letter-spacing:.18em;
+       text-transform:uppercase;color:var(--muted);margin:20px 0 10px}
+
+  /* bottom sheet for focus mode */
+  .backdrop{position:fixed;inset:0;background:rgba(18,28,20,.34);z-index:40;
+            animation:fade .25s ease-in-out forwards}
+  .backdrop[hidden]{display:none}
+  .focus-sheet{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;
+               border-radius:26px 26px 0 0;padding:12px 20px 20px;max-height:86vh;overflow-y:auto;
+               box-shadow:0 -16px 44px rgba(0,0,0,.24);background:var(--paper);z-index:50;
+               animation:slideUp .36s cubic-bezier(.34,1.5,.4,1) forwards}
+  .focus-sheet[hidden]{display:none}
+  .grip{width:46px;height:5px;border-radius:99px;background:var(--hair-2);margin:0 auto 16px}
+  .s-seat{font-family:var(--type);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+          color:var(--muted);text-align:center;margin-bottom:8px}
+  .s-head{font-size:18px;font-weight:700;color:var(--ink);text-align:center;margin-bottom:16px;
+          letter-spacing:normal;font-family:var(--sans)}
+
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+
+  /* destination list */
+  .dests{display:flex;gap:10px;padding:2px 0 10px;overflow-x:auto;scrollbar-width:none}
+  .dests::-webkit-scrollbar{display:none}
+  .dest{flex:none;width:240px;display:flex;align-items:center;gap:10px;text-align:left;
+        background:var(--sheet);border:1px solid var(--hair);border-radius:16px;
+        padding:10px;cursor:pointer;box-shadow:0 3px 0 var(--hair);
+        transition:all .12s var(--e)}
+  .dest:hover{border-color:var(--green-line)}
+  .dest.on{border-color:var(--green);box-shadow:0 3px 0 var(--green-line);background:#F4F8F4}
+  .dest .bus{width:32px;height:32px;border-radius:10px;flex:none;display:grid;
+             place-items:center;background:var(--green-soft);color:var(--green-mid)}
+  .dest .bus svg{width:16px;height:16px}
+  .dest .n{flex:1;min-width:0;overflow:hidden}
+  .dest .n b{display:block;font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+  .dest .n span{display:block;font-size:11px;color:var(--muted);white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+  .dest .m{font-family:var(--type);font-weight:700;font-size:13px;color:var(--green);flex:none}
+
+  /* ---------- the coach ---------- */
+  .coach{background:var(--sheet);border:1px solid var(--hair);border-radius:22px;
+         padding:18px;box-shadow:0 4px 0 var(--hair);text-align:center}
+  .coach .rt{font-family:var(--type);font-size:12px;letter-spacing:.16em;
+             text-transform:uppercase;color:var(--muted)}
+  .coach h2{font-size:19px;color:var(--green);margin-top:6px}
+  .coach .cap{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .cabin{margin:18px auto 0;max-width:290px;background:var(--paper);
+         border:1px solid var(--hair-2);border-top-left-radius:70px;
+         border-top-right-radius:70px;border-radius:70px 70px 18px 18px;padding:34px 16px 18px}
+  .drv{display:flex;justify-content:flex-end;padding:0 6px 12px}
+  .drv span{font-family:var(--type);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+            color:var(--faint);display:flex;align-items:center;gap:6px}
+  .rows{display:grid;gap:9px}
+  .row{display:grid;grid-template-columns:1fr 1fr 26px 1fr 1fr;gap:7px;align-items:center}
+  .row .no{font-family:var(--type);font-size:11px;font-weight:700;color:var(--faint);
+           text-align:center}
+  .seat{height:34px;border-radius:9px 9px 6px 6px;border:1px solid var(--hair-2);
+        background:var(--sheet);cursor:pointer;font-family:var(--type);font-size:10px;
+        font-weight:700;color:var(--muted);transition:all .1s var(--e)}
+  .seat:hover:not(:disabled){border-color:var(--green-line);color:var(--green)}
+  .seat.on{background:linear-gradient(#3E8F52,#2C6E3D);border-color:var(--green);color:#fff}
+  .seat:disabled{background:var(--track);border-color:var(--hair-2);color:var(--hair-2);
+                 cursor:not-allowed}
+  .legend{display:flex;justify-content:center;gap:16px;margin-top:14px;font-size:11.5px;
+          color:var(--muted)}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:4px;margin-right:5px;
+            vertical-align:-1px;border:1px solid var(--hair-2)}
+  .legend i.free{background:var(--sheet)}
+  .legend i.taken{background:var(--track)}
+  .legend i.mine{background:#2C6E3D;border-color:#2C6E3D}
+
+  /* focus modes */
+  .modes{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-top:12px}
+  .mode{display:flex;align-items:center;gap:11px;background:var(--sheet);
+        border:1px solid var(--hair);border-radius:16px;padding:13px;cursor:pointer;
+        box-shadow:0 3px 0 var(--hair);text-align:left;transition:all .12s var(--e)}
+  .mode.on{border-color:var(--green);background:#F4F8F4;box-shadow:0 3px 0 var(--green-line)}
+  .mode .mi{width:38px;height:38px;border-radius:12px;flex:none;display:grid;place-items:center;
+            background:var(--brass-soft);color:var(--brass)}
+  .mode.on .mi{background:var(--green-soft);color:var(--green-mid)}
+  .mode b{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+  .mode span{display:block;font-size:11.5px;color:var(--muted)}
+
+  /* ---------- the ticket ---------- */
+  .ticket{position:relative;background:var(--sheet);border:1px solid var(--hair);
+          border-radius:20px;box-shadow:0 5px 0 var(--hair);overflow:hidden;margin-top:6px}
+  .t-head{background:var(--green);color:#fff;padding:18px 20px}
+  .t-head .op{display:flex;align-items:center;gap:8px;font-family:var(--type);font-size:10px;
+              letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+  .t-route{display:flex;align-items:center;gap:12px;margin-top:12px}
+  .t-route .end{flex:none}
+  .t-route .end b{display:block;font-family:var(--type);font-size:29px;letter-spacing:-.04em;
+                  line-height:1}
+  .t-route .end span{display:block;font-size:10.5px;color:rgba(255,255,255,.66);margin-top:4px;
+                     max-width:13ch;line-height:1.3}
+  .t-route .end.r{text-align:right;margin-left:auto}
+  .t-route .mid{flex:1;position:relative;height:26px}
+  .t-route .mid hr{position:absolute;left:0;right:0;top:12px;border:0;border-top:2px dashed
+                   rgba(255,255,255,.35)}
+  .t-route .mid i{position:absolute;left:50%;top:0;transform:translateX(-50%);width:26px;
+                  height:26px;border-radius:50%;background:#fff;color:var(--green);
+                  display:grid;place-items:center}
+  .t-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:20px}
+  .t-grid .kv .k{font-size:9.5px}
+  .t-grid .kv b{display:block;font-family:var(--type);font-size:17px;color:var(--ink);
+                margin-top:3px;letter-spacing:-.02em}
+  .perf{position:relative;height:22px}
+  .perf::before,.perf::after{content:"";position:absolute;top:0;width:22px;height:22px;
+    border-radius:50%;background:var(--paper);border:1px solid var(--hair)}
+  .perf::before{left:-12px}
+  .perf::after{right:-12px}
+  .perf hr{position:absolute;left:14px;right:14px;top:10px;border:0;
+           border-top:2px dashed var(--hair-2)}
+  .barcode{display:flex;gap:2px;align-items:flex-end;height:56px;padding:0 20px 6px}
+  .barcode i{flex:1;background:var(--ink);border-radius:1px}
+  .bc-no{font-family:var(--type);font-size:11px;letter-spacing:.32em;color:var(--muted);
+         text-align:center;padding:0 20px 18px}
+
+  /* ---------- the running timer ---------- */
+  .run{text-align:center;padding-top:8px}
+  .clock{font-family:var(--type);font-size:70px;font-weight:700;letter-spacing:-.05em;
+         color:var(--green);line-height:1;margin:14px 0 4px;font-variant-numeric:tabular-nums}
+  /* ---------- the focus sheet ---------- */
+  .sheet{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;
+         background:rgba(18,28,20,.58);backdrop-filter:blur(7px);
+         -webkit-backdrop-filter:blur(7px);animation:veil .28s var(--e)}
+  .sheet[hidden]{display:none}
+  .sheet .panel{width:min(420px,100%);background:var(--paper);border-radius:30px;
+                padding:34px 26px 26px;text-align:center;
+                box-shadow:0 20px 0 rgba(0,0,0,.16), 0 0 0 1px var(--hair) inset;
+                animation:pop .42s var(--pop)}
+  .sheet .tag{display:inline-block;font-family:var(--type);font-size:10px;font-weight:700;
+              letter-spacing:.2em;text-transform:uppercase;color:#fff;background:var(--green);
+              border-radius:999px;padding:6px 14px;margin-bottom:18px}
+  .sheet .k{display:block}
+  .sheet .stack{margin-top:24px}
+  /* leaving the trip is an exit, not the loud action */
+  .btn.exit{background:var(--sheet);color:#B8433F;border:1px solid #E7CBC9;
+            box-shadow:0 4px 0 #EEDAD8}
+  .btn.exit:hover{background:#FFF8F7}
+  @keyframes veil{from{opacity:0}to{opacity:1}}
+  @keyframes pop{0%{opacity:0;transform:translateY(18px) scale(.92)}
+                 100%{opacity:1;transform:none}}
+  .note{font-size:12.5px;color:var(--muted);text-align:center;margin-top:14px}
+
+  @media print{
+    body *{visibility:hidden}
+    .ticket,.ticket *{visibility:visible}
+    .ticket{position:absolute;left:0;top:0;width:100%;box-shadow:none;border:0;margin:0}
+    .app{padding:0}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="row" style="position: relative;">
+      <button class="back" id="back" aria-label="Back" style="display:none; position: absolute; left: 0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 5l-6 7 6 7"/></svg>
+      </button>
+      <span class="t" style="text-align: center; width: 100%;">
+        <span class="lab" id="crumb" style="display:none">Step 1 of 4</span>
+        <h1 id="title">Departure</h1>
+      </span>
+    </div>
+    <div class="steps" id="steps" style="display:none"><i></i><i></i><i></i><i></i></div>
+  </header>
+
+  <!-- 1 ── departure -->
+  <section class="screen live" id="s1">
+    <div class="map-wrap" id="map1"></div>
+    <div class="card">
+      <span class="k" id="routeLab">Departure</span>
+      <h2 class="big" id="routeName">Tap a province</h2>
+      <p class="sub" id="routeSub">Pick where you are leaving from, then where you are going.</p>
+    </div>
+    <div class="stack">
+      <button class="btn primary" id="go2" disabled>Start journey</button>
+    </div>
+  </section>
+
+  <!-- 2 ── destination -->
+  <section class="screen" id="s2">
+    <div class="map-wrap" id="map2"></div>
+    <p class="sec">Focus length</p>
+    <div class="chips" id="durChips"></div>
+    <p class="sec">Destination</p>
+    <div class="dests" id="dests"></div>
+    <div class="stack"><button class="btn primary" id="go3" disabled>Set</button></div>
+  </section>
+
+  <!-- 3 ── seat + mode -->
+  <section class="screen" id="s3">
+    <div class="coach">
+      <span class="rt" id="seatRoute">PNH → SRP</span>
+      <h2>Mekong Express Coach</h2>
+      <p class="cap">2 + 2 layout · 44 seats</p>
+      <div class="cabin">
+        <div class="drv"><span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M12 3v18" stroke-linecap="round"/></svg>
+          Driver</span></div>
+        <div class="rows" id="rows"></div>
+      </div>
+      <div class="legend">
+        <span><i class="free"></i>Free</span>
+        <span><i class="taken"></i>Taken</span>
+        <span><i class="mine"></i>Yours</span>
+      </div>
+    </div>
+    <p class="sec" id="seatMsg" style="text-align:center;text-transform:none;letter-spacing:normal;color:var(--faint);font-weight:normal">Pick a seat to choose your focus mode.</p>
+    <div id="focusSheet" class="focus-sheet" hidden>
+      <div class="grip"></div>
+      <div class="s-seat" id="sheetSeat">SEAT 08B</div>
+      <h3 class="s-head">Choose your focus mode</h3>
+      <div class="modes" id="modes"></div>
+      <p class="sec" style="margin-top:24px">Rest stops · 15 min each</p>
+      <div class="chips" id="breakChips"></div>
+      <div class="stack"><button class="btn primary" id="go4" disabled>Get boarding pass</button></div>
+    </div>
+  </section>
+
+  <!-- 4 ── ticket -->
+  <section class="screen" id="s4">
+    <div class="ticket" id="ticket">
+      <div class="t-head">
+        <span class="op">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5V16a2 2 0 0 1-1 1.7V19a1.2 1.2 0 0 1-2.4 0v-1H7.4v1A1.2 1.2 0 0 1 5 19v-1.3A2 2 0 0 1 4 16Zm2.4 1.2v5.1h11.2V6.7Zm.9 8.4a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Zm9.4 0a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Z"/></svg>
+          JongCham Coach
+        </span>
+        <div class="t-route">
+          <span class="end"><b id="tFrom">PNH</b><span id="tFromN">Phnom Penh</span></span>
+          <span class="mid"><hr><i>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5V16a2 2 0 0 1-1 1.7V19a1.2 1.2 0 0 1-2.4 0v-1H7.4v1A1.2 1.2 0 0 1 5 19v-1.3A2 2 0 0 1 4 16Zm2.4 1.2v5.1h11.2V6.7Zm.9 8.4a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Zm9.4 0a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Z"/></svg>
+          </i></span>
+          <span class="end r"><b id="tTo">SRP</b><span id="tToN">Siem Reap</span></span>
+        </div>
+      </div>
+      <div class="t-grid">
+        <span class="kv"><span class="k">Trip</span><b id="tTrip">KH 7882</b></span>
+        <span class="kv"><span class="k">Platform</span><b id="tPlat">5</b></span>
+        <span class="kv"><span class="k">Boarding</span><b>Now</b></span>
+        <span class="kv"><span class="k">Seat</span><b id="tSeat">01A</b></span>
+        <span class="kv"><span class="k">Focus time</span><b id="tDur">60m</b></span>
+        <span class="kv"><span class="k">Date</span><b id="tDate">—</b></span>
+        <span class="kv"><span class="k">Mode</span><b id="tMode">Deep work</b></span>
+        <span class="kv"><span class="k">By road</span><b id="tRoad">6h</b></span>
+        <span class="kv"><span class="k">Rest stops</span><b id="tBreaks">1 &times; 15m</b></span>
+        <span class="kv"><span class="k">Total</span><b id="tTotal">2h15</b></span>
+      </div>
+      <div class="perf"><hr></div>
+      <div class="barcode" id="bars"></div>
+      <p class="bc-no" id="bcNo">KH7882</p>
+    </div>
+    <div class="stack">
+      <button class="btn primary" id="board">Boarding now</button>
+    </div>
+  </section>
+
+  <!-- the focus sheet, thrown over the whole screen when the trip starts -->
+  <div class="sheet" id="sheet" hidden>
+    <div class="panel" role="dialog" aria-modal="true" aria-labelledby="runTo">
+      <span class="tag" id="runTag">Focus on</span>
+      <span class="k" id="runTo">On the road</span>
+      <p class="clock" id="clock">60:00</p>
+      <span class="k" id="runMode">Leg 1 of 2</span>
+      <p class="note" id="runNote">Leave the app and the bus stops.</p>
+      <div class="stack">
+        <button class="btn primary" id="pause">Pause</button>
+        <button class="btn exit" id="cancel">Cancel journey</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="backdrop" id="backdrop" hidden></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+/* ---------- the 25 provinces ---------- */
+/* road = real hours by bus from Phnom Penh, focus = the session length it costs */
+const PROV = [
+  {c:"PNH",n:"Phnom Penh - Kampot", lon:104.92,lat:11.56,road:3, focus:60},
+  {c:"KDL",n:"Koh Kong - PNH", lon:104.94,lat:11.28,road:5, focus:120},
+  {c:"KSP",n:"Phnom Penh - Siem Reap",   lon:104.52,lat:11.45,road:6, focus:120},
+  {c:"TKO",n:"Takeo",          lon:104.79,lat:10.99,road:2,   focus:60},
+  {c:"PVG",n:"Prey Veng",      lon:105.33,lat:11.49,road:2,   focus:60},
+  {c:"KPH",n:"Kampong Chhnang",lon:104.67,lat:12.25,road:2,   focus:60},
+  {c:"KPC",n:"Kampong Cham",   lon:105.46,lat:11.99,road:3,   focus:60},
+  {c:"SVR",n:"Svay Rieng",     lon:105.80,lat:11.09,road:3,   focus:60},
+  {c:"KMT",n:"Kampot",         lon:104.18,lat:10.61,road:3,   focus:60},
+  {c:"KPT",n:"Kampong Thom",   lon:104.89,lat:12.71,road:3,   focus:60},
+  {c:"KEP",n:"Kep",            lon:104.32,lat:10.48,road:3.5, focus:90},
+  {c:"TKM",n:"Tboung Khmum",   lon:105.87,lat:11.90,road:3.5, focus:90},
+  {c:"PST",n:"Pursat",         lon:103.92,lat:12.53,road:4,   focus:90},
+  {c:"KOS",n:"Preah Sihanouk", lon:103.52,lat:10.63,road:4,   focus:90},
+  {c:"KKZ",n:"Koh Kong",       lon:102.98,lat:11.62,road:5,   focus:120},
+  {c:"SRP",n:"Siem Reap",      lon:103.86,lat:13.36,road:6,   focus:120},
+  {c:"BTB",n:"Battambang",     lon:103.20,lat:13.10,road:6,   focus:120},
+  {c:"KTI",n:"Kratie",         lon:106.03,lat:12.49,road:6,   focus:120},
+  {c:"BMC",n:"Banteay Meanchey",lon:102.97,lat:13.59,road:7,  focus:180},
+  {c:"PLN",n:"Pailin",         lon:102.61,lat:12.85,road:8,   focus:180},
+  {c:"STV",n:"Stung Treng",    lon:105.97,lat:13.53,road:8,   focus:180},
+  {c:"MWV",n:"Mondulkiri",     lon:107.19,lat:12.46,road:8,   focus:180},
+  {c:"PVR",n:"Preah Vihear",   lon:104.98,lat:13.80,road:8,   focus:180},
+  {c:"OMC",n:"Oddar Meanchey", lon:103.52,lat:14.18,road:9,   focus:240},
+  {c:"RBE",n:"Ratanakiri",     lon:106.99,lat:13.74,road:11,  focus:240}
+];
+
+/* ---------- Cambodia, traced from the survey map ---------- */
+const GEO = {
+  paths: {
+    "PVR": "M453 85 L449 91 L441 88 L436 91 L431 98 L428 99 L417 95 L414 99 L412 106 L413 119 L411 125 L421 135 L408 149 L406 158 L407 172 L405 179 L401 181 L402 184 L397 190 L397 192 L401 196 L401 199 L405 202 L408 213 L407 217 L409 218 L407 228 L403 231 L403 235 L405 238 L423 239 L427 243 L435 243 L438 246 L448 241 L451 244 L445 250 L445 255 L435 265 L431 272 L432 291 L441 289 L452 284 L455 281 L463 280 L465 282 L485 281 L488 284 L489 288 L484 298 L484 307 L494 324 L500 326 L529 307 L536 296 L543 291 L550 289 L566 271 L596 257 L600 251 L602 219 L598 208 L593 202 L592 190 L594 186 L604 179 L608 180 L610 183 L618 181 L624 182 L623 177 L627 173 L656 172 L656 170 L639 156 L638 146 L630 144 L625 146 L621 142 L617 142 L615 144 L612 139 L604 137 L601 134 L598 134 L583 143 L566 143 L558 134 L558 132 L552 131 L550 129 L546 118 L538 111 L538 100 L535 100 L536 104 L533 107 L531 117 L522 124 L516 124 L509 122 L504 117 L498 105 L498 93 L490 92 L484 88 L475 90 L471 84 L464 86 L462 89 L458 88 L457 90 L455 88 L455 85Z",
+    "MWV": "M740 267 L738 288 L741 292 L741 295 L746 297 L752 304 L752 307 L750 309 L738 308 L737 319 L749 332 L756 333 L770 341 L784 353 L782 365 L772 375 L763 378 L751 388 L747 395 L747 401 L741 414 L740 421 L760 434 L765 435 L769 439 L773 440 L776 443 L782 457 L797 461 L808 468 L816 480 L815 496 L816 498 L823 500 L829 499 L837 501 L849 497 L860 484 L860 481 L871 472 L876 463 L879 463 L882 460 L889 460 L895 455 L909 454 L916 461 L917 466 L923 469 L924 463 L930 457 L936 455 L941 451 L941 441 L947 428 L944 422 L948 417 L948 405 L946 403 L947 393 L944 389 L944 373 L941 367 L934 360 L931 343 L933 341 L932 334 L947 295 L947 292 L944 291 L945 288 L942 286 L934 286 L931 282 L926 282 L924 284 L921 284 L919 288 L913 290 L907 283 L899 284 L895 276 L891 274 L891 277 L882 284 L877 284 L874 280 L872 280 L868 284 L864 284 L864 287 L866 289 L865 301 L857 308 L855 308 L854 306 L825 308 L811 304 L784 283 L776 280 L773 277 L765 276 L761 271 L755 269 L750 265Z",
+    "KPT": "M629 424 L629 418 L626 409 L627 398 L622 387 L622 380 L619 376 L620 369 L618 367 L621 364 L621 358 L616 353 L619 345 L613 340 L614 333 L612 326 L614 317 L608 312 L606 308 L604 293 L597 288 L597 261 L589 263 L566 274 L551 291 L540 296 L529 310 L516 317 L500 329 L495 328 L483 312 L481 299 L486 288 L485 284 L458 284 L438 293 L431 294 L427 302 L415 307 L414 328 L411 331 L413 335 L408 341 L405 341 L398 348 L396 354 L393 357 L382 360 L375 367 L373 373 L370 374 L371 381 L375 383 L387 383 L401 378 L409 381 L415 391 L415 400 L412 409 L417 413 L417 417 L419 417 L419 415 L426 409 L440 405 L452 410 L461 416 L474 419 L476 422 L475 428 L478 430 L479 437 L481 437 L483 442 L486 442 L488 445 L488 452 L480 460 L483 470 L490 466 L499 465 L506 473 L521 473 L523 476 L530 474 L534 478 L537 478 L536 467 L532 463 L531 456 L525 449 L533 442 L550 442 L565 449 L567 441 L570 437 L571 429 L573 427 L581 426 L589 432 L593 432 L600 425 L621 426Z",
+    "STV": "M769 56 L766 56 L757 62 L757 64 L761 68 L759 70 L753 69 L754 73 L748 81 L731 83 L726 78 L720 77 L721 82 L719 84 L719 89 L717 93 L709 99 L704 99 L702 96 L697 98 L693 96 L691 101 L678 99 L678 103 L682 105 L684 111 L684 119 L688 124 L695 125 L697 127 L697 135 L699 140 L710 149 L709 154 L696 163 L695 177 L683 176 L678 174 L632 175 L627 176 L629 183 L624 186 L618 184 L611 187 L606 182 L603 182 L597 186 L596 202 L600 206 L605 219 L603 251 L599 256 L601 265 L600 284 L607 295 L617 299 L624 299 L632 303 L643 313 L655 315 L665 310 L669 303 L669 297 L671 295 L679 297 L680 290 L688 280 L689 275 L695 271 L705 270 L715 272 L716 269 L722 264 L739 265 L750 262 L755 266 L761 268 L766 274 L773 274 L778 278 L783 275 L782 269 L779 266 L780 261 L774 250 L774 246 L770 241 L767 240 L767 218 L782 212 L789 201 L788 189 L784 184 L783 172 L781 167 L782 161 L790 161 L792 159 L797 159 L803 155 L806 155 L811 148 L811 144 L805 130 L805 88 L804 86 L798 86 L790 82 L785 82 L781 77 L781 73 L779 71 L775 73 L772 70 L773 66Z",
+    "KTI": "M607 298 L609 309 L617 317 L615 325 L618 336 L617 341 L622 345 L619 353 L623 356 L625 361 L622 366 L623 377 L626 382 L625 387 L630 398 L629 409 L632 419 L632 428 L635 432 L639 446 L639 457 L634 461 L633 467 L645 466 L649 469 L650 474 L665 474 L669 477 L676 477 L681 486 L686 486 L688 490 L688 498 L696 499 L699 503 L702 503 L708 508 L708 518 L717 518 L719 520 L741 520 L746 516 L750 517 L755 514 L758 517 L768 516 L770 518 L787 517 L790 514 L795 518 L799 518 L812 499 L812 478 L803 467 L781 460 L776 452 L773 443 L742 426 L737 421 L738 414 L744 401 L744 395 L748 388 L761 376 L772 372 L780 364 L781 353 L772 345 L758 337 L749 335 L734 319 L735 307 L737 305 L748 305 L747 301 L741 298 L736 290 L735 268 L719 269 L719 272 L715 275 L693 275 L690 282 L683 290 L682 297 L677 301 L675 299 L672 299 L672 303 L668 311 L653 319 L643 316 L632 306 L624 302 L617 302Z",
+    "BTB": "M50 254 L51 266 L48 276 L51 282 L49 288 L56 300 L57 309 L61 313 L63 320 L69 324 L73 334 L78 335 L80 339 L84 339 L86 335 L85 325 L91 318 L94 318 L97 315 L106 317 L118 332 L119 381 L103 393 L88 396 L88 398 L94 404 L99 405 L100 410 L103 411 L106 418 L110 422 L114 423 L114 427 L116 431 L119 432 L123 437 L125 445 L127 445 L131 440 L138 441 L143 436 L150 436 L159 427 L165 434 L170 435 L172 431 L178 430 L183 426 L187 427 L191 423 L199 419 L203 420 L207 416 L216 412 L229 414 L239 418 L246 423 L251 423 L257 420 L264 420 L265 415 L268 412 L267 408 L269 397 L265 394 L267 391 L265 378 L268 373 L267 365 L273 360 L278 360 L279 352 L283 349 L282 342 L284 338 L288 334 L290 334 L290 332 L287 331 L280 322 L279 304 L276 299 L279 289 L275 290 L268 286 L262 287 L249 277 L244 278 L233 274 L227 275 L221 271 L202 271 L194 269 L190 266 L180 266 L172 269 L163 269 L157 275 L146 274 L117 266 L112 267 L106 271 L104 269 L104 254Z",
+    "RBE": "M942 43 L940 43 L933 51 L930 51 L931 54 L929 56 L927 67 L922 68 L920 66 L913 65 L910 59 L907 57 L900 57 L899 62 L894 67 L895 72 L891 76 L885 75 L884 81 L877 88 L873 88 L865 92 L862 90 L860 84 L858 84 L858 86 L853 90 L850 96 L846 98 L846 102 L842 106 L836 103 L832 103 L830 106 L826 105 L823 109 L821 109 L811 100 L809 95 L807 95 L807 112 L809 118 L808 130 L813 141 L814 148 L806 158 L802 158 L798 162 L792 162 L790 164 L784 163 L786 178 L788 180 L787 183 L792 189 L792 201 L787 207 L787 210 L782 215 L769 220 L769 237 L777 246 L777 250 L784 262 L783 267 L785 268 L786 276 L783 278 L783 280 L805 295 L811 301 L825 305 L839 305 L843 303 L858 304 L862 301 L863 289 L860 285 L860 281 L862 279 L864 281 L868 281 L872 277 L874 277 L878 281 L882 281 L888 277 L888 273 L890 271 L895 272 L900 281 L907 280 L912 286 L916 286 L928 277 L930 277 L934 282 L947 285 L952 272 L951 244 L936 214 L923 197 L924 187 L922 183 L924 174 L926 172 L926 164 L924 162 L915 163 L909 157 L911 145 L905 140 L909 130 L913 127 L917 119 L918 110 L915 102 L918 98 L918 95 L924 90 L926 85 L932 86 L932 83 L934 81 L935 70 L939 63 L937 55 L943 49Z",
+    "PST": "M397 426 L384 418 L368 414 L356 399 L356 393 L352 391 L352 386 L349 382 L350 377 L348 377 L347 375 L343 377 L334 377 L323 370 L320 370 L314 363 L310 362 L306 356 L298 356 L294 351 L293 345 L295 344 L295 342 L288 338 L285 342 L287 349 L282 352 L281 360 L278 363 L273 363 L270 365 L272 371 L268 377 L268 384 L271 390 L269 392 L269 395 L273 400 L271 403 L272 412 L264 423 L256 423 L250 426 L246 426 L239 421 L229 417 L222 418 L220 416 L216 416 L211 419 L207 419 L202 424 L197 423 L187 430 L181 430 L178 433 L173 434 L171 438 L163 436 L161 432 L158 431 L155 436 L150 439 L143 439 L138 445 L131 443 L128 449 L123 446 L117 446 L114 449 L111 487 L114 490 L115 494 L122 501 L122 508 L124 510 L157 512 L179 522 L198 519 L200 516 L206 514 L213 515 L213 512 L220 507 L227 493 L232 496 L237 496 L240 492 L242 492 L244 494 L252 495 L254 499 L258 501 L265 509 L268 509 L271 512 L271 515 L273 517 L280 519 L282 524 L295 524 L305 536 L305 538 L309 539 L309 537 L314 532 L316 532 L316 526 L323 522 L328 524 L331 529 L336 529 L340 526 L339 521 L346 515 L348 506 L351 504 L362 504 L364 501 L362 485 L360 483 L361 472 L370 461 L376 460 L381 455 L387 454 L391 444 L397 439Z",
+    "KKZ": "M249 497 L244 498 L240 496 L234 500 L230 497 L227 497 L227 502 L223 505 L224 508 L217 512 L213 518 L205 518 L198 523 L193 522 L188 525 L180 525 L157 515 L123 513 L123 516 L130 529 L132 539 L145 555 L146 577 L150 582 L153 594 L158 599 L164 611 L167 610 L173 613 L176 618 L177 627 L183 627 L186 633 L174 641 L173 649 L177 654 L181 666 L181 672 L178 677 L180 688 L178 703 L183 707 L184 710 L187 711 L194 710 L202 702 L213 703 L221 709 L228 709 L231 704 L229 695 L236 677 L235 671 L241 663 L246 659 L251 658 L256 660 L264 673 L267 672 L275 676 L275 691 L282 704 L287 705 L294 699 L295 696 L294 683 L303 676 L303 673 L310 662 L309 656 L305 650 L308 648 L310 642 L313 640 L313 637 L323 625 L341 609 L341 605 L336 603 L334 599 L330 598 L321 600 L315 593 L309 591 L300 582 L297 582 L295 580 L296 569 L291 563 L291 554 L294 551 L293 540 L296 539 L303 541 L302 536 L295 527 L283 528 L278 524 L279 521 L270 518 L267 515 L267 512 L265 512ZM156 619 L157 628 L159 631 L158 641 L160 644 L163 644 L165 640 L165 631 L163 629 L163 620 L162 618Z",
+    "SRP": "M235 183 L234 190 L237 193 L234 198 L234 212 L237 215 L230 221 L233 243 L232 249 L230 251 L232 255 L229 264 L232 268 L232 271 L239 274 L250 274 L257 280 L259 280 L262 284 L268 283 L274 286 L277 285 L282 289 L323 299 L334 304 L344 315 L350 326 L354 342 L359 347 L361 352 L360 359 L367 371 L370 371 L380 358 L393 354 L396 347 L409 336 L408 331 L411 327 L412 308 L416 303 L426 299 L429 290 L429 270 L442 255 L442 248 L438 249 L435 246 L428 246 L423 242 L406 241 L401 238 L400 231 L404 228 L406 219 L404 217 L404 209 L398 196 L395 196 L392 193 L398 185 L398 181 L403 174 L402 170 L399 168 L394 168 L392 170 L376 169 L373 172 L367 174 L360 169 L351 169 L350 167 L285 167 L277 169 L268 168 L258 178 L252 180 L243 179Z",
+    "KSP": "M296 543 L298 551 L295 553 L295 565 L299 569 L298 579 L303 581 L313 590 L317 591 L321 597 L332 595 L338 601 L341 601 L344 605 L345 609 L341 612 L341 617 L343 619 L342 623 L344 625 L344 627 L340 631 L342 643 L338 649 L341 658 L355 660 L359 662 L366 671 L369 672 L385 670 L390 664 L398 664 L400 662 L404 665 L410 666 L420 665 L424 669 L435 673 L442 674 L449 672 L448 661 L452 644 L452 636 L457 627 L465 619 L465 617 L454 615 L449 617 L444 614 L447 583 L451 569 L460 550 L460 546 L454 549 L440 549 L426 561 L416 562 L412 558 L397 556 L386 544 L384 535 L376 529 L375 514 L370 513 L367 507 L363 509 L361 507 L351 507 L348 518 L343 521 L344 527 L342 529 L339 529 L335 533 L330 532 L327 527 L321 526 L319 527 L320 531 L312 537 L312 540 L310 542 L304 544Z",
+    "OMC": "M168 115 L168 119 L175 132 L175 135 L181 139 L197 140 L194 150 L195 154 L191 160 L195 168 L205 167 L216 154 L226 170 L235 173 L237 175 L237 178 L242 176 L256 175 L268 164 L351 164 L353 166 L360 166 L366 171 L370 171 L376 166 L404 166 L402 160 L405 149 L417 136 L417 134 L407 124 L410 119 L409 107 L411 99 L408 97 L386 94 L380 91 L377 91 L374 95 L368 96 L366 94 L363 94 L361 98 L350 96 L347 100 L341 101 L324 99 L322 103 L310 101 L306 98 L302 99 L295 96 L276 93 L274 91 L274 88 L262 90 L257 87 L251 87 L240 96 L232 94 L229 98 L225 99 L206 99 L198 104 L185 104 L181 108 L174 109Z",
+    "BMC": "M233 176 L231 174 L227 174 L224 171 L217 159 L215 159 L205 170 L197 170 L194 172 L187 161 L192 155 L190 151 L193 148 L193 143 L179 141 L172 135 L172 132 L166 120 L164 120 L158 124 L153 124 L151 126 L151 134 L148 137 L148 141 L144 145 L144 154 L146 157 L139 161 L136 161 L123 173 L121 185 L114 195 L115 200 L85 217 L84 221 L94 227 L96 230 L87 232 L84 236 L78 239 L49 238 L47 239 L47 242 L51 247 L51 251 L106 251 L107 266 L117 263 L132 268 L136 267 L146 271 L156 272 L158 268 L166 265 L172 266 L179 263 L190 263 L193 266 L200 268 L221 268 L229 272 L229 268 L226 262 L228 257 L227 250 L230 241 L228 237 L228 231 L225 227 L227 221 L232 216 L231 202 L229 199 L232 195 L231 182 L233 180Z",
+    "KPH": "M441 408 L434 409 L423 414 L422 421 L425 421 L436 428 L436 432 L433 435 L432 440 L429 440 L420 434 L416 426 L402 425 L400 426 L399 430 L401 440 L394 444 L390 454 L385 458 L381 458 L377 463 L370 464 L364 472 L363 482 L365 484 L365 491 L370 509 L377 513 L379 517 L378 525 L380 527 L380 530 L387 535 L390 546 L397 553 L412 555 L415 558 L420 559 L426 558 L440 546 L454 546 L457 543 L464 542 L462 535 L465 532 L472 531 L474 523 L477 521 L480 515 L484 514 L484 504 L480 500 L483 494 L483 490 L486 486 L486 479 L483 477 L477 463 L477 460 L484 452 L484 450 L481 450 L479 448 L480 441 L476 438 L471 428 L472 421 L459 418Z",
+    "TKM": "M602 464 L598 473 L599 483 L597 492 L600 505 L595 510 L587 511 L587 523 L585 527 L586 531 L584 533 L583 542 L577 546 L578 554 L591 554 L611 558 L625 558 L630 562 L641 580 L646 579 L647 576 L656 569 L665 575 L669 575 L672 572 L671 569 L678 562 L677 556 L684 551 L691 553 L695 557 L704 558 L710 556 L713 560 L722 561 L729 569 L739 566 L748 567 L744 559 L744 554 L747 549 L748 541 L750 539 L750 533 L744 523 L715 523 L713 521 L707 523 L704 520 L706 513 L705 508 L700 507 L695 502 L690 503 L688 501 L685 501 L682 497 L685 494 L684 489 L679 489 L677 483 L667 480 L664 477 L653 477 L649 479 L645 469 L633 470 L628 466 L616 465 L611 462Z",
+    "PVG": "M558 539 L551 543 L550 546 L544 551 L534 556 L533 565 L528 568 L528 575 L524 579 L528 595 L539 597 L545 604 L545 606 L547 608 L553 608 L557 615 L550 621 L550 627 L553 632 L554 647 L548 657 L546 667 L539 674 L540 684 L537 695 L538 704 L545 707 L550 706 L559 711 L564 711 L574 700 L575 696 L578 693 L581 695 L586 694 L589 697 L596 697 L607 694 L607 692 L603 689 L607 680 L607 674 L611 670 L611 667 L608 663 L607 654 L612 642 L614 640 L617 640 L615 634 L615 618 L618 610 L617 604 L620 601 L619 596 L625 588 L631 587 L633 585 L639 585 L639 581 L634 575 L633 571 L629 568 L626 561 L611 561 L591 557 L580 558 L575 554 L573 550 L574 543 L569 543 L567 541Z",
+    "KMT": "M345 661 L345 671 L347 676 L345 679 L346 684 L340 689 L331 688 L321 697 L322 707 L320 709 L321 717 L324 721 L320 730 L320 734 L327 742 L328 747 L325 756 L321 758 L321 760 L327 761 L340 767 L351 767 L354 765 L365 767 L368 764 L377 764 L380 760 L384 763 L398 763 L400 765 L400 770 L405 774 L407 789 L417 788 L429 771 L453 769 L452 758 L449 758 L447 756 L446 743 L451 736 L451 732 L454 729 L454 726 L452 723 L451 714 L447 708 L438 708 L433 711 L422 710 L420 708 L424 702 L422 688 L418 681 L412 681 L409 678 L402 677 L401 667 L390 667 L385 673 L369 675 L366 674 L358 664Z",
+    "KPC": "M629 427 L621 429 L599 428 L594 435 L590 436 L581 429 L577 429 L573 434 L568 450 L565 452 L561 452 L558 448 L552 448 L550 445 L534 446 L530 448 L529 451 L535 456 L535 463 L539 467 L540 479 L538 481 L534 481 L530 477 L527 477 L525 479 L522 479 L520 476 L515 475 L508 477 L500 470 L496 469 L486 472 L486 476 L489 480 L489 486 L486 489 L484 500 L487 504 L487 514 L485 517 L481 518 L476 525 L475 534 L478 537 L477 542 L490 545 L493 542 L495 536 L500 536 L502 533 L506 538 L511 539 L517 546 L517 548 L514 550 L514 556 L530 559 L530 556 L544 548 L553 537 L561 536 L563 538 L570 540 L573 539 L576 542 L580 542 L582 532 L581 529 L584 523 L584 511 L587 506 L597 506 L597 502 L594 496 L596 484 L595 474 L597 467 L604 460 L610 459 L616 462 L630 463 L631 460 L636 457 L635 441Z",
+    "TKO": "M487 630 L476 631 L469 629 L463 632 L457 631 L451 660 L452 671 L450 675 L440 677 L426 673 L421 669 L404 668 L404 674 L411 677 L416 676 L423 684 L427 696 L427 701 L424 708 L433 708 L438 705 L444 704 L447 705 L453 712 L455 717 L455 724 L458 729 L454 732 L454 736 L450 742 L450 755 L454 755 L456 757 L456 770 L462 773 L478 771 L493 752 L511 743 L514 740 L514 733 L505 716 L505 709 L509 704 L508 692 L505 692 L501 689 L501 683 L506 672 L506 662 L500 659 L500 652 L491 645 L490 642 L492 639 L492 633Z",
+    "KDL": "M469 534 L466 536 L468 542 L463 545 L459 561 L453 571 L450 583 L447 613 L451 611 L459 612 L459 605 L463 601 L463 599 L460 598 L453 589 L454 587 L457 587 L459 573 L461 571 L470 570 L474 562 L478 564 L480 570 L485 570 L489 560 L495 559 L500 565 L499 570 L494 578 L496 590 L503 593 L511 593 L513 595 L511 598 L511 603 L513 603 L514 605 L510 609 L499 610 L495 605 L492 605 L491 616 L484 615 L480 617 L478 615 L470 615 L469 618 L461 626 L461 628 L469 626 L479 628 L482 626 L493 630 L495 632 L494 645 L503 652 L503 658 L508 658 L510 661 L509 672 L505 680 L505 689 L511 691 L512 699 L524 695 L526 697 L525 702 L535 702 L534 697 L537 685 L536 674 L543 667 L545 657 L551 647 L550 632 L547 627 L547 621 L553 616 L553 614 L550 611 L545 610 L538 600 L528 598 L525 595 L522 589 L522 582 L520 580 L524 575 L525 568 L529 565 L529 562 L521 562 L519 559 L513 559 L511 557 L513 545 L510 541 L505 541 L503 538 L501 538 L499 540 L496 540 L492 547 L488 549 L482 546 L475 546 L474 536 L472 534Z",
+    "SVR": "M625 591 L623 595 L624 600 L620 604 L621 610 L618 618 L618 635 L621 643 L614 645 L610 654 L611 663 L615 669 L610 674 L610 680 L607 685 L607 689 L609 689 L611 692 L614 692 L628 684 L638 682 L645 695 L654 706 L654 714 L661 715 L663 708 L668 703 L688 721 L703 721 L702 715 L696 704 L696 697 L700 693 L705 691 L703 680 L699 676 L697 676 L691 681 L687 674 L677 665 L675 661 L671 657 L662 655 L657 650 L656 643 L652 642 L648 638 L653 618 L650 594 L643 592 L640 588 L634 588 L632 590Z",
+    "KOS": "M338 617 L335 617 L329 621 L316 637 L314 643 L311 645 L309 652 L314 662 L311 664 L307 672 L307 677 L297 683 L298 700 L284 709 L284 717 L277 724 L275 735 L270 737 L259 737 L255 740 L255 744 L246 755 L246 757 L252 759 L257 766 L263 766 L267 771 L266 776 L268 777 L276 774 L285 775 L285 773 L281 769 L284 766 L289 770 L294 769 L298 771 L307 757 L305 751 L308 748 L315 749 L318 755 L323 754 L325 749 L324 742 L317 734 L320 719 L317 716 L316 711 L319 706 L319 701 L316 698 L331 685 L340 686 L343 684 L341 680 L343 677 L343 664 L334 653 L339 643 L337 632 L340 627 L340 623Z",
+    "PLN": "M102 318 L98 318 L92 321 L89 325 L90 333 L84 342 L75 342 L75 345 L73 347 L76 355 L76 364 L80 370 L81 375 L80 379 L76 382 L76 395 L102 391 L116 381 L115 332 L107 321Z",
+    "PNH": "M494 562 L491 562 L490 567 L486 573 L480 573 L477 570 L476 566 L474 566 L472 573 L462 574 L460 587 L458 589 L458 592 L466 599 L462 607 L465 607 L470 611 L474 610 L477 613 L482 613 L484 611 L489 612 L489 605 L495 601 L499 607 L508 606 L508 596 L499 595 L493 590 L491 579 L497 567Z",
+    "KEP": "M380 765 L379 769 L382 772 L383 780 L392 776 L398 783 L400 783 L400 778 L402 777 L402 775 L397 770 L397 766Z"
+  },
+  poles: {
+    "PVR": [516, 202, 77.9],
+    "MWV": [857, 386, 78.7],
+    "KPT": [556, 368, 62.9],
+    "STV": [659, 229, 55.2],
+    "KTI": [687, 372, 62.5],
+    "BTB": [192, 343, 74.7],
+    "RBE": [858, 210, 68.6],
+    "PST": [305, 464, 58.2],
+    "KKZ": [230, 581, 65.5],
+    "SRP": [330, 233, 67.0],
+    "KSP": [394, 613, 50.8],
+    "OMC": [261, 128, 38.4],
+    "BMC": [164, 214, 52.3],
+    "KPH": [428, 493, 54.2],
+    "TKM": [646, 521, 42.9],
+    "PVG": [585, 592, 35.4],
+    "KMT": [374, 718, 44.0],
+    "KPC": [531, 513, 33.2],
+    "TKO": [474, 693, 28.8],
+    "KDL": [522, 633, 27.2],
+    "SVR": [636, 660, 23.2],
+    "KOS": [298, 731, 20.0],
+    "PLN": [96, 358, 20.0],
+    "PNH": [477, 588, 16.2],
+    "KEP": [388, 772, 6.4]
+  },
+  areas: {
+    "PVR": 33482,
+    "MWV": 32515,
+    "KPT": 29384,
+    "STV": 28571,
+    "KTI": 28268,
+    "BTB": 28142,
+    "RBE": 27517,
+    "PST": 27153,
+    "KKZ": 25455,
+    "SRP": 25238,
+    "KSP": 16006,
+    "OMC": 15355,
+    "BMC": 14182,
+    "KPH": 12156,
+    "TKM": 10983,
+    "PVG": 10750,
+    "KMT": 10517,
+    "KPC": 10109,
+    "TKO": 7436,
+    "KDL": 6407,
+    "SVR": 5577,
+    "KOS": 5029,
+    "PLN": 2260,
+    "PNH": 1242,
+    "KEP": 188
+  },
+  trees: {
+    "PVR": [[476, 106, 1.03], [562, 173, 0.9], [456, 165, 0.85], [558, 261, 0.88], [469, 256, 0.89], [536, 132, 0.77]],
+    "MWV": [[794, 309, 0.81], [893, 323, 0.87], [836, 340, 0.91], [828, 386, 1.02], [885, 389, 0.72], [866, 450, 1.02]],
+    "KPT": [[409, 359, 0.83], [498, 375, 0.83], [586, 309, 0.89], [463, 332, 0.94], [548, 399, 0.71], [609, 399, 0.95]],
+    "STV": [[741, 136, 0.78], [746, 219, 0.96], [702, 205, 0.72], [792, 104, 0.71], [675, 262, 0.98], [621, 239, 1.03]],
+    "KTI": [[723, 375, 0.89], [714, 288, 0.89], [652, 437, 0.7], [661, 340, 0.86], [742, 478, 1.03], [705, 443, 0.74]],
+    "BTB": [[265, 352, 0.73], [127, 286, 0.72], [224, 386, 1.04], [80, 265, 1.0], [142, 353, 0.88], [236, 302, 0.9]],
+    "RBE": [[811, 259, 1.0], [882, 240, 0.71], [901, 198, 0.75], [882, 149, 0.94], [830, 198, 0.8], [925, 267, 0.73]],
+    "PST": [[352, 412, 0.71], [236, 472, 0.98], [126, 475, 0.74], [314, 511, 1.04], [290, 389, 0.92], [212, 430, 0.92]],
+    "KKZ": [[192, 689, 0.97], [235, 514, 0.8], [171, 538, 0.97], [272, 597, 0.77], [281, 646, 0.77], [166, 588, 0.77]],
+    "SRP": [[388, 327, 0.94], [313, 282, 0.98], [314, 200, 0.79], [385, 254, 0.87], [272, 241, 0.97], [386, 204, 0.93]],
+    "KSP": [[364, 570, 0.77], [437, 656, 0.81], [436, 584, 1.02], [381, 647, 1.04]],
+    "OMC": [[246, 163, 0.95], [368, 126, 0.95], [224, 111, 0.93], [298, 129, 1.02]],
+    "BMC": [[210, 190, 0.92], [125, 208, 0.98], [204, 239, 0.75]],
+    "KPH": [[416, 523, 1.02], [441, 465, 0.93], [392, 481, 0.97]],
+    "TKM": [[700, 533, 1.05], [620, 545, 0.74], [638, 485, 1.0]],
+    "PVG": [[575, 666, 0.77], [559, 594, 1.0]],
+    "KMT": [[392, 683, 0.84], [343, 699, 0.88]],
+    "KPC": [[567, 501, 1.0], [503, 495, 0.92]],
+    "TKO": [[482, 722, 1.04], [438, 688, 0.92]],
+    "KDL": [[530, 660, 1.02]],
+    "SVR": [[677, 681, 0.71]],
+    "KOS": [[322, 651, 0.85]],
+    "PLN": [[100, 331, 0.85]],
+    "PNH": []
+  },
+  lake: "M280 293 L279 300 L282 307 L282 322 L288 329 L293 332 L293 334 L290 336 L297 342 L296 347 L298 354 L304 352 L312 360 L314 360 L317 365 L319 364 L321 368 L324 365 L326 371 L331 372 L332 370 L335 375 L340 375 L342 373 L344 374 L346 369 L348 368 L349 375 L354 375 L352 382 L357 383 L355 385 L354 390 L359 391 L358 398 L363 402 L368 412 L369 411 L379 415 L381 414 L382 416 L383 415 L386 418 L400 424 L404 422 L394 422 L391 419 L394 418 L398 420 L398 418 L402 414 L410 417 L415 416 L415 414 L408 408 L413 400 L413 391 L410 384 L403 381 L397 381 L387 385 L375 385 L369 382 L365 370 L358 359 L358 350 L352 342 L347 324 L335 307 L323 301 L311 299 L308 297 L293 295 L284 291Z"
+};
+
+/* the traced image is 1000x834; this frames the country tightly */
+const VB = "35 28 930 776";
+const pole = c => GEO.poles[c];
+
+/* the road network, province to province */
+const ROADS = [
+ ["PNH","KPH"],["KPH","PST"],["PST","BTB"],["BTB","BMC"],["BMC","SRP"],["SRP","KPT"],
+ ["KPT","PNH"],["KPT","PVR"],["BTB","PLN"],["SRP","OMC"],["PNH","KPC"],["KPC","TKM"],
+ ["KPC","KTI"],["KTI","STV"],["STV","RBE"],["KTI","MWV"],["PNH","PVG"],["PVG","SVR"],
+ ["PNH","KDL"],["PNH","TKO"],["TKO","KMT"],["KMT","KEP"],["KMT","KOS"],["PNH","KSP"],
+ ["KSP","KOS"],["KOS","KKZ"],["KKZ","PST"],["SRP","BTB"],["PVR","STV"],["SRP","KPH"]
+];
+function roadPath(){
+  return ROADS.map(([a,b],i)=>{
+    const p = pole(a), q = pole(b);
+    if (!p || !q) return "";
+    const [x1,y1] = p, [x2,y2] = q;
+    /* a small deterministic bow so the roads look driven, not drafted */
+    const bow = ((i%2)?1:-1) * (10 + (i*11)%22);
+    const mx=(x1+x2)/2, my=(y1+y2)/2, dx=x2-x1, dy=y2-y1, len=Math.hypot(dx,dy)||1;
+    return `<path class="road" d="M${x1} ${y1} Q${mx-dy/len*bow} ${my+dx/len*bow} ${x2} ${y2}"/>`;
+  }).join("");
+}
+
+const G = (x,y,s,inner) => `<g transform="translate(${x} ${y}) scale(${s})">${inner}</g>`;
+
+/* trees, scattered on the interior points found in the trace */
+const TREE = `<rect x="-1.7" y="-1" width="3.4" height="10" rx="1.7" fill="#7E6540"/>
+  <circle cx="-5" cy="-1" r="5.4" fill="#4E8C48"/><circle cx="5" cy="-1.5" r="5.6" fill="#4E8C48"/>
+  <circle cx="0" cy="-5" r="7.2" fill="#5EA357"/><circle cx="-1.5" cy="-9.5" r="4.8" fill="#72B868"/>`;
+const PALM = `<path d="M0 10 C-1.5 4 -0.5 -2 2 -7" stroke="#8A7048" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <g transform="translate(2 -7)">
+    <g transform="rotate(-105)"><ellipse cx="8" cy="0" rx="8.5" ry="3" fill="#417C44"/></g>
+    <g transform="rotate(-50)"><ellipse cx="8" cy="0" rx="9" ry="3.2" fill="#4E9350"/></g>
+    <g transform="rotate(5)"><ellipse cx="8.5" cy="0" rx="9" ry="3" fill="#417C44"/></g>
+    <g transform="rotate(55)"><ellipse cx="8" cy="0" rx="8.5" ry="3.2" fill="#4E9350"/></g>
+    <g transform="rotate(120)"><ellipse cx="7.5" cy="0" rx="8" ry="3" fill="#3A7040"/></g>
+    <circle cx="0" cy="0" r="2" fill="#356538"/></g>`;
+/* the coastal and island provinces get palms instead */
+const PALMY = new Set(["KOS","KKZ","KEP","KMT"]);
+const NO_TREE = new Set(["PNH","KEP","PLN","KDL"]);
+function scenery(){
+  let out = "";
+  for (const code in GEO.trees){
+    if (NO_TREE.has(code)) continue;
+    /* one tree per province keeps the map readable */
+    const [x,y,sc] = GEO.trees[code][0];
+    out += G(x, y, sc*1.25, PALMY.has(code) ? PALM : TREE);
+  }
+  return out;
+}
+
+/* ---------- one small signature per province ---------- */
+const S_ = {
+  wat:`<g stroke="#3E3A33" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M-11 -20 L-9 -15 L-10 -15 L-7.5 -10 L-8.5 -10 L-6 -4 L-16 -4 L-13.5 -10 L-14.5 -10
+             L-12 -15 L-13 -15Z" fill="#F2C13F"/>
+    <path d="M11 -20 L13 -15 L12 -15 L14.5 -10 L13.5 -10 L16 -4 L6 -4 L8.5 -10 L7.5 -10
+             L10 -15 L9 -15Z" fill="#F2C13F"/>
+    <path d="M0 -27 L2.4 -21 L1.2 -21 L4 -14 L2.8 -14 L6 -4 L-6 -4 L-2.8 -14 L-4 -14
+             L-1.2 -21 L-2.4 -21Z" fill="#F7D652"/>
+    <rect x="-18" y="-4" width="36" height="5" rx="1" fill="#EFB43A"/>
+    <rect x="-20" y="1" width="40" height="6" rx="1" fill="#F7D652"/>
+    <path d="M-14 2 v4 M-7 2 v4 M0 2 v4 M7 2 v4 M14 2 v4" stroke-width="1.3"/>
+  </g>`,
+  temple:`<path d="M0 -18 L8 -6 L-8 -6Z" fill="#BDB49E"/>
+    <rect x="-11" y="-6" width="22" height="4" fill="#A79F8B"/>
+    <rect x="-14" y="-2" width="28" height="4" rx="1" fill="#958D7B"/>
+    <rect x="-2" y="-14" width="4" height="8" fill="#8F8776"/>`,
+  tower:`<path d="M-6 -2 L-4 -16 Q0 -21 4 -16 L6 -2Z" fill="#B9A88C"/>
+    <rect x="-8" y="-2" width="16" height="4" rx="1" fill="#9C8D74"/>
+    <path d="M-1.6 -4 L-1.6 -12 L1.6 -12 L1.6 -4Z" fill="#7E7160"/>`,
+  monument:`<g stroke="#5A2E28" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M0 -37 L1.7 -30 L-1.7 -30Z" fill="#C4665A"/>
+    <path d="M0 -32 L5 -25 L-5 -25Z" fill="#B5544A"/>
+    <rect x="-6.5" y="-25" width="13" height="3.5" rx="1" fill="#A64C43"/>
+    <path d="M0 -24.5 L8.5 -17 L-8.5 -17Z" fill="#B5544A"/>
+    <rect x="-9.5" y="-17" width="19" height="4" rx="1" fill="#A64C43"/>
+    <rect x="-7.5" y="-13" width="15" height="12" fill="#C4665A"/>
+    <path d="M-3.6 -13 v12 M0 -13 v12 M3.6 -13 v12" stroke-width="1.2"/>
+    <rect x="-11" y="-1" width="22" height="4" rx="1" fill="#B5544A"/>
+    <rect x="-15" y="3" width="30" height="4" rx="1" fill="#A64C43"/>
+    <rect x="-19" y="7" width="38" height="4" rx="1" fill="#9E463D"/>
+  </g>`,
+  durian:`<g stroke="#3E3A33" stroke-width="1.3" stroke-linejoin="round">
+    <ellipse cx="-9" cy="1" rx="7" ry="4" fill="#5EA357" stroke="none"/>
+    <ellipse cx="9" cy="1" rx="7" ry="4" fill="#5EA357" stroke="none"/>
+    <path d="M0 -27 q1.5 -4 3.5 -5.5" stroke="#8A6B3E" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path d="M0.0 -27.9 L1.5 -25.5 L3.6 -27.2 L4.4 -24.4 L6.8 -25.3 L6.9 -22.2 L9.4 -22.2 L8.6 -19.3 L11.0 -18.3 L9.6 -15.8 L11.6 -14.0 L9.6 -12.2 L11.0 -9.7 L8.6 -8.7 L9.4 -5.8 L6.9 -5.8 L6.8 -2.7 L4.4 -3.6 L3.6 -0.8 L1.5 -2.5 L0.0 -0.1 L-1.5 -2.5 L-3.6 -0.8 L-4.4 -3.6 L-6.8 -2.7 L-6.9 -5.8 L-9.4 -5.8 L-8.6 -8.7 L-11.0 -9.7 L-9.6 -12.2 L-11.6 -14.0 L-9.6 -15.8 L-11.0 -18.3 L-8.6 -19.3 L-9.4 -22.2 L-6.9 -22.2 L-6.8 -25.3 L-4.4 -24.4 L-3.6 -27.2 L-1.5 -25.5Z" fill="#7FB03A"/>
+    <path d="M-3 -24 q-2 10 0 19M3 -24 q2 10 0 19" stroke="#5E8C2E" stroke-width="1.1" fill="none"/>
+    <path d="M-13 2 L13 2 L11 8 L-11 8Z" fill="#B5544A"/>
+    <rect x="-15" y="8" width="30" height="4.5" rx="1" fill="#9E463D"/>
+  </g>`,
+  elephant:`<rect x="-7" y="0" width="3.6" height="7" rx="1.8" fill="#8B6E52"/>
+    <rect x="-1" y="0" width="3.6" height="7" rx="1.8" fill="#9C7D5E"/>
+    <rect x="4" y="0" width="3.6" height="7" rx="1.8" fill="#8B6E52"/>
+    <ellipse cx="0" cy="-4" rx="10" ry="6.6" fill="#A08363"/>
+    <circle cx="9.5" cy="-4.5" r="5.4" fill="#A08363"/>
+    <ellipse cx="7.5" cy="-5.5" rx="3.6" ry="4.4" fill="#8B6E52"/>
+    <path d="M13.5 -2.5 q3.6 3.2 2 6.8" stroke="#A08363" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <circle cx="11.5" cy="-6.4" r="0.9" fill="#3B302A"/>`,
+  dolphin:`<path d="M-13 2 Q-4 -9 8 -8 Q13 -8 15 -3 Q10 -1 6 -1 Q-2 -1 -13 2Z" fill="#7E93A6"/>
+    <path d="M-1 -7 Q1 -14 5 -8Z" fill="#6C8193"/>
+    <path d="M-13 2 Q-16 -1 -17 -5 Q-13 -3 -11 0Z" fill="#6C8193"/>
+    <circle cx="11" cy="-5" r="0.9" fill="#2F3A44"/>`,
+  fish:`<path d="M-11 0 Q-4 -7 6 -5 Q12 -4 14 0 Q12 4 6 5 Q-4 7 -11 0Z" fill="#6FA3B5"/>
+    <path d="M-11 0 L-17 -5 L-16 5Z" fill="#5B8C9D"/>
+    <circle cx="9" cy="-1" r="1" fill="#2F3A44"/>`,
+  crab:`<ellipse cx="0" cy="0" rx="9" ry="6.5" fill="#C9553C"/>
+    <path d="M-9 -3 q-6 -3 -8 -8M9 -3 q6 -3 8 -8" stroke="#C9553C" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M-8 4 q-5 3 -7 6M8 4 q5 3 7 6" stroke="#C9553C" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="-3.2" cy="-2" r="1.3" fill="#3B2018"/><circle cx="3.2" cy="-2" r="1.3" fill="#3B2018"/>`,
+  falls:`<path d="M-11 -12 L11 -12 L8 6 L-8 6Z" fill="#8FC3D4"/>
+    <path d="M-5 -12 L-4 6M0 -12 L0 6M5 -12 L4 6" stroke="#B9DDE8" stroke-width="1.6"/>
+    <path d="M-13 -12 q13 -6 26 0" stroke="#6E8F5A" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="0" cy="7" rx="11" ry="3.2" fill="#B9DDE8"/>`,
+  gem:`<path d="M-8 -5 L-4 -10 L4 -10 L8 -5 L0 8Z" fill="#69B9C6"/>
+    <path d="M-8 -5 L8 -5M-4 -10 L0 8M4 -10 L0 8" stroke="#CFEFF3" stroke-width="1.2"/>`,
+  pepper:`<path d="M0 -12 q7 1 8 8" stroke="#5E8C4A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="2" cy="-6" r="2.6" fill="#C2452F"/><circle cx="5.5" cy="-2" r="2.6" fill="#D4644A"/>
+    <circle cx="7" cy="3" r="2.6" fill="#C2452F"/><circle cx="-2" cy="-3" r="2.4" fill="#D4644A"/>
+    <circle cx="1" cy="2" r="2.4" fill="#B33C29"/><circle cx="-4" cy="3" r="2.2" fill="#C2452F"/>`,
+  rice:`<path d="M-6 8 q0 -12 -2 -16M0 8 q0 -14 0 -18M6 8 q0 -12 2 -16" stroke="#9C7F3E"
+      stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <ellipse cx="-8.4" cy="-9" rx="2.6" ry="4.4" fill="#D9B657"/>
+    <ellipse cx="0" cy="-11" rx="2.8" ry="4.8" fill="#E3C465"/>
+    <ellipse cx="8.4" cy="-9" rx="2.6" ry="4.4" fill="#D9B657"/>`,
+  pot:`<path d="M-8 -4 q8 -6 16 0 q3 7 -1 11 q-7 3 -14 0 q-4 -4 -1 -11Z" fill="#B4764A"/>
+    <path d="M-6 -5 q6 -3 12 0" stroke="#8C5836" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="0" cy="-5" rx="6" ry="2" fill="#8C5836"/>`,
+  sugarpalm:`<path d="M0 9 q-1 -8 0 -14" stroke="#8A7048" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <g transform="translate(0 -6)">
+      <g transform="rotate(-70)"><ellipse cx="7" cy="0" rx="7.5" ry="2.6" fill="#4E9350"/></g>
+      <g transform="rotate(-25)"><ellipse cx="7.5" cy="0" rx="8" ry="2.8" fill="#5CA75C"/></g>
+      <g transform="rotate(25)"><ellipse cx="7.5" cy="0" rx="8" ry="2.8" fill="#4E9350"/></g>
+      <g transform="rotate(70)"><ellipse cx="7" cy="0" rx="7.5" ry="2.6" fill="#417C44"/></g></g>
+    <circle cx="-2.5" cy="-4" r="1.8" fill="#8A6B3E"/><circle cx="2.5" cy="-3" r="1.8" fill="#8A6B3E"/>`,
+  orange:`<circle cx="0" cy="1" r="8" fill="#E08A2E"/>
+    <path d="M0 -7 q1 -4 5 -5 q-1 4 -5 5Z" fill="#5E9A4E"/>
+    <ellipse cx="-2.5" cy="-2" rx="2.6" ry="1.6" fill="#EFA94E"/>`,
+  mango:`<path d="M-2 -8 q9 -1 10 8 q1 8 -7 9 q-8 1 -9 -8 q-1 -8 6 -9Z" fill="#E0B23C"/>
+    <path d="M-2 -8 q2 -5 6 -6" stroke="#5E8C4A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M2 -3 q4 3 3 9" stroke="#EFCB6B" stroke-width="1.6" fill="none"/>`,
+  lotus:`<path d="M0 6 q-10 -2 -11 -10 q7 1 11 10Z" fill="#D9779B"/>
+    <path d="M0 6 q10 -2 11 -10 q-7 1 -11 10Z" fill="#D9779B"/>
+    <path d="M0 6 q-6 -5 -5 -14 q6 5 5 14Z" fill="#E894B2"/>
+    <path d="M0 6 q6 -5 5 -14 q-6 5 -5 14Z" fill="#E894B2"/>
+    <path d="M0 7 q-2 -9 0 -15 q2 6 0 15Z" fill="#F2AFC6"/>
+    <ellipse cx="0" cy="7" rx="9" ry="2.4" fill="#5E9A6E"/>`,
+  boat:`<path d="M-13 3 L13 3 L9 9 L-9 9Z" fill="#C9BC96"/>
+    <path d="M0 -13 L0 2" stroke="#8A7048" stroke-width="2" stroke-linecap="round"/>
+    <path d="M1 -12 L10 1 L1 1Z" fill="#F0EAD8"/>
+    <path d="M-1 -9 L-8 1 L-1 1Z" fill="#E0D8BE"/>`,
+  rubber:`<rect x="-2" y="-2" width="4" height="11" rx="1.6" fill="#7E6540"/>
+    <ellipse cx="0" cy="-9" rx="10" ry="7.5" fill="#4E8C48"/>
+    <ellipse cx="0" cy="-11" rx="6" ry="4.5" fill="#5EA357"/>
+    <path d="M2 0 q5 1 5 5" stroke="#C9B98E" stroke-width="1.6" fill="none"/>
+    <circle cx="7.5" cy="6" r="2.4" fill="#EFE8CE"/>`,
+  ferry:`<path d="M-14 2 L14 2 L10 8 L-10 8Z" fill="#5E7E92"/>
+    <rect x="-8" y="-7" width="16" height="9" rx="1.6" fill="#EAE2CC"/>
+    <rect x="-5" y="-4.5" width="3.4" height="3.4" fill="#8FB6C9"/>
+    <rect x="1.6" y="-4.5" width="3.4" height="3.4" fill="#8FB6C9"/>
+    <path d="M0 -12 L0 -7" stroke="#8A7048" stroke-width="1.8" stroke-linecap="round"/>`,
+  forest:`<path d="M-7 8 L-7 4M7 8 L7 4M0 9 L0 3" stroke="#7E6540" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M-7 -12 L-1 4 L-13 4Z" fill="#4E8C48"/>
+    <path d="M7 -10 L13 4 L1 4Z" fill="#417C44"/>
+    <path d="M0 -16 L7 3 L-7 3Z" fill="#5EA357"/>`
+};
+const SIG = {
+  SRP:{k:"wat",      s:.95, dy:-24},   /* Angkor Wat */
+  PNH:{k:"monument", s:.85, dy:-22},   /* the Independence Monument */
+  KMT:{k:"durian",   s:.85, dy:-22},   /* the durian roundabout */
+  MWV:{k:"elephant", s:1.5, dy:-28},   /* the eastern highlands */
+  KTI:{k:"dolphin",  s:1.5, dy:-26},   /* the Mekong dolphins */
+  STV:{k:"fish",     s:1.5, dy:-26}
+};
+
+/* the map is drawn twice — once per screen — so each can highlight differently */
+function drawMap(host, o){
+  const { onPick=null, dim=()=>false, showRoute=false } = o || {};
+  const shapes = PROV.map(p => {
+    const cls = ["prov", p.c===S.from?"from":"", p.c===S.to?"to":"", dim(p)?"dim":""]
+      .filter(Boolean).join(" ");
+    return `<path class="${cls}" data-c="${p.c}" d="${GEO.paths[p.c]}"><title>${p.n}</title></path>`;
+  }).join("");
+
+  const marks = PROV.map(p => {
+    const [x,y] = pole(p.c);
+    const isEnd = p.c===S.from || p.c===S.to;
+    const cls = ["pin", p.c===S.from?"home":"", isEnd?"sel":"", dim(p)?"dim":""]
+      .filter(Boolean).join(" ");
+    const g = SIG[p.c];
+    const icon = g ? G(x, y+g.dy, g.s, S_[g.k]) : "";
+    return `<g class="${cls}" data-c="${p.c}">
+      ${icon}
+      <circle class="halo" cx="${x}" cy="${y}" r="22"/>
+      <circle class="dot" cx="${x}" cy="${y}" r="9"/>
+      ${isEnd ? `<text x="${x}" y="${y+28}" text-anchor="middle">${p.n}</text>` : ""}
+      <title>${p.n}</title></g>`;
+  }).join("");
+
+  let route = "";
+  if (showRoute && S.to){
+    const [x1,y1] = pole(S.from), [x2,y2] = pole(S.to);
+    const mx=(x1+x2)/2, my=(y1+y2)/2 - 40;
+    route = `<path class="route" d="M${x1} ${y1} Q${mx} ${my} ${x2} ${y2}"/>`;
+  }
+
+  host.innerHTML = `<svg viewBox="${VB}" role="img" aria-label="Map of Cambodia">
+    <g class="provinces">${shapes}</g>
+    <path class="lake" d="${GEO.lake}"/>
+    <g class="scenery">${scenery()}</g>
+    ${route}
+    <g class="marks">${marks}</g>
+  </svg>`;
+
+  if (onPick) host.querySelectorAll("[data-c]").forEach(el => {
+    el.style.cursor = "pointer";
+    el.addEventListener("click", () => onPick(el.dataset.c));
+  });
+}
+
+/* ---------- state ---------- */
+const S = { from:null, to:null, dur:null, seat:null, mode:null, breaks:1, step:1,
+            plan:[], leg:0,
+            trip:null, plat:null, left:0, timer:null, paused:false };
+const prov = c => PROV.find(p=>p.c===c);
+const fmt  = m => m < 60 ? m+"m" : (m%60 ? Math.floor(m/60)+"h"+(m%60) : (m/60)+"h");
+const hrs  = h => h < 1 ? "30m by road" : h + "h by road";
+
+/* ---------- navigation ---------- */
+const TITLES = ["Departure","Destination","Seat & mode","Boarding pass","On the road"];
+function show(n){
+  S.step = n;
+  [1,2,3,4].forEach(i => $("s"+i).classList.toggle("live", i===n));
+  $("title").textContent = TITLES[n-1];
+  $("crumb").textContent = `Step ${n} of 4`;
+  [...$("steps").children].forEach((el,i)=>el.classList.toggle("on", i < Math.min(n,4)));
+
+  $("back").style.display = (n === 1) ? 'none' : 'grid';
+
+  scrollTo({top:0,behavior:"smooth"});
+}
+$("back").onclick = () => show(Math.max(1, S.step-1));
+
+/* ---------- screen 1 ---------- */
+function pick1(c){
+  if (!S.from)                       S.from = c;
+  else if (!S.to && c !== S.from)  { S.to = c; S.dur = prov(c).focus; }
+  else                             { S.from = c; S.to = null; S.dur = null; }
+  paintMap1();
+}
+function paintMap1(){
+  drawMap($("map1"), { onPick: pick1, showRoute: true });
+  const f = S.from && prov(S.from), t = S.to && prov(S.to);
+  if (!f){
+    $("routeLab").textContent = "Departure";
+    $("routeName").textContent = "Tap a province";
+    $("routeSub").textContent = "Pick where you are leaving from, then where you are going.";
+  } else if (!t){
+    $("routeLab").textContent = "Leaving from";
+    $("routeName").textContent = f.n;
+    $("routeSub").textContent = "Now tap the province you want to travel to.";
+  } else {
+    $("routeLab").textContent = "Your route";
+    $("routeName").innerHTML = `${f.n} <span class="arrow">\u2192</span> ${t.n}`;
+    $("routeSub").textContent = `${fmt(t.focus)} of focus \u00b7 ${hrs(t.road)}. Tap any province to start over.`;
+  }
+  $("go2").disabled = !(S.from && S.to);
+}
+$("go2").onclick = () => { paintChips(); paintDests(); paintMap2(); syncGo3(); show(2); };
+
+/* ---------- screen 2 ---------- */
+const DURS = [30,60,90,120,180,240];
+function paintChips(){
+  $("durChips").innerHTML =
+    `<button class="chip ${S.dur===null?"on":""}" data-d="">All</button>` +
+    DURS.map(d=>`<button class="chip ${S.dur===d?"on":""}" data-d="${d}">${fmt(d)}</button>`).join("");
+  $("durChips").querySelectorAll(".chip").forEach(b=>{
+    b.onclick = () => {
+      S.dur = b.dataset.d ? +b.dataset.d : null;
+      if (S.to && S.dur && prov(S.to).focus !== S.dur) S.to = null;
+      paintChips(); paintDests(); paintMap2(); syncGo3();
+    };
+  });
+}
+function listed(){
+  const popular = ["KDL", "PNH", "KSP", "SRP", "BTB"];
+  return PROV.filter(p => p.c !== S.from && (S.dur===null || p.focus===S.dur) && popular.includes(p.c))
+             .sort((a,b)=>a.road-b.road);
+}
+function paintDests(){
+  const rows = listed();
+  $("dests").innerHTML = rows.length ? rows.map(p=>`
+    <button class="dest ${S.to===p.c?"on":""}" data-c="${p.c}">
+      <span class="bus">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5V16a2 2 0 0 1-1 1.7V19a1.2 1.2 0 0 1-2.4 0v-1H7.4v1A1.2 1.2 0 0 1 5 19v-1.3A2 2 0 0 1 4 16Zm2.4 1.2v5.1h11.2V6.7Zm.9 8.4a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Zm9.4 0a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Z"/></svg>
+      </span>
+      <span class="n"><b>${p.n}</b><span>${p.c} · ${hrs(p.road)}</span></span>
+      <span class="m">${fmt(p.focus)}</span>
+    </button>`).join("")
+    : `<p class="note">No province sits at that focus length. Try another.</p>`;
+  $("dests").querySelectorAll(".dest").forEach(b=>{
+    b.onclick = () => { S.to = b.dataset.c; paintDests(); paintMap2(); syncGo3(); };
+  });
+}
+function paintMap2(){
+  drawMap($("map2"), {
+    showRoute: true,
+    dim: p => S.dur !== null && p.focus !== S.dur && p.c !== S.from && p.c !== S.to,
+    onPick: c => {
+      if (c === S.from) return;
+      S.to = c; S.dur = prov(c).focus;
+      paintChips(); paintDests(); paintMap2(); syncGo3();
+    }
+  });
+}
+const syncGo3 = () => { $("go3").disabled = !S.to; };
+$("go3").onclick = () => { paintCoach(); show(3); };
+
+/* ---------- screen 3 ---------- */
+const ROWS = 11, COLS = ["A","B","C","D"];
+/* a fixed set of taken seats so the coach looks lived-in but never changes under you */
+const TAKEN = new Set(["01B","02C","03A","04D","05B","05C","07A","08D","09B","10C","11A","11D","06A"]);
+function paintCoach(){
+  $("seatRoute").textContent = `${S.from} → ${S.to}`;
+  let out = "";
+  for (let r=1; r<=ROWS; r++){
+    const n = String(r).padStart(2,"0");
+    out += `<div class="row">` +
+      COLS.map((c,i)=>{
+        const id = n+c;
+        const cell = `<button class="seat ${S.seat===id?"on":""}" data-s="${id}"
+          ${TAKEN.has(id)?"disabled":""}>${c}</button>`;
+        return i===2 ? `<span class="no">${r}</span>${cell}` : cell;
+      }).join("") + `</div>`;
+  }
+  $("rows").innerHTML = out;
+  $("rows").querySelectorAll(".seat").forEach(b=>{
+    b.onclick = () => {
+      S.seat = b.dataset.s;
+      $("sheetSeat").textContent = `SEAT ${S.seat}`;
+      $("seatMsg").textContent = `Seat ${S.seat} · tap another to change`;
+      $("backdrop").hidden = false;
+      $("focusSheet").hidden = false;
+      paintCoach();
+      syncGo4();
+    };
+  });
+  paintModes();
+  paintBreaks();
+  syncGo4();
+}
+
+$("backdrop").onclick = (e) => {
+  if (e.target === $("backdrop")) {
+    $("backdrop").hidden = true;
+    $("focusSheet").hidden = true;
+  }
+};
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !$("backdrop").hidden) {
+    $("backdrop").hidden = true;
+    $("focusSheet").hidden = true;
+  }
+});
+function paintBreaks(){
+  $("breakChips").innerHTML = [1,2,3,4].map(b =>
+    `<button class="chip ${S.breaks===b?"on":""}" data-b="${b}">${b} break${b>1?"s":""}</button>`
+  ).join("");
+  $("breakChips").querySelectorAll(".chip").forEach(b => {
+    b.onclick = () => { S.breaks = +b.dataset.b; paintBreaks(); };
+  });
+}
+const MODES = [
+  {k:"Focus",     d:"Phone face down",  i:'<path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"/>'},
+  {k:"Study",     d:"Notes open",       i:'<path d="M4 4.5h6a3 3 0 0 1 3 3V20a2.4 2.4 0 0 0-2.2-1.5H4Z"/><path d="M20 4.5h-6a3 3 0 0 0-3 3V20a2.4 2.4 0 0 1 2.2-1.5H20Z"/>'},
+  {k:"Deep work", d:"No notifications", i:'<path d="M3 19h18M6 19l5-9 3 5 2-3 3 7"/>'},
+  {k:"Reading",   d:"One chapter",      i:'<path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3Z"/><path d="M8 8h6M8 12h6"/>'}
+];
+function paintModes(){
+  $("modes").innerHTML = MODES.map(m=>`
+    <button class="mode ${S.mode===m.k?"on":""}" data-k="${m.k}">
+      <span class="mi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
+        stroke-linejoin="round">${m.i}</svg></span>
+      <span><b>${m.k}</b><span>${m.d}</span></span>
+    </button>`).join("");
+  $("modes").querySelectorAll(".mode").forEach(b=>{
+    b.onclick = () => { S.mode = b.dataset.k; paintModes(); syncGo4(); };
+  });
+}
+  const syncGo4 = () => { $("go4").disabled = !(S.seat && S.mode); };
+$("go4").onclick = () => {
+  $("backdrop").hidden = true;
+  $("focusSheet").hidden = true;
+  paintTicket();
+  show(4);
+};
+
+/* ---------- screen 4 ---------- */
+/* the trip number is derived from the route so the same ride always prints the same ticket */
+function tripNo(){
+  const a = S.from.charCodeAt(0)+S.from.charCodeAt(1)+S.from.charCodeAt(2);
+  const b = S.to.charCodeAt(0)+S.to.charCodeAt(1)+S.to.charCodeAt(2);
+  return "KH " + String((a*7 + b*13) % 9000 + 1000);
+}
+function paintTicket(){
+  const f = prov(S.from), t = prov(S.to);
+  S.trip = tripNo();
+  S.plat = (t.road % 9) + 1;
+  $("tFrom").textContent = f.c; $("tFromN").textContent = f.n;
+  $("tTo").textContent   = t.c; $("tToN").textContent   = t.n;
+  $("tTrip").textContent = S.trip;
+  $("tPlat").textContent = S.plat;
+  $("tSeat").textContent = S.seat;
+  $("tDur").textContent  = fmt(t.focus);
+  $("tMode").textContent = S.mode;
+  $("tRoad").textContent = t.road < 1 ? "30m" : t.road + "h";
+  $("tBreaks").innerHTML = `${S.breaks} &times; 15m`;
+  $("tTotal").textContent = fmt(t.focus + S.breaks*15);
+  $("tDate").textContent = new Date().toISOString().slice(0,10).replace(/-/g,".");
+  /* a barcode that is stable for a given trip rather than random on every paint */
+  let seed = S.trip.split("").reduce((a,ch)=>a+ch.charCodeAt(0),0) + S.seat.charCodeAt(1);
+  $("bars").innerHTML = Array.from({length:52}, (_,i)=>{
+    seed = (seed*1103515245 + 12345) & 0x7fffffff;
+    const h = 55 - (seed % 3) * 7;
+    return `<i style="height:${h}%;flex:${1 + (seed % 3)}"></i>`;
+  }).join("");
+  $("bcNo").textContent = S.trip.replace(" ","") + " " + S.seat;
+}
+$("board").onclick = () => { startRun(); openSheet(); };
+
+/* ---------- screen 5 ---------- */
+/* the focus time is split into legs, with a 15 minute rest stop between each */
+function buildPlan(){
+  const total = prov(S.to).focus, legs = S.breaks + 1;
+  const each = Math.round(total*60/legs);
+  const plan = [];
+  for (let i=0; i<legs; i++){
+    plan.push({ ride:true, secs:each, leg:i+1, of:legs });
+    if (i < legs-1) plan.push({ ride:false, secs:15*60 });
+  }
+  return plan;
+}
+function paintLeg(){
+  const seg = S.plan[S.leg], t = prov(S.to);
+  if (seg.ride){
+    $("runTo").textContent = `On the road to ${t.n}`;
+    $("runMode").textContent = `Leg ${seg.leg} of ${seg.of} \u00b7 ${S.mode} \u00b7 seat ${S.seat}`;
+    $("runNote").textContent = "Leave the app and the bus stops.";
+  } else {
+    $("runTo").textContent = "Rest stop";
+    $("runMode").textContent = "Stretch your legs \u00b7 15 minutes";
+    $("runNote").textContent = "The bus waits for you.";
+  }
+}
+function startRun(){
+  S.plan = buildPlan(); S.leg = 0; S.left = S.plan[0].secs; S.paused = false;
+  $("pause").textContent = "Pause";
+  paintLeg(); tick();
+  clearInterval(S.timer);
+  S.timer = setInterval(() => {
+    if (S.paused) return;
+    if (S.left > 0){ S.left--; tick(); }
+    if (S.left === 0){
+      if (S.leg < S.plan.length - 1){
+        S.leg++; S.left = S.plan[S.leg].secs; paintLeg(); tick();
+      } else {
+        clearInterval(S.timer);
+        $("runTo").textContent = "Arrived";
+        $("runNote").textContent = `You reached ${prov(S.to).n}. Stretch your legs.`;
+      }
+    }
+  }, 1000);
+}
+function tick(){
+  const m = Math.floor(S.left/60), s2 = S.left % 60;
+  $("clock").textContent = String(m).padStart(2,"0") + ":" + String(s2).padStart(2,"0");
+}
+$("pause").onclick = () => {
+  S.paused = !S.paused;
+  $("pause").textContent = S.paused ? "Resume" : "Pause";
+  $("runNote").textContent = S.paused ? "Bus stopped at the roadside." : "Leave the app and the bus stops.";
+};
+function openSheet(){ $("sheet").hidden = false; document.body.style.overflow = "hidden"; }
+function closeSheet(){
+  clearInterval(S.timer);
+  $("sheet").hidden = true;
+  document.body.style.overflow = "";
+}
+$("cancel").onclick = closeSheet;
+
+/* ---------- boot ---------- */
+paintMap1(); paintChips(); paintDests(); paintMap2(); syncGo3();
+</script>
+</body>
+</html>

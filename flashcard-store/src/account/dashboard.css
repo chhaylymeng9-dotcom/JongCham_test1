@@ -1,0 +1,474 @@
+/* ---------- JongCham account dashboard ----------
+Ported from the supplied static mockup — the sequel to authPanel.css's
+sign-in screen. Every selector is scoped under .jd-root so it can't leak
+onto the rest of the app, which uses Tailwind utility classes instead of
+bespoke CSS like this. Same variables/fonts as .ja-root on purpose — same
+design system, different screen.
+
+Only entry/menu/list screens live here. The interactive pieces nested
+inside this shell (practice drills, the timed exam run, the printable
+certificate) keep the app's existing Tailwind styling — this stylesheet
+doesn't reach into them.
+--------------------------------- */
+
+.jd-root {
+  --paper: #FAF8F3;
+  --sheet: #FFFFFF;
+  --ink: #221F1A;
+  --body: #4A473F;
+  --muted: #8A857A;
+  --faint: #AFAA9E;
+  --hair: #E5E0D5;
+  --hair-2: #D5CFC1;
+
+  --green: #2C4032;
+  --green-dark: #1B291F;
+  --green-soft: #E7EEE7;
+  --green-line: #B5CCBA;
+  --sage: #9FC1AA;
+  --amber: #9A7B32;
+  --amber-soft: #F5EEDD;
+  --amber-line: #E4D5AE;
+  --rose: #A6485A;
+
+  /* hero card only — a brass/bronze alternative to --green */
+  --brass-dark: #5C4520;
+  --gold: #D9B168;
+
+  --type: "Courier Prime", "American Typewriter", "Courier New", monospace;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --e: cubic-bezier(.2, .7, .2, 1);
+}
+
+.jd-root, .jd-root *{ box-sizing: border-box; }
+.jd-root button:focus-visible, .jd-root a:focus-visible{ outline: 2px solid var(--green); outline-offset: 2px; }
+
+.jd-root{
+  background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  padding: 28px 0 8px;
+}
+
+/* The mockup's .wrap — without it the dashboard stretches full-bleed
+   across a wide/maximized window instead of staying in a readable
+   centered column, which is what made everything read as oversized. */
+.jd-wrap{ max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+.jd-label{
+  font-family: var(--type); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--faint);
+  display: block;
+}
+
+/* ---------------- identity chip + dropdown ---------------- */
+/* margin-left:auto on .jd-chip (not justify-content here) keeps the chip
+   pinned right whether it's the only child (Home.jsx) or shares the row
+   with .jd-back (Dashboard.jsx) — space-between would left-align a lone
+   child instead, since a position:absolute .jd-menu sibling doesn't count
+   as a second flex item. */
+.jd-account{ position: relative; display: flex; align-items: center; margin-bottom: 18px; }
+
+.jd-back{
+  display: flex; align-items: center; gap: 8px;
+  background: var(--sheet); border: 1px solid var(--hair); border-radius: 999px;
+  padding: 9px 16px; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--ink);
+  cursor: pointer; transition: all .18s var(--e);
+}
+.jd-back:hover{ border-color: var(--hair-2); background: #FCFBF7; }
+.jd-back svg{ flex: none; color: var(--ink); }
+
+.jd-chip{
+  display: flex; align-items: center; gap: 9px; margin-left: auto;
+  background: var(--sheet); border: 1px solid var(--hair); border-radius: 999px;
+  padding: 5px 13px 5px 5px; font: inherit; font-size: 13px; font-weight: 500; color: var(--ink);
+  cursor: pointer; transition: all .18s var(--e);
+}
+.jd-chip:hover, .jd-chip.jd-open{ border-color: var(--hair-2); background: #FCFBF7; }
+.jd-chip .jd-avatar{
+  width: 26px; height: 26px; border-radius: 50%; background: var(--green); color: #fff; flex: none;
+  display: grid; place-items: center; font-family: var(--type); font-size: 12px; font-weight: 700;
+}
+.jd-chip svg.jd-caret{ color: var(--muted); transition: transform .18s var(--e); }
+.jd-chip.jd-open svg.jd-caret{ transform: rotate(180deg); }
+
+.jd-menu{
+  position: absolute; top: calc(100% + 10px); right: 0; width: 250px;
+  background: var(--sheet); border: 1px solid var(--hair); border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(34,31,26,.14);
+  padding: 8px; opacity: 0; visibility: hidden; transform: translateY(-6px);
+  transition: opacity .16s var(--e), transform .16s var(--e), visibility .16s;
+  z-index: 40;
+}
+.jd-menu.jd-open{ opacity: 1; visibility: visible; transform: none; }
+.jd-menu .jd-who{ display: flex; align-items: center; gap: 11px; padding: 10px 10px 12px; border-bottom: 1px solid var(--hair); margin-bottom: 6px; }
+.jd-menu .jd-who .jd-avatar{ width: 34px; height: 34px; font-size: 14px; }
+.jd-menu .jd-who h5{ margin: 0; font-size: 13.5px; font-weight: 600; }
+.jd-menu .jd-who span{ font-size: 12px; color: var(--muted); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jd-menu .jd-code{ display: flex; align-items: center; gap: 10px; padding: 9px 10px; font-size: 12.5px; color: var(--muted); }
+.jd-menu .jd-code b{ font-family: var(--type); color: var(--ink); font-weight: 700; letter-spacing: .03em; }
+.jd-menu button{
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: none; border: 0; border-radius: 9px; padding: 9px 10px; cursor: pointer;
+  font: inherit; font-size: 13.5px; font-weight: 500; color: var(--ink);
+}
+.jd-menu button:hover{ background: var(--paper); }
+.jd-menu button svg{ flex: none; color: var(--muted); }
+.jd-menu button.jd-danger{ color: var(--rose); }
+.jd-menu button.jd-danger svg{ color: var(--rose); }
+.jd-menu button.jd-danger:hover{ background: #FBEFF1; }
+.jd-menu hr{ border: 0; border-top: 1px solid var(--hair); margin: 6px 4px; }
+
+/* ---------------- deck head ---------------- */
+.jd-head{ padding: 4px 0 22px; }
+.jd-head .jd-label{ margin-bottom: 9px; }
+.jd-title{
+  font-family: var(--type); font-weight: 700; font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.05; letter-spacing: -.03em; margin: 0;
+}
+.jd-code{
+  display: inline-block; margin-top: 12px; font-family: var(--type); font-size: 11px;
+  letter-spacing: .12em; color: var(--muted); border: 1px solid var(--hair);
+  border-radius: 6px; padding: 3px 9px; background: var(--sheet);
+}
+
+.jd-about{
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--amber-soft); border: 1px solid var(--amber-line); border-radius: 13px;
+  padding: 14px 17px; margin-bottom: 26px; font-size: 13.5px; color: #6E5720;
+}
+.jd-about svg{ flex: none; margin-top: 2px; color: var(--amber); }
+.jd-about b{ font-weight: 600; }
+
+/* ---------------- stats ---------------- */
+.jd-stats{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+.jd-stat{ background: var(--sheet); border: 1px solid var(--hair); border-radius: 14px; padding: 15px 17px 17px; }
+.jd-stat .jd-label{ margin-bottom: 9px; }
+.jd-stat .jd-value{
+  font-family: var(--type); font-size: 25px; font-weight: 700; line-height: 1.1;
+  letter-spacing: -.02em; display: flex; align-items: baseline; gap: 6px;
+}
+.jd-stat .jd-value small{ font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.jd-stat .jd-sub{ font-size: 12px; color: var(--muted); margin-top: 5px; }
+.jd-track{ height: 4px; background: #EFEBE1; border-radius: 99px; overflow: hidden; margin-top: 11px; }
+.jd-track i{ display: block; height: 100%; background: var(--green); border-radius: 99px; transition: width .6s var(--e); }
+
+/* ---------------- tabs ---------------- */
+.jd-tabs{ display: flex; gap: 8px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--hair); margin-bottom: 26px; }
+.jd-tabs button{
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--sheet); border: 1px solid var(--hair); border-radius: 999px;
+  height: 38px; padding: 0 18px; cursor: pointer; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--body);
+  transition: all .18s var(--e);
+}
+.jd-tabs button:hover{ border-color: var(--hair-2); background: #FCFBF7; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(34,31,26,.08); }
+.jd-tabs button:active{ transform: translateY(0) scale(.95); box-shadow: none; }
+.jd-tabs button.jd-on{ background: var(--green); border-color: var(--green); color: #fff; }
+.jd-tabs button em{ font-style: normal; font-family: var(--type); font-size: 11px; color: var(--faint); }
+.jd-tabs button.jd-on em{ color: rgba(255,255,255,.6); }
+
+/* ---------------- layout ---------------- */
+.jd-panel{ background: var(--sheet); border: 1px solid var(--hair); border-radius: 16px; overflow: hidden; margin-bottom: 20px; }
+.jd-panel-head{ display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid var(--hair); }
+.jd-panel-head h3{ font-family: var(--type); font-size: 13.5px; font-weight: 700; margin: 0; }
+.jd-panel-head .jd-meta{ font-size: 12.5px; color: var(--muted); }
+.jd-panel-body{ padding: 20px; }
+
+/* ---------------- continue hero ---------------- */
+@keyframes jd-rise{
+  from{ opacity: 0; transform: translateY(14px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+.jd-continue{
+  background: var(--sheet); color: var(--ink); border: 1px solid var(--hair); border-radius: 16px;
+  padding: 24px; margin-bottom: 20px; position: relative; overflow: hidden;
+  animation: jd-rise .5s var(--e) both;
+}
+.jd-continue::after{
+  content: ""; position: absolute; right: -70px; top: -70px; width: 220px; height: 220px;
+  border: 1px solid rgba(34,31,26,.06); border-radius: 50%;
+}
+.jd-continue .jd-label{ color: var(--faint); }
+.jd-continue h3{ font-family: var(--type); font-size: 22px; font-weight: 700; margin: 9px 0 4px; color: var(--ink); letter-spacing: -.02em; }
+.jd-continue p{ margin: 0 0 18px; font-size: 13.5px; color: var(--muted); }
+.jd-cbtn{
+  display: inline-flex; align-items: center; gap: 9px; background: var(--brass-dark); color: #fff;
+  border: 0; border-radius: 11px; height: 45px; padding: 0 21px; cursor: pointer;
+  font: inherit; font-size: 14.5px; font-weight: 600; position: relative; z-index: 1;
+  transition: transform .14s var(--e), background-color .18s var(--e), box-shadow .14s var(--e);
+}
+.jd-cbtn:hover{ background: #6E5426; transform: translateY(-2px); box-shadow: 0 8px 18px rgba(92,69,32,.28); }
+.jd-cbtn:active{ transform: translateY(0) scale(.97); box-shadow: none; }
+
+/* streak + today's goal, set inside the hero card */
+.jd-hrule{ border: 0; border-top: 1px solid var(--hair); margin: 22px 0 18px; position: relative; }
+.jd-today{ display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr; gap: 22px; position: relative; }
+.jd-today .jd-tdiv{ background: var(--hair); }
+.jd-today .jd-label{ margin-bottom: 12px; }
+.jd-todaycol{
+  border-radius: 14px; padding: 14px; margin: -14px;
+  animation: jd-rise .5s var(--e) both;
+  transition: transform .2s var(--e), background-color .2s var(--e), box-shadow .2s var(--e);
+}
+.jd-todaycol:nth-child(1){ animation-delay: .06s; }
+.jd-todaycol:nth-child(3){ animation-delay: .13s; }
+.jd-todaycol:nth-child(5){ animation-delay: .2s; }
+.jd-todaycol:hover{ transform: translateY(-5px) scale(1.02); background: var(--paper); box-shadow: 0 12px 26px rgba(34,31,26,.1); }
+
+.jd-srow{ display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.jd-treeslot{ flex: none; display: flex; }
+.jd-treeslot svg{ transition: transform .25s var(--e); }
+.jd-todaycol:hover .jd-treeslot svg{ transform: scale(1.08) rotate(-2deg); }
+.jd-srow b{ display: block; font-family: var(--type); font-size: 19px; font-weight: 700; letter-spacing: -.03em; color: var(--ink); line-height: 1.2; }
+.jd-srow span{ font-size: 12px; color: var(--muted); }
+
+.jd-heroweek{ display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; max-width: 240px; }
+.jd-heroweek em{
+  display: block; font-family: var(--type); font-size: 9px; font-style: normal;
+  letter-spacing: .06em; color: var(--faint); margin-bottom: 5px; text-align: center;
+}
+.jd-heroweek .jd-hdot{
+  width: 100%; max-width: 25px; margin: 0 auto; aspect-ratio: 1; border-radius: 50%;
+  background: var(--paper); border: 1px solid var(--hair);
+  display: grid; place-items: center; color: transparent; font-size: 10px;
+}
+.jd-heroweek .jd-hdot.jd-on{ background: var(--gold); border-color: var(--gold); color: var(--brass-dark); }
+.jd-heroweek .jd-hdot.jd-today{ background: transparent; border: 1.5px dashed var(--brass-dark); color: var(--brass-dark); }
+
+.jd-gtop{ display: flex; justify-content: space-between; align-items: baseline; gap: 14px; font-size: 12.5px; color: var(--muted); margin-bottom: 9px; }
+.jd-gtop b{ font-family: var(--type); font-size: 14px; color: var(--ink); font-weight: 700; white-space: nowrap; }
+.jd-gbar{ height: 6px; background: #EFEBE1; border-radius: 99px; overflow: hidden; }
+.jd-gbar i{ display: block; height: 100%; background: var(--brass-dark); border-radius: 99px; transition: width .8s var(--e); }
+
+.jd-facts{ display: flex; gap: 20px; flex-wrap: wrap; margin-top: 16px; }
+.jd-facts div{ font-size: 11.5px; color: var(--muted); }
+.jd-facts b{ display: block; font-family: var(--type); font-size: 14px; color: var(--ink); font-weight: 700; }
+
+.jd-svalue{ font-family: var(--type); font-size: 24px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+.jd-ssub{ margin: 6px 0 0; font-size: 12px; color: var(--muted); }
+
+/* ---------------- unit (lesson) rows ---------------- */
+.jd-unit{
+  display: flex; align-items: center; gap: 15px; padding: 15px 20px; border-bottom: 1px solid var(--hair);
+  transition: background-color .18s var(--e), transform .18s var(--e); text-align: left; width: 100%; background: none; border-left: 0; border-right: 0; border-top: 0; cursor: pointer; font: inherit;
+}
+.jd-unit:last-child{ border-bottom: 0; }
+.jd-unit:hover{ background: #FCFBF7; transform: translateX(5px); }
+.jd-unit-no{
+  flex: none; width: 33px; height: 33px; border-radius: 10px; display: grid; place-items: center;
+  font-family: var(--type); font-size: 13px; font-weight: 700;
+  background: var(--paper); border: 1px solid var(--hair); color: var(--muted);
+  transition: transform .18s var(--e);
+}
+.jd-unit:hover .jd-unit-no{ transform: scale(1.1); }
+.jd-unit.jd-done .jd-unit-no{ background: var(--green-soft); border-color: var(--green-line); color: var(--green); }
+.jd-unit.jd-now .jd-unit-no{ background: var(--green); border-color: var(--green); color: #fff; }
+.jd-unit-main{ flex: 1; min-width: 0; }
+.jd-unit-main h4{ margin: 0 0 2px; font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.jd-unit-main span{ font-size: 12.5px; color: var(--muted); }
+.jd-ubtn{
+  flex: none; background: var(--paper); border: 1px solid var(--hair); border-radius: 9px; height: 34px;
+  padding: 0 14px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink);
+  transition: all .18s var(--e);
+}
+.jd-ubtn:hover{ background: #fff; border-color: var(--hair-2); }
+.jd-ubtn.jd-solid{ background: var(--green); border-color: var(--green); color: #fff; }
+
+/* ---------------- practice modes ---------------- */
+.jd-modes{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.jd-mode{
+  position: relative; text-align: left; background: var(--sheet); border: 1px solid var(--hair);
+  border-radius: 15px; padding: 20px; cursor: pointer; font: inherit; color: var(--ink);
+  transition: transform .18s var(--e), box-shadow .18s var(--e), border-color .18s var(--e);
+}
+.jd-mode:hover{ transform: translateY(-2px); border-color: var(--hair-2); box-shadow: 0 10px 26px rgba(34,31,26,.07); }
+.jd-mode .jd-ic{
+  width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; margin-bottom: 14px;
+  background: var(--green-soft); color: var(--green); border: 1px solid var(--green-line);
+}
+.jd-mode h4{ font-family: var(--type); font-size: 17px; font-weight: 700; letter-spacing: -.01em; margin: 0 0 4px; }
+.jd-mode p{ margin: 0 0 14px; font-size: 13px; color: var(--muted); }
+.jd-mode .jd-foot{
+  display: flex; align-items: center; gap: 10px; font-family: var(--type); font-size: 11px;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--faint);
+}
+.jd-mode .jd-arrow{ margin-left: auto; color: var(--muted); opacity: 0; transform: translateX(-4px); transition: all .2s var(--e); }
+.jd-mode:hover .jd-arrow{ opacity: 1; transform: none; }
+.jd-mode.jd-hard .jd-ic{ background: var(--amber-soft); color: var(--amber); border-color: var(--amber-line); }
+
+/* ---------------- exam ---------------- */
+.jd-exam-row{ display: flex; align-items: center; gap: 16px; }
+.jd-exam-icon{
+  width: 44px; height: 44px; border-radius: 12px; flex: none; display: grid; place-items: center;
+  background: var(--green-soft); color: var(--green); border: 1px solid var(--green-line);
+}
+.jd-exam-row h4{ margin: 0 0 2px; font-size: 14.5px; font-weight: 600; }
+.jd-exam-row p{ margin: 0; font-size: 12.5px; color: var(--muted); }
+.jd-exam-row .jd-ubtn{ margin-left: auto; }
+.jd-rules{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--hair); border-top: 1px solid var(--hair); }
+.jd-rules div{ background: var(--sheet); padding: 14px 18px; }
+.jd-rules b{ display: block; font-family: var(--type); font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+.jd-rules span{ font-size: 11.5px; color: var(--muted); }
+
+/* ---------------- certificate (locked state only) ---------------- */
+.jd-cert{
+  position: relative; border: 1px solid var(--hair); border-radius: 16px; overflow: hidden;
+  background:
+    repeating-linear-gradient(135deg, rgba(44,64,50,.025) 0 2px, transparent 2px 9px),
+    var(--sheet);
+  padding: 30px; text-align: center;
+}
+.jd-cert .jd-seal{
+  width: 58px; height: 58px; border-radius: 50%; margin: 0 auto 16px; display: grid; place-items: center;
+  background: #F1EEE6; border: 1.5px solid var(--hair); color: var(--faint);
+}
+.jd-cert h4{ font-family: var(--type); font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 5px; }
+.jd-cert p{ margin: 0; font-size: 13px; color: var(--muted); }
+
+/* ---------------- Home: due-today rows ---------------- */
+.jd-due-row{ display: flex; align-items: center; gap: 13px; padding: 12px 20px; border-bottom: 1px solid var(--hair); }
+.jd-due-row:last-child{ border-bottom: 0; }
+.jd-due-row .jd-spine{ width: 4px; height: 30px; border-radius: 2px; flex: none; }
+.jd-due-row .jd-t{ flex: 1; min-width: 0; }
+.jd-due-row b{ display: block; font-size: 14px; font-weight: 600; }
+.jd-due-row span{ font-size: 12.5px; color: var(--muted); }
+.jd-due-row .jd-n{ font-family: var(--type); font-size: 15px; font-weight: 700; color: var(--amber); }
+
+@media (prefers-reduced-motion: reduce){ .jd-continue, .jd-todaycol{ animation: none !important; } }
+
+@media (max-width: 900px){
+  .jd-stats{ grid-template-columns: 1fr 1fr; }
+  .jd-modes{ grid-template-columns: 1fr; }
+}
+@media (max-width: 700px){
+  .jd-today{ grid-template-columns: 1fr; gap: 20px; }
+  .jd-today .jd-tdiv{ display: none; }
+}
+@media (max-width: 560px){
+  .jd-stats{ grid-template-columns: 1fr; }
+  .jd-rules{ grid-template-columns: 1fr; }
+}
+/* ---------------- lesson path (gamified unit map) ----------------
+Ported from the supplied "Lesson path" prototype — a winding trail of
+pressable nodes replaces the flat .jd-unit rows. Node sizes are scaled
+down from the prototype's full-page version so the trail fits a panel;
+the landscape scene and mascot stay out (they belong to the standalone
+page, not the dashboard shell).
+--------------------------------- */
+.jd-path{
+  position: relative; padding: 46px 16px 34px;
+  background:
+    radial-gradient(120% 90% at 50% -10%, #EFF4EC 0%, rgba(239,244,236,0) 60%),
+    linear-gradient(#F6F4EC, #F1EFE4);
+}
+.jd-path-row{ display: flex; flex-direction: column; align-items: center; gap: 38px; }
+
+.jd-node{ position: relative; width: 112px; transform: translateX(calc(var(--offn, 0) * 64px)); transition: transform .3s var(--e); }
+.jd-node.jd-open{ z-index: 30; }
+
+/* 3D press — the darker base peeks out below the cap, and the cap
+   sinks onto it while pressed, same trick as the prototype. */
+.jd-disc{ position: relative; display: block; width: 100%; aspect-ratio: 1; border: 0; padding: 0; background: none; border-radius: 50%; cursor: pointer; }
+.jd-base{ position: absolute; inset: 0; border-radius: 50%; transform: translateY(7px); }
+.jd-cap{
+  position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center; color: #fff;
+  transition: transform .12s var(--e);
+}
+.jd-disc:active .jd-cap{ transform: translateY(5px); }
+.jd-cap svg{ width: 38%; height: 38%; }
+.jd-ring{ position: absolute; inset: -9%; width: 118%; height: 118%; stroke: var(--gold); }
+
+/* node states */
+.jd-done .jd-base{ background: #1B291F; }      .jd-done .jd-cap{ background: var(--green); }
+.jd-now .jd-base{ background: #2A4232; }       .jd-now .jd-cap{ background: #3E5F48; animation: jd-ringpulse 2.4s var(--e) infinite; }
+.jd-lock .jd-base{ background: #B9B2A2; }      .jd-lock .jd-cap{ background: #D6D0C2; color: #8A857A; }
+.jd-chest .jd-base{ background: #5C4520; }     .jd-chest .jd-cap{ background: var(--gold); color: #5C4520; }
+.jd-exam .jd-base{ background: #6E2A28; }      .jd-exam .jd-cap{ background: #B8433F; }
+
+@keyframes jd-ringpulse{
+  0%{ box-shadow: 0 0 0 0 rgba(62,95,72,.4); }
+  70%{ box-shadow: 0 0 0 16px rgba(62,95,72,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(62,95,72,0); }
+}
+
+/* pill label under each node */
+.jd-cap-label{
+  position: absolute; top: calc(100% + 9px); left: 50%; transform: translateX(-50%);
+  white-space: nowrap; background: var(--sheet); border: 1px solid var(--hair); border-radius: 999px;
+  padding: 4px 12px; font-family: var(--type); font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  color: var(--body); box-shadow: 0 4px 12px rgba(34,31,26,.06);
+}
+.jd-done .jd-cap-label{ color: var(--green); }
+.jd-now .jd-cap-label{ color: var(--green); border-color: var(--green-line); }
+.jd-chest .jd-cap-label{ color: var(--brass-dark); border-color: var(--amber-line); }
+.jd-exam .jd-cap-label{ color: #8C3A38; border-color: #E3BCBA; }
+
+/* START callout bobbing above the current node */
+.jd-bubble{
+  position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+  background: var(--brass-dark); color: #fff; border-radius: 999px; padding: 5px 13px;
+  font-family: var(--type); font-size: 11px; font-weight: 700; letter-spacing: .14em;
+  white-space: nowrap; pointer-events: none; animation: jd-bob 2.2s var(--e) infinite;
+}
+.jd-bubble::after{
+  content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: var(--brass-dark);
+}
+@keyframes jd-bob{ 0%, 100%{ transform: translate(-50%, 0); } 50%{ transform: translate(-50%, -6px); } }
+
+/* popover card — opens below the node (above for the exam, the last
+   step, so it never runs off the panel's bottom edge) */
+.jd-pop{
+  position: absolute; top: calc(100% + 42px); left: 50%; width: 300px;
+  transform: translateX(-50%) scale(.94); transform-origin: top center;
+  opacity: 0; pointer-events: none; z-index: 30;
+  background: var(--green); color: #fff; border-radius: 16px; padding: 16px 17px;
+  box-shadow: 0 18px 40px rgba(34,31,26,.22); text-align: left;
+  transition: opacity .18s var(--e), transform .18s var(--e);
+}
+.jd-node.jd-open .jd-pop{ opacity: 1; transform: translateX(-50%) scale(1); pointer-events: auto; }
+.jd-pop::before{
+  content: ""; position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(45deg);
+  width: 13px; height: 13px; background: inherit; border-radius: 3px;
+}
+.jd-pop.jd-gold{ background: #8E6F2A; }
+.jd-pop.jd-red{ background: #8C3A38; }
+.jd-pop.jd-grey{ background: #6E695F; }
+.jd-pop.jd-pop-up{ top: auto; bottom: calc(100% + 42px); transform-origin: bottom center; }
+.jd-pop.jd-pop-up::before{ top: auto; bottom: -6px; }
+.jd-pop h3{ font-family: var(--type); font-size: 16px; font-weight: 700; letter-spacing: -.01em; margin: 0 0 5px; }
+.jd-pop p{
+  margin: 0 0 13px; font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,.82);
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.jd-go{
+  display: inline-flex; align-items: center; gap: 9px; background: #fff; color: var(--ink);
+  border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 700;
+  transition: transform .14s var(--e), box-shadow .14s var(--e);
+}
+.jd-go:hover{ transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0,0,0,.22); }
+.jd-go:active{ transform: translateY(0) scale(.97); box-shadow: none; }
+.jd-go .jd-xp{ font-family: var(--type); font-size: 10.5px; font-weight: 700; letter-spacing: .08em; color: var(--brass-dark); }
+
+/* apple chip in the path's panel head */
+.jd-apples{ display: inline-flex; align-items: center; gap: 6px; }
+.jd-apple-ic{ display: inline-flex; color: #B8433F; }
+.jd-apple-ic svg{ width: 14px; height: 14px; }
+.jd-apples-div{ opacity: .5; margin: 0 2px; }
+
+@media (max-width: 900px){
+  .jd-path-row{ gap: 32px; }
+  .jd-node{ width: 96px; transform: translateX(calc(var(--offn, 0) * 46px)); }
+  .jd-pop{ width: min(300px, 82vw); }
+}
+@media (max-width: 560px){
+  .jd-path{ padding: 40px 8px 30px; }
+  .jd-path-row{ gap: 26px; }
+  .jd-node{ width: 84px; transform: translateX(calc(var(--offn, 0) * 30px)); }
+  .jd-cap-label{ font-size: 10px; padding: 3px 10px; }
+}
+@media (prefers-reduced-motion: reduce){
+  .jd-now .jd-cap, .jd-bubble{ animation: none !important; }
+}
+@media (prefers-reduced-motion: reduce){ .jd-root *{ transition: none !important; } }

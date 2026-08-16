@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+
+  /* Khmer needs more vertical room than Latin for its stacked marks. */
+  html[data-lang="km"] body {
+    line-height: 1.85;
+  }
+  html[data-lang="km"] .font-display {
+    @apply tracking-normal;
+  }
+
+  ::selection {
+    @apply bg-grease text-paper;
+  }
+
+  /* One consistent focus treatment everywhere, keyboard-only. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-grease ring-offset-2 ring-offset-paper rounded-sm;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* The small mono caps used as eyebrows and field labels across the site. */
+  .label {
+    @apply font-mono text-[11px] uppercase tracking-label;
+  }
+
+}
+
+/* ---------- print ----------
+Anything given .print-area is printed alone on a clean page; everything
+else in the document is hidden. Used by certificates and invoices.
+--------------------------------- */
+@media print {
+  @page {
+    size: auto;
+    margin: 10mm;
+  }
+  body {
+    background: #fff;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+}

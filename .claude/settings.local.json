@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(grep -o '\\\\.border-ink\\\\\\\\/[0-9.[]*' dist/assets/*.css)",
+      "Bash(grep -o '\\\\.bg-ink\\\\\\\\/[0-9.[]*' dist/assets/*.css)",
+      "Bash(grep -o '\\\\.bg-chalk\\\\\\\\/[0-9.[]*' dist/assets/*.css)",
+      "Bash(grep -o 'hover\\\\\\\\:bg-ink[^{]*' dist/assets/*.css)",
+      "Bash(grep -vE '/\\(0|5|10|15|20|25|30|35|40|45|50|55|60|65|70|75|80|85|90|95|100\\)$')",
+      "Bash(node -e ' *)",
+      "Bash(node __verify10.mjs)",
+      "Bash(node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")",
+      "Bash(node -e \"console.log\\(require.resolve\\('puppeteer'\\)\\)\")",
+      "Read(//c/Users/ASUS ROG M16/AppData/Local/npm-cache/_npx/db89d7302a373f10/node_modules/playwright//**)",
+      "Read(//c/Users/ASUS ROG M16/AppData/Local/npm-cache/_npx/db89d7302a373f10/node_modules/playwright/**)"
+    ]
+  }
+}

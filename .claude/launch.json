@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "flashcard-store",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "flashcard-store", "--", "--port", "5178"],
+      "port": 5178,
+      "autoPort": false
+    }
+  ]
+}

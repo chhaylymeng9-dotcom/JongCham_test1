@@ -1,0 +1,164 @@
+/* ---------- JongCham "My decks" library ----------
+Ported from a supplied mockup, same treatment as the rest of this design
+system, scoped under .jmd-root. This is the real multi-deck-per-account
+model (session.decks) — filters, search, grid/list view and per-deck
+progress are all computed from real data.
+
+Two pieces from the mockup were dropped rather than faked: the "N cards
+due across your decks" strip and per-deck "due" badges. Both describe a
+spaced-repetition scheduler this app doesn't have — unlike a decorative
+plan/price (see Plans.jsx), a specific "12 due" is a claim about your
+actual review queue, and there's no queue to report on. The mockup's own
+header rail (brand + a second deck-switcher dropdown) was also skipped —
+the real app header and Dashboard's chip already cover navigation and
+identity; clicking a deck card here does the switching.
+--------------------------------- */
+
+.jmd-root {
+  --paper: #FAF8F3;
+  --sheet: #FFFFFF;
+  --ink: #221F1A;
+  --body: #4A473F;
+  --muted: #8A857A;
+  --faint: #AFAA9E;
+  --hair: #E5E0D5;
+  --hair-2: #D5CFC1;
+
+  --green: #2C4032;
+  --green-dark: #1B291F;
+  --green-soft: #E7EEE7;
+  --green-line: #B5CCBA;
+  --amber: #9A7B32;
+  --amber-soft: #F5EEDD;
+  --amber-line: #E4D5AE;
+
+  --type: "Courier Prime", "American Typewriter", "Courier New", monospace;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --e: cubic-bezier(.2, .7, .2, 1);
+}
+
+.jmd-root, .jmd-root *{ box-sizing: border-box; }
+.jmd-root button:focus-visible, .jmd-root a:focus-visible{ outline: 2px solid var(--green); outline-offset: 2px; }
+
+.jmd-root{
+  background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  padding: 28px 0 70px;
+}
+
+.jmd-wrap{ max-width: 1080px; margin: 0 auto; padding: 0 30px; }
+
+/* embedded: rendered inline as a Dashboard tab body, so the host page
+   already provides width, padding and background — see Dashboard.jsx */
+.jmd-root.jmd-embedded{ padding: 0; background: none; }
+
+.jmd-back{
+  background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
+  font-size: 13.5px; color: var(--muted); text-decoration: underline;
+  text-decoration-color: var(--hair-2); text-underline-offset: 4px;
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-bottom: 22px; transition: color .16s var(--e);
+}
+.jmd-back:hover{ color: var(--ink); }
+
+.jmd-label{
+  font-family: var(--type); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--faint);
+}
+
+.jmd-head{ padding-bottom: 20px; display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.jmd-head h1{ font-family: var(--type); font-weight: 700; font-size: clamp(28px, 4vw, 38px); letter-spacing: -.03em; margin: 9px 0 0; }
+.jmd-head .jmd-sum{ font-size: 13.5px; color: var(--muted); }
+
+/* toolbar */
+.jmd-bar{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+
+.jmd-search{
+  margin-left: auto; display: flex; align-items: center; gap: 8px; background: var(--sheet);
+  border: 1px solid var(--hair); border-radius: 10px; height: 34px; padding: 0 12px;
+}
+.jmd-search input{ border: 0; background: none; outline: none; font: inherit; font-size: 13px; width: 150px; color: var(--ink); }
+.jmd-search svg{ color: var(--faint); flex: none; }
+
+.jmd-view{ display: flex; gap: 2px; background: #F1EDE4; border: 1px solid var(--hair); border-radius: 10px; padding: 3px; }
+.jmd-view button{
+  border: 0; background: none; border-radius: 7px; width: 30px; height: 26px; cursor: pointer;
+  display: grid; place-items: center; color: var(--muted); transition: all .18s var(--e);
+}
+.jmd-view button.jmd-on{ background: var(--sheet); color: var(--ink); box-shadow: 0 1px 2px rgba(34,31,26,.08); }
+
+/* deck grid */
+.jmd-decks{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.jmd-decks.jmd-list{ grid-template-columns: 1fr; gap: 10px; }
+
+.jmd-deck{
+  position: relative; text-align: left; background: var(--sheet); border: 1px solid var(--hair);
+  border-radius: 16px; overflow: hidden; cursor: pointer; font: inherit; color: var(--ink); padding: 0;
+  transition: transform .2s var(--e), box-shadow .2s var(--e), border-color .2s var(--e);
+  display: flex; flex-direction: column; width: 100%;
+}
+.jmd-deck:hover{ transform: translateY(-3px); border-color: var(--hair-2); box-shadow: 0 14px 32px rgba(34,31,26,.09); }
+.jmd-deck .jmd-spine{ height: 6px; width: 100%; }
+.jmd-deck .jmd-in{ padding: 18px 18px 16px; display: flex; flex-direction: column; flex: 1; }
+.jmd-deck .jmd-row1{ display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+.jmd-deck h3{ font-family: var(--type); font-size: 17px; font-weight: 700; letter-spacing: -.015em; margin: 0; flex: 1; min-width: 0; overflow-wrap: break-word; }
+.jmd-state{
+  font-family: var(--type); font-size: 9.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  border-radius: 999px; padding: 4px 9px; white-space: nowrap; flex: none;
+  background: var(--paper); border: 1px solid var(--hair); color: var(--muted);
+}
+.jmd-state.jmd-now{ background: var(--green-soft); border-color: var(--green-line); color: var(--green); }
+.jmd-state.jmd-done{ background: var(--green); border-color: var(--green); color: #fff; }
+.jmd-state.jmd-new{ background: var(--amber-soft); border-color: var(--amber-line); color: var(--amber); }
+.jmd-deck .jmd-meta{ font-size: 12.5px; color: var(--muted); margin: 0 0 16px; }
+.jmd-deck .jmd-code{ font-family: var(--type); font-size: 11px; letter-spacing: .1em; color: var(--faint); }
+
+.jmd-pbar{ height: 5px; background: #EFEBE1; border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+.jmd-pbar i{ display: block; height: 100%; border-radius: 99px; transition: width .9s var(--e); }
+.jmd-plabel{ display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+.jmd-plabel b{ font-family: var(--type); color: var(--ink); font-weight: 700; }
+
+.jmd-deck .jmd-foot{ margin-top: auto; display: flex; align-items: center; gap: 10px; }
+.jmd-deck .jmd-foot .jmd-btn{ margin-left: auto; }
+.jmd-btn{
+  height: 36px; padding: 0 14px; border-radius: 10px; cursor: pointer; font: inherit; font-size: 13px;
+  font-weight: 600; border: 1.5px solid var(--hair); background: var(--sheet); color: var(--ink);
+  transition: all .18s var(--e);
+}
+.jmd-btn:hover{ border-color: var(--hair-2); background: #FCFBF7; }
+.jmd-btn.jmd-solid{ background: var(--green); border-color: var(--green); color: #fff; }
+.jmd-btn.jmd-solid:hover{ background: var(--green-dark); }
+
+/* list mode */
+.jmd-decks.jmd-list .jmd-deck{ flex-direction: row; align-items: center; }
+.jmd-decks.jmd-list .jmd-deck .jmd-spine{ width: 6px; height: auto; align-self: stretch; }
+.jmd-decks.jmd-list .jmd-in{ flex-direction: row; align-items: center; gap: 16px; padding: 14px 18px; width: 100%; }
+.jmd-decks.jmd-list .jmd-row1{ margin: 0; flex: 1; min-width: 0; flex-direction: column; gap: 3px; align-items: flex-start; }
+.jmd-decks.jmd-list h3{ font-size: 15px; }
+.jmd-decks.jmd-list .jmd-meta{ margin: 0; font-size: 12px; }
+.jmd-decks.jmd-list .jmd-pbar{ width: 110px; margin: 0; flex: none; }
+.jmd-decks.jmd-list .jmd-plabel, .jmd-decks.jmd-list .jmd-state{ display: none; }
+.jmd-decks.jmd-list .jmd-foot{ margin: 0; }
+
+/* add-deck tile */
+.jmd-add{
+  border: 1.5px dashed var(--hair-2); border-radius: 16px; background: transparent; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  min-height: 210px; padding: 24px; font: inherit; color: var(--muted);
+  transition: all .2s var(--e);
+}
+.jmd-add:hover{ border-color: var(--green-line); background: var(--green-soft); color: var(--green); }
+.jmd-add b{ font-family: var(--type); font-size: 14px; font-weight: 700; }
+.jmd-add span{ font-size: 12.5px; text-align: center; max-width: 180px; }
+.jmd-decks.jmd-list .jmd-add{ min-height: 0; flex-direction: row; gap: 12px; padding: 16px; }
+
+.jmd-empty{ text-align: center; padding: 40px 0; color: var(--muted); font-size: 14px; }
+
+@media (max-width: 900px){ .jmd-decks{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px){
+  .jmd-decks{ grid-template-columns: 1fr; }
+  .jmd-wrap{ padding: 0 18px; }
+  .jmd-search{ display: none; }
+}
+@media (prefers-reduced-motion: reduce){ .jmd-root *{ transition: none !important; } }

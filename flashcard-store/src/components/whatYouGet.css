@@ -1,0 +1,217 @@
+/* ---------- What-you-get band ----------
+Ported from the supplied "What you get" mockup: four animated art cards
+(flipping card, KHQR scan, unlocking lessons, certificate ring) strung
+along a marching dashed journey line, with a facts/shipping strip
+underneath. Every selector is scoped under .wg-root and every keyframe
+is wg-prefixed so nothing leaks onto the rest of the app. Scroll reveal
+is NOT done here — the JSX wraps each card in the site's Reveal
+component so the band eases in and out like every other section.
+--------------------------------- */
+
+.wg-root{
+  --wg-paper: #F2F1EC;
+  --wg-card: #FDFCF9;
+  --wg-line: #E9DFCC;
+  --wg-ink: #16130F;
+  --wg-body: #5A6472;
+  --wg-rust: #B4573D;
+  --wg-green: #2E9B70;
+  --wg-gold: #D9A441;
+
+  --wg-type: "Special Elite", "Courier New", monospace;
+  --wg-mono: "Courier New", monospace;
+  --wg-sans: "Inter", -apple-system, "Segoe UI", sans-serif;
+
+  background: var(--wg-paper); color: var(--wg-ink);
+  font-family: var(--wg-sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.wg-root, .wg-root *{ box-sizing: border-box; }
+
+.wg-wrap{ max-width: 1180px; margin: 0 auto; padding: 86px 32px 96px; position: relative; }
+
+/* soft ambient blobs so the empty space breathes */
+.wg-blob{ position: absolute; border-radius: 50%; filter: blur(60px); opacity: .5; pointer-events: none; }
+.wg-blob.wg-a{ width: 340px; height: 340px; background: #EFE0C6; top: -40px; right: -60px; }
+.wg-blob.wg-b{ width: 280px; height: 280px; background: #E2E8F7; bottom: 60px; left: -80px; }
+
+.wg-eyebrow{
+  font-family: var(--wg-mono); font-size: 12px; letter-spacing: .22em;
+  text-transform: uppercase; color: #9A8C74; margin-bottom: 14px;
+}
+/* heading goes bold modern sans — same treatment as the site's hero —
+   instead of the section's typewriter accent face */
+.wg-root h2{
+  font-family: var(--wg-sans); font-weight: 700; letter-spacing: -.02em;
+  font-size: clamp(30px, 3.4vw, 42px); line-height: 1.15;
+  max-width: 20ch; margin: 0 0 12px;
+}
+.wg-sub{ font-size: 16px; color: var(--wg-body); max-width: 52ch; line-height: 1.6; margin: 0 0 46px; }
+
+/* ---- dashed journey line behind cards ---- */
+.wg-deck{ position: relative; }
+.wg-journey{ position: absolute; top: 118px; left: 6%; right: 6%; height: 2px; pointer-events: none; z-index: 0; }
+.wg-journey svg{ width: 100%; height: 40px; overflow: visible; }
+.wg-journey path{
+  stroke: #D9C9AC; stroke-width: 2; stroke-dasharray: 7 9; fill: none;
+  stroke-dashoffset: 0; animation: wg-march 22s linear infinite;
+}
+@keyframes wg-march{ to{ stroke-dashoffset: -320; } }
+
+.wg-cards{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; position: relative; z-index: 1; }
+/* the Reveal wrappers are the grid cells — stretch them so the cards
+   inside all reach the same height */
+.wg-cards > *{ display: flex; }
+
+.wg-card{
+  background: var(--wg-card); border: 1px solid var(--wg-line); border-radius: 18px;
+  padding: 22px 22px 24px; display: flex; flex-direction: column; flex: 1;
+  transition: transform .5s cubic-bezier(.2, .8, .25, 1), box-shadow .35s ease, border-color .35s ease;
+}
+.wg-card:hover{ transform: translateY(-8px); box-shadow: 0 18px 38px rgba(90, 70, 40, .13); border-color: #DCCEB4; }
+
+.wg-num{
+  font-family: var(--wg-mono); font-size: 12px; font-weight: 700;
+  color: var(--wg-rust); letter-spacing: .08em; margin-bottom: 16px;
+}
+
+/* ---- art stage ---- */
+.wg-stage{
+  height: 132px; border-radius: 13px; background: linear-gradient(160deg, #FBF6EC, #F4EEE2);
+  border: 1px solid #EEE5D5; display: grid; place-items: center; margin-bottom: 18px;
+  overflow: hidden; position: relative;
+}
+.wg-card h3{ font-family: var(--wg-type); font-size: 19px; line-height: 1.3; margin: 0 0 10px; }
+.wg-card p{ font-size: 14px; line-height: 1.62; color: var(--wg-body); margin: 0; }
+.wg-tagrow{ display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+.wg-tag{
+  font-size: 11px; font-weight: 600; color: #7B6A50; background: #F3EADA;
+  border: 1px solid #E7DAC3; padding: 4px 9px; border-radius: 999px;
+}
+
+/* ============ 01 — flipping card ============ */
+.wg-flip{ width: 78px; height: 100px; perspective: 600px; }
+.wg-flip-in{
+  position: relative; width: 100%; height: 100%; transform-style: preserve-3d;
+  animation: wg-flip 6s cubic-bezier(.6, .05, .3, 1) infinite;
+}
+.wg-card:hover .wg-flip-in{ animation-duration: 2.4s; }
+@keyframes wg-flip{ 0%, 38%{ transform: rotateY(0); } 50%, 88%{ transform: rotateY(180deg); } 100%{ transform: rotateY(360deg); } }
+.wg-face{
+  position: absolute; inset: 0; backface-visibility: hidden; border-radius: 9px;
+  border: 1px solid #E2D6BF; background: #fff; box-shadow: 0 5px 14px rgba(90, 70, 40, .13);
+  padding: 10px; display: flex; flex-direction: column; gap: 6px;
+}
+.wg-face.wg-back{ transform: rotateY(180deg); background: #16130F; border-color: #16130F; }
+.wg-ln{ height: 5px; border-radius: 3px; background: #E7DECC; }
+.wg-ln.wg-s{ width: 60%; }
+.wg-ln.wg-m{ width: 82%; }
+.wg-face.wg-back .wg-ln{ background: #3A342B; }
+.wg-swatches{ position: absolute; bottom: 12px; display: flex; gap: 6px; }
+.wg-sw{ width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .14); }
+.wg-sw.wg-on{ animation: wg-pop 6s ease-in-out infinite; }
+@keyframes wg-pop{ 0%, 20%{ transform: scale(1); } 30%{ transform: scale(1.35); } 40%, 100%{ transform: scale(1); } }
+
+/* ============ 02 — KHQR scan ============ */
+.wg-phone{
+  width: 76px; height: 106px; border-radius: 12px; background: #fff; border: 1px solid #E2D6BF;
+  box-shadow: 0 5px 14px rgba(90, 70, 40, .13); padding: 9px; display: grid;
+  place-items: center; position: relative; overflow: hidden;
+}
+.wg-qr{ display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; width: 54px; height: 54px; }
+.wg-qr i{ background: #16130F; border-radius: 1px; }
+.wg-qr i.wg-off{ background: transparent; }
+.wg-scan{
+  position: absolute; left: 8px; right: 8px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--wg-green), transparent);
+  box-shadow: 0 0 10px rgba(46, 155, 112, .75); animation: wg-scan 2.6s ease-in-out infinite;
+}
+@keyframes wg-scan{ 0%{ top: 16px; } 50%{ top: 88px; } 100%{ top: 16px; } }
+.wg-paychips{ position: absolute; right: 8px; bottom: 9px; display: flex; flex-direction: column; gap: 5px; }
+.wg-chip{
+  font-size: 9px; font-weight: 700; letter-spacing: .03em; background: #fff;
+  border: 1px solid #E7DAC3; color: #6E6250; padding: 3px 7px; border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(90, 70, 40, .09); animation: wg-drift 4.5s ease-in-out infinite;
+}
+.wg-chip:nth-child(2){ animation-delay: .5s; }
+.wg-chip:nth-child(3){ animation-delay: 1s; }
+@keyframes wg-drift{ 0%, 100%{ transform: translateY(0); } 50%{ transform: translateY(-4px); } }
+
+/* ============ 03 — lessons unlocking ============ */
+.wg-lessons{ width: 100px; display: flex; flex-direction: column; gap: 7px; }
+.wg-lesson{
+  display: flex; align-items: center; gap: 7px; background: #fff;
+  border: 1px solid #E7DAC3; border-radius: 8px; padding: 6px 8px;
+  box-shadow: 0 2px 6px rgba(90, 70, 40, .07);
+}
+.wg-lock{
+  width: 13px; height: 13px; border-radius: 4px; background: #DED3BE;
+  display: grid; place-items: center; flex: none; position: relative; overflow: hidden;
+}
+.wg-lock::after{
+  content: ''; position: absolute; inset: 0; background: var(--wg-green);
+  transform: translateY(100%); animation: wg-unlock 5.4s ease-in-out infinite;
+}
+.wg-lesson:nth-child(2) .wg-lock::after{ animation-delay: .6s; }
+.wg-lesson:nth-child(3) .wg-lock::after{ animation-delay: 1.2s; }
+@keyframes wg-unlock{ 0%, 12%{ transform: translateY(100%); } 26%, 82%{ transform: translateY(0); } 100%{ transform: translateY(100%); } }
+.wg-lock svg{ position: relative; z-index: 1; }
+.wg-lbar{ height: 5px; border-radius: 3px; background: #EAE1D0; flex: 1; }
+.wg-lbar.wg-s{ max-width: 60%; }
+
+/* ============ 04 — ring + certificate ============ */
+.wg-certwrap{ position: relative; display: grid; place-items: center; }
+.wg-ring{ transform: rotate(-90deg); }
+.wg-ring circle.wg-bg{ stroke: #E9DECA; stroke-width: 6; fill: none; }
+.wg-ring circle.wg-fg{
+  stroke: var(--wg-gold); stroke-width: 6; fill: none; stroke-linecap: round;
+  stroke-dasharray: 201; stroke-dashoffset: 201; animation: wg-fill 5s ease-in-out infinite;
+}
+@keyframes wg-fill{ 0%{ stroke-dashoffset: 201; } 55%, 85%{ stroke-dashoffset: 0; } 100%{ stroke-dashoffset: 201; } }
+.wg-seal{
+  position: absolute; display: grid; place-items: center; width: 38px; height: 38px;
+  border-radius: 50%; background: var(--wg-gold); color: #fff; font-size: 15px;
+  box-shadow: 0 4px 12px rgba(217, 164, 65, .45); transform: scale(.4); opacity: 0;
+  animation: wg-seal 5s ease-in-out infinite;
+}
+@keyframes wg-seal{
+  0%, 50%{ transform: scale(.4); opacity: 0; }
+  62%{ transform: scale(1.14); opacity: 1; }
+  70%, 86%{ transform: scale(1); opacity: 1; }
+  100%{ transform: scale(.4); opacity: 0; }
+}
+.wg-spark{
+  position: absolute; width: 5px; height: 5px; background: var(--wg-gold);
+  border-radius: 50%; opacity: 0; animation: wg-spark 5s ease-in-out infinite;
+}
+.wg-spark:nth-of-type(1){ top: 16px; left: 14px; }
+.wg-spark:nth-of-type(2){ top: 22px; right: 12px; animation-delay: .12s; }
+.wg-spark:nth-of-type(3){ bottom: 18px; left: 22px; animation-delay: .24s; }
+@keyframes wg-spark{ 0%, 58%{ opacity: 0; transform: scale(0); } 66%{ opacity: 1; transform: scale(1.5); } 78%, 100%{ opacity: 0; transform: scale(0); } }
+
+/* ---- bottom strip fills the dead space ---- */
+.wg-strip{
+  margin-top: 34px; display: flex; align-items: center; justify-content: space-between;
+  gap: 26px; flex-wrap: wrap; background: #FDFCF9; border: 1px dashed #DDCFB4;
+  border-radius: 18px; padding: 20px 26px;
+}
+.wg-facts{ display: flex; gap: 34px; flex-wrap: wrap; }
+.wg-fact b{ display: block; font-family: var(--wg-type); font-size: 21px; line-height: 1.2; }
+.wg-fact span{ font-size: 12.5px; color: #8A8069; }
+.wg-ship{ display: flex; align-items: center; gap: 11px; font-size: 13.5px; color: var(--wg-body); }
+.wg-truck{
+  width: 30px; height: 30px; border-radius: 50%; background: #F1EADC;
+  display: grid; place-items: center; animation: wg-drift 3.6s ease-in-out infinite;
+}
+
+@media (max-width: 1040px){
+  .wg-cards{ grid-template-columns: repeat(2, 1fr); }
+  .wg-journey{ display: none; }
+}
+@media (max-width: 600px){
+  .wg-cards{ grid-template-columns: 1fr; }
+  .wg-wrap{ padding: 56px 20px 72px; }
+}
+@media (prefers-reduced-motion: reduce){
+  .wg-root *{ animation: none !important; transition: none !important; }
+}
