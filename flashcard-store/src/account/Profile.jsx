@@ -76,14 +76,6 @@ function PersonIcon() {
     </svg>
   );
 }
-function StudyIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 20h18" />
-      <path d="M6 20v-6M12 20V8M18 20v-9" />
-    </svg>
-  );
-}
 function LockIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -138,9 +130,10 @@ export default function Profile({
   onAddDeck,
   switchError,
   onDeleteAccount,
+  initialTab = "personal",
 }) {
   const { lang, setLang, pick } = useI18n();
-  const [tab, setTab] = useState("personal");
+  const [tab, setTab] = useState(initialTab);
   const personalRef = useRef(null);
   function focusPersonalInfo() {
     setTab("personal");
@@ -392,9 +385,6 @@ export default function Profile({
           <nav className="jp-nav">
             <button type="button" className={tab === "personal" ? "jp-on" : ""} onClick={() => setTab("personal")}>
               <PersonIcon /> Personal info
-            </button>
-            <button type="button" className={tab === "study" ? "jp-on" : ""} onClick={() => setTab("study")}>
-              <StudyIcon /> Study plan
             </button>
             <button type="button" className={tab === "password" ? "jp-on" : ""} onClick={() => setTab("password")}>
               <LockIcon /> Password

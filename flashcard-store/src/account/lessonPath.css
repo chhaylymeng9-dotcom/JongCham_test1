@@ -8,7 +8,7 @@
 .lp-root{
   --paper:#F7F4ED; --sheet:#FFFFFF; --ink:#1C1A15; --body:#4A473F;
   --muted:#857F73; --faint:#AEA89A; --hair:#E1DBCC; --hair-2:#CFC8B6; --track:#E8E2D5;
-  --green:#243529; --green-mid:#3E5F48; --green-dark:#16211A;
+  --green:#243529; --green-mid:#3E5F48; --green-dark:#16211A; --green-btn:#3E8F52;
   --green-soft:#E5EBE4; --green-line:#B2C6B4; --sage:#9CBFA3;
   --brass:#8E6F2A; --brass-soft:#F3EBD8; --brass-line:#E0CFA4; --brass-mid:#C9A44B;
   --apple:#B8433F;
@@ -262,15 +262,22 @@
 /* ---------- right rail ----------
    The counterpart to the left nav: a pinned column of paper cards on the
    space the path used to sprawl into. Every number in here is real —
-   streak, apples and lesson counts all come from storage. */
-.lp-root .lp-rail{position:sticky;top:0;flex:none;width:320px;height:100vh;overflow-y:auto;
+   lesson counts come from storage. */
+.lp-root .lp-rail{position:sticky;top:0;flex:none;width:320px;height:100vh;
        padding:28px 24px 24px;display:flex;flex-direction:column;gap:16px;background:var(--paper);
        border-left:2px solid var(--hair)}
 
+/* the rail's own scroll container — kept off .lp-rail itself so the stat
+   strip above it (and the course picker's dropdown inside that strip)
+   never sits under a clipping overflow:auto ancestor */
+.lp-root .lp-rail-scroll{flex:1;min-height:0;overflow-y:auto;display:flex;
+       flex-direction:column;gap:16px}
+
 /* the stat strip across the top of the rail */
 .lp-root .lp-stats{display:flex;gap:8px}
-.lp-root .lp-stat{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;
-       padding:10px 6px;border:2px solid var(--hair);border-radius:14px;background:var(--sheet);
+.lp-root .lp-stat{flex:none;min-width:150px;height:70px;box-sizing:border-box;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+       padding:10px 18px;border:2px solid var(--hair);border-radius:14px;background:var(--sheet);
        cursor:pointer;transition:border-color .15s var(--e)}
 .lp-root .lp-stat:hover{border-color:var(--green-line)}
 .lp-root .lp-stat b{font-family:var(--type);font-size:19px;font-weight:700;letter-spacing:-.03em;
@@ -295,83 +302,6 @@
            display:flex;align-items:center;justify-content:center;
            box-shadow:0 4px 0 rgba(31,29,24,.16);transition:transform .1s ease}
 .start-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(31,29,24,.16)}
-
-/* Bus Toggle Styles */
-.lp-root .lp-bus-btn {
-  font: inherit;
-  color: inherit;
-  transition: all .15s var(--e);
-}
-.lp-root .lp-bus-btn:active {
-  transform: translateY(2px);
-}
-.lp-root .lp-bus-btn.off {
-  border-color: var(--apple);
-}
-.lp-root .lp-bus-icon-wrap {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  margin-bottom: 2px;
-  border: 1.5px solid currentColor;
-  transition: all .15s var(--e);
-}
-.lp-root .lp-bus-btn.off .lp-bus-icon-wrap {
-  color: var(--apple);
-  border-color: var(--apple);
-}
-.lp-root .lp-bus-btn.on {
-  border-color: var(--green);
-}
-.lp-root .lp-bus-btn.on .lp-bus-icon-wrap {
-  color: var(--green);
-  border-color: var(--green);
-}
-.lp-root .lp-bus-btn.on .lp-bus-icon {
-  animation: lp-drive 0.8s infinite alternate ease-in-out;
-}
-@keyframes lp-drive {
-  0% { transform: translateX(-2px); }
-  100% { transform: translateX(2px); }
-}
-
-.lp-root .lp-bus-popup-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(28, 26, 21, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-.lp-root .lp-bus-popup-card {
-  background: var(--sheet);
-  border: 1px solid var(--hair);
-  border-radius: 22px;
-  padding: 24px;
-  width: 100%;
-  max-width: 320px;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  animation: lp-pop-in .3s var(--e);
-}
-.lp-root .lp-bus-popup-card h3 {
-  color: var(--green);
-  font-size: 20px;
-  margin-bottom: 8px;
-}
-.lp-root .lp-bus-popup-card p {
-  color: var(--body);
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-@keyframes lp-pop-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
 
 /* a card in the rail */
 .lp-root .lp-block{padding:18px;border:2px solid var(--hair);border-radius:18px;background:var(--sheet)}
@@ -410,6 +340,7 @@
   .lp-root .lp-rail{position:static;width:100%;max-height:none;overflow:visible;
          padding:0 24px 32px;flex-direction:row;flex-wrap:wrap;align-items:flex-start}
   .lp-root .lp-stats{flex:1 1 100%}
+  .lp-root .lp-rail-scroll{flex:1 1 100%;overflow:visible;flex-direction:row;flex-wrap:wrap}
   .lp-root .lp-block{flex:1 1 260px}
 }
 

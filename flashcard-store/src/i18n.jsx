@@ -605,6 +605,7 @@ const STRINGS = {
   "lp.more": { en: "More", km: "ច្រើនទៀត" },
   "lp.leaderboard": { en: "Leaderboard", km: "តារាងចំណាត់ថ្នាក់" },
   "lp.pomoMode": { en: "Pomo mode", km: "របៀបប៉ូម៉ូដូរ៉ូ" },
+  "lp.studyPlan": { en: "Study plan", km: "ផែនការសិក្សា" },
   "lp.finish": {
     en: "Your certificate opens when you pass the chapter exam.",
     km: "វិញ្ញាបនបត្ររបស់អ្នកនឹងបើក នៅពេលអ្នកប្រឡងជាប់។",

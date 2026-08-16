@@ -259,6 +259,28 @@ export function claimReward(rewardId, cost) {
   return code;
 }
 
+/* ---------- stars ----------
+A separate balance from apples, spent from the Learn view to add a new
+course directly (see CoursePicker in LessonPath.jsx) rather than
+through a real-money checkout. Seeded so the picker is usable right
+away — there's no earning rule yet, only spending. */
+const STARS_SEED = 1000;
+
+export function getStars() {
+  const n = readStore("stars_balance", STARS_SEED);
+  return typeof n === "number" && n >= 0 ? n : STARS_SEED;
+}
+
+// Returns true and deducts on success, false (untouched) if the balance
+// can't cover it — callers should treat false as "nothing happened."
+export function spendStars(amount) {
+  if (!(amount > 0)) return false;
+  const balance = getStars();
+  if (balance < amount) return false;
+  writeStore("stars_balance", balance - amount);
+  return true;
+}
+
 /* ---------- daily goal ----------
 A daily target (cards answered in Practice or Exam) plus a per-day
 counter that naturally resets each day since it's keyed by date. The

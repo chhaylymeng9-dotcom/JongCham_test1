@@ -21,6 +21,7 @@ import {
   getDueCount,
   getHarvest,
   getSession,
+  getStars,
   getStreak,
   getStudyDays,
   getStudySeconds,
@@ -28,6 +29,7 @@ import {
   setActivationLock,
   setLessonComplete,
   setSession,
+  spendStars,
   syncDailyTasks,
   updateSession,
 } from "../storage.js";
@@ -83,6 +85,10 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
   // student lands on "home" first (see the Home component), then drills
   // into a deck.
   const [view, setView] = useState("home");
+  // which Profile tab to land on next time view becomes "profile" — reset
+  // to "personal" at every normal entry point, set to "study" only by the
+  // sidebar's More > Study plan shortcut
+  const [profileTab, setProfileTab] = useState("personal");
   const [switchError, setSwitchError] = useState("");
   // A lesson node clicked on the home path lands here; the Lessons tab
   // opens that lesson and clears it again (see onConsumedOpen below).
@@ -215,6 +221,39 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
     }
     setTab(targetTab ?? (DECK_BY_ID[deckId]?.customizable ? "design" : "lessons"));
     setView("dashboard");
+  }
+
+  // The course picker's "switch to an owned course" action — unlike
+  // setActiveDeck above, this stays on the Learn view (LessonPath) instead
+  // of jumping to the dashboard's tabs, since picking a course from the
+  // strip is meant to swap the path in place.
+  function switchActiveDeck(deckId) {
+    if (!session.decks.some((d) => d.deckId === deckId) || deckId === session.activeDeckId) return;
+    const next = { ...session, activeDeckId: deckId };
+    setSession(next);
+    setSessionState(next);
+  }
+
+  // The course picker's "buy with stars" action — an alternate, in-app-
+  // currency path to owning a deck, alongside the real-money cart/checkout
+  // + activation-code path (see addDeck above). Mirrors addDeck's
+  // session.decks entry shape; the "code" is synthetic since no physical
+  // code was issued.
+  function buyCourseWithStars(deckId, price) {
+    const catalogDeck = DECK_BY_ID[deckId];
+    if (!catalogDeck || session.decks.some((d) => d.deckId === deckId)) return false;
+    if (!spendStars(price)) return false;
+    const entry = {
+      code: `STARS-${deckId.toUpperCase()}-${Math.floor(1000 + Math.random() * 8999)}`,
+      deckId,
+      subject: catalogDeck.subject,
+      capacity: catalogDeck.capacity,
+      addedAt: new Date().toISOString(),
+    };
+    const next = { ...session, decks: [...session.decks, entry], activeDeckId: deckId };
+    setSession(next);
+    setSessionState(next);
+    return true;
   }
 
   function deleteAccount() {
@@ -390,7 +429,7 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
             setTab("decks");
             setView("dashboard");
           }}
-          onOpenProfile={() => setView("profile")}
+          onOpenProfile={() => { setProfileTab("personal"); setView("profile"); }}
           onOpenVouchers={() => setView("vouchers")}
           onOpenDailyTasks={() => setView("dailyTasks")}
           onGoToOrders={onGoToOrders}
@@ -411,6 +450,11 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         cardsToday={getCardsStudiedToday()}
         justDone={justDone}
         onClearJustDone={() => setJustDone(null)}
+        currentDeckId={activeDeckEntry.deckId}
+        ownedDeckIds={session.decks.map((d) => d.deckId)}
+        stars={getStars()}
+        onSwitchCourse={switchActiveDeck}
+        onBuyCourse={buyCourseWithStars}
         onBack={() => {
           setTab("decks");
           setView("dashboard");
@@ -445,7 +489,8 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
           setView("dashboard");
         }}
         onOpenVouchers={() => setView("vouchers")}
-        onOpenProfile={() => setView("profile")}
+        onOpenProfile={() => { setProfileTab("personal"); setView("profile"); }}
+        onOpenStudyPlan={() => { setProfileTab("study"); setView("profile"); }}
         onOpenDailyTasks={() => setView("dailyTasks")}
         onGoToCart={onGoToCart}
       />
@@ -481,6 +526,7 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         onAddDeck={addDeck}
         switchError={switchError}
         onDeleteAccount={deleteAccount}
+        initialTab={profileTab}
       />
     );
   }
@@ -591,14 +637,14 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
       tab={tab}
       onTabChange={setTab}
       onSignOut={signOut}
-      onOpenProfile={() => setView("profile")}
+      onOpenProfile={() => { setProfileTab("personal"); setView("profile"); }}
       onOpenVouchers={() => setView("vouchers")}
       onOpenDailyTasks={() => setView("dailyTasks")}
       onGoToOrders={onGoToOrders}
       onGoHome={() => setView("home")}
     >
       {tab === "decks" && (
-        <MyDecks decks={decksWithProgress} onOpenDeck={setActiveDeck} onAddDeck={() => setView("profile")} embedded />
+        <MyDecks decks={decksWithProgress} onOpenDeck={setActiveDeck} onAddDeck={() => { setProfileTab("personal"); setView("profile"); }} embedded />
       )}
 
       {tab === "lessons" && (

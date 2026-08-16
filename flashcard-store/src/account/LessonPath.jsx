@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useI18n } from "../i18n.jsx";
 import FocusJourney from "../components/FocusJourney";
 import PomoStatusBox from "../components/PomoStatusBox";
+import CoursePicker, { StarsPill } from "../components/CoursePicker";
 import LessonChat from "./LessonChat.jsx";
 import { PANDA } from "./panda.js";
 import "./lessonPath.css";
@@ -73,15 +74,11 @@ const ICONS = {
 /* the right rail's own small icons — a flame, an apple and a tick */
 const RAIL_ICONS = {
   streak: (
-    <svg width="19" height="23" viewBox="0 0 32 40" aria-hidden="true">
-      <path d="M16 39c-6.6 0-12-4.7-12-11.1 0-4.6 2.6-8.3 5.2-11.6C12 12.8 14.6 9.4 14.2 4c1.9 1.1 3.6 2.6 5 4.4 2.1 2.6 3.5 5.6 4.2 8.6.9-1.1 1.5-2.5 1.6-4.2C27.3 16 28 20.4 28 24.5 28 32.2 23 39 16 39Z" fill="#D4703C" />
-      <path d="M16 35.5c-2.9 0-5.2-2.1-5.2-4.9 0-2.2 1.4-3.7 2.6-5.3 1.1-1.5 1.9-2.9 1.7-4.9 2.6 1.5 4.4 3.7 5.1 6 .4-.6.6-1.3.7-2.1 1 1.7 1.5 3.6 1.5 5.3 0 3.6-2.4 5.9-6.4 5.9Z" fill="#F0B44F" />
-    </svg>
-  ),
-  apples: (
-    <svg width="21" height="21" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 7.2c2-1.8 5-1.6 6.6.5 1.8 2.4 1.2 6.3-1.1 9.2-1.3 1.6-2.9 2.6-4.2 2.1-.9-.3-1.7-.3-2.6 0-1.3.5-2.9-.5-4.2-2.1C4.2 14 3.6 10.1 5.4 7.7 7 5.6 10 5.4 12 7.2Z" fill="#B8433F" />
-      <path d="M12 7.2c0-1.8.9-3.3 2.6-4.2-.2 1.9-.9 3.3-2.6 4.2Z" fill="#4C8C58" />
+    <svg width="20" height="21" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M11 13h2v9h-2z" fill="#8C5A46" />
+      <circle cx="12" cy="9" r="7.5" fill="#5FA96D" />
+      <circle cx="8.5" cy="8" r="1.3" fill="#B8433F" />
+      <circle cx="15" cy="10.5" r="1.3" fill="#B8433F" />
     </svg>
   ),
   done: (
@@ -93,11 +90,6 @@ const RAIL_ICONS = {
   tasks: (
     <svg width="21" height="21" viewBox="0 0 24 24" fill="#D9A22F" aria-hidden="true">
       <path d="M13.5 2 4 13.6h6L9.5 22 20 10.2h-6.6z" />
-    </svg>
-  ),
-  bus: (
-    <svg className="lp-bus-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5V16a2 2 0 0 1-1 1.7V19a1.2 1.2 0 0 1-2.4 0v-1H7.4v1A1.2 1.2 0 0 1 5 19v-1.3A2 2 0 0 1 4 16Zm2.4 1.2v5.1h11.2V6.7Zm.9 8.4a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Zm9.4 0a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Z"/>
     </svg>
   )
 };
@@ -180,7 +172,33 @@ const SIDE_ICONS = {
       <path d="M9 6.5 12 3l3 3.5" />
     </svg>
   ),
+  study: (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 20h18" />
+      <path d="M6 20v-6M12 20V8M18 20v-9" />
+    </svg>
+  ),
 };
+
+/* the course picker's catalogue — one entry per deck this store actually
+   sells (see DECK_BY_ID in data/decks.js). `k` is the real deckId, so
+   CoursePicker's onSelect/onBuy keys straight into session.decks with no
+   translation table; `on` is filled in per-render from what's owned.
+   Tile colours are the same accents DECK_BY_ID/DECK_COLOR use elsewhere
+   (Store.jsx swatches, ReviewsRail), just paired with a lighter tint. */
+const COURSE_SUBJECTS = [
+  { k: "math", n: "Math", c1: "#D69A6E", c2: "#8C5A46", learners: "9.4k",
+    g: (<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6.6h6v1.8H4Zm0 3.2h6v1.8H4ZM6.1 15h1.8v2H10v1.8H7.9v2H6.1v-2H4V17h2.1ZM14 6.6h6v1.8h-6Zm.6 8.2 1.3-1.3 1.6 1.6 1.6-1.6 1.3 1.3-1.6 1.6 1.6 1.6-1.3 1.3-1.6-1.6-1.6 1.6-1.3-1.3 1.6-1.6Z" /></svg>) },
+  { k: "grammar", n: "English", c1: "#5FA96D", c2: "#2C4032", learners: "11.2k",
+    g: (<span className="glyph">Aa</span>) },
+  { k: "history", n: "History", c1: "#D6B96E", c2: "#9A7B32", learners: "5.8k",
+    g: (<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M2.5 8 12 3.5 21.5 8" /><path d="M5 9v8M9.6 9v8M14.4 9v8M19 9v8" /><path d="M3 20.5h18" /></svg>) },
+  { k: "chemistry", n: "Chemistry", c1: "#9B7FD6", c2: "#5B3B8C", learners: "4.1k",
+    g: (<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M10 3v6.5L4.8 18a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3L14 9.5V3" /><path d="M9 3h6M7.5 14h9" /></svg>) },
+  { k: "physics", n: "Physics", c1: "#6F97D6", c2: "#3B5B8C", learners: "4.6k",
+    g: (<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none" /><ellipse cx="12" cy="12" rx="10" ry="4.4" /><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(60 12 12)" /><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(120 12 12)" /></svg>) },
+];
+const COURSE_PRICE = 300;
 
 function buildSteps(lessons, completed, deckName, pick, t) {
   const steps = [];
@@ -231,58 +249,6 @@ function curve(pts) {
 const RING_R = 70;
 const RING_C = 2 * Math.PI * RING_R;
 
-function BusToggle({ doneCount, t }) {
-  const [isOn, setIsOn] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-
-  const handleClick = () => {
-    if (isOn) {
-      setIsOn(false);
-    } else {
-      setShowPopup(true);
-    }
-  };
-
-  const handleConfirm = () => {
-    setShowPopup(false);
-    setIsOn(true);
-    if (window.setPomoOpen) {
-      window.setPomoOpen(true);
-    } else {
-      window.open("/pomo.html", "pomo", "width=520,height=900");
-    }
-  };
-
-  return (
-    <>
-      <button
-        type="button"
-        className={`lp-stat lp-bus-btn ${isOn ? 'on' : 'off'}`}
-        onClick={handleClick}
-      >
-        <span className="lp-bus-icon-wrap">
-          {RAIL_ICONS.bus}
-        </span>
-        <b>{doneCount}</b>
-        <i>{t("lp.rail.lessons")}</i>
-      </button>
-
-      {showPopup && (
-        <div className="lp-bus-popup-overlay" onClick={() => setShowPopup(false)}>
-          <div className="lp-bus-popup-card" onClick={e => e.stopPropagation()}>
-            <h3>Start Journey?</h3>
-            <p>Are you ready to turn on focus mode and start the bus?</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <button className="lp-go" onClick={handleConfirm} style={{ marginTop: 0 }}>Turn On</button>
-              <button className="lp-go ghost" onClick={() => setShowPopup(false)} style={{ marginTop: 0 }}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
 /* the Pomo mode modal: a plain frame around FocusJourney, which draws
    its own back (←) and close (✕) buttons. Portalled to <body> so no
    ancestor overflow/transform clips it and the page's .lp-root-scoped
@@ -319,7 +285,6 @@ export default function LessonPath({
   lessons,
   completed,
   streak = 0,
-  apples = 0,
   dailyGoal = 0,
   cardsToday = 0,
   justDone = null,
@@ -332,12 +297,22 @@ export default function LessonPath({
   onOpenVouchers,
   onOpenProfile,
   onOpenDailyTasks,
+  onOpenStudyPlan,
+  currentDeckId,
+  ownedDeckIds = [],
+  stars = 0,
+  onSwitchCourse,
+  onBuyCourse,
 }) {
   const { t, pick } = useI18n();
   const deckName = pick(deck.name);
   const steps = buildSteps(lessons, completed, deckName, pick, t);
   const doneCount = lessons.filter((l) => completed[l.id]).length;
   const nowIdx = steps.findIndex((s) => s.state === "now");
+  const courseSubjects = useMemo(
+    () => COURSE_SUBJECTS.map((s) => ({ ...s, on: ownedDeckIds.includes(s.k) })),
+    [ownedDeckIds]
+  );
 
   const [openIdx, setOpenIdx] = useState(null);
   const [openNode, setOpenNode] = useState(null);
@@ -457,6 +432,7 @@ export default function LessonPath({
   const moreItems = [
     { id: "pomo", label: t("lp.pomoMode"), onClick: () => setPomoOpen(true) },
     { id: "exam", label: t("account.tab.exam"), onClick: onOpenExam },
+    { id: "study", label: t("lp.studyPlan"), onClick: onOpenStudyPlan },
   ];
 
   return (
@@ -634,57 +610,65 @@ export default function LessonPath({
         </div>
 
         {/* ============ right rail ============
-            Real numbers only: the streak and apples come from storage,
-            the counts from the lessons themselves. Nothing invented. */}
+            .lp-stats sits outside the scrolling inner wrapper: the rail
+            itself used to scroll (overflow-y:auto), which — even with no
+            overflow-x set — clips horizontal overflow too, cutting off the
+            course picker's dropdown. Scrolling now happens on
+            .lp-rail-scroll instead, leaving .lp-stats unclipped. */}
         <aside className="lp-rail">
           <div className="lp-stats">
+            <CoursePicker
+              subjects={courseSubjects}
+              current={currentDeckId}
+              stars={stars}
+              price={COURSE_PRICE}
+              onSelect={onSwitchCourse}
+              onBuy={onBuyCourse}
+            />
             <span className="lp-stat">
               {RAIL_ICONS.streak}
               <b>{streak}</b>
               <i>{t("lp.rail.streak")}</i>
             </span>
-            <span className="lp-stat">
-              {RAIL_ICONS.apples}
-              <b>{apples}</b>
-              <i>{t("lp.rail.apples")}</i>
-            </span>
-            <BusToggle doneCount={doneCount} t={t} />
+            <StarsPill stars={stars} />
           </div>
 
-          <section className="lp-block">
-            <h2>{t("lp.rail.progress")}</h2>
-            <div className="lp-bar"><span style={{ width: `${Math.round(pct * 100)}%` }} /></div>
-            <p className="lp-note">{t("lp.rail.lessonsOf", { n: doneCount, total: lessons.length })}</p>
-            {nextStep && (
-              <>
-                <span className="lp-eyebrow">{t("lp.rail.nextUp")}</span>
-                <p className="lp-next">{nextStep.k === "exam" ? nextStep.n : nextStep.h}</p>
-                <button type="button" className="lp-go" onClick={continueNext}>
-                  {t("lp.rail.continue")}
-                </button>
-                {nextStep.k === "exam" && <p className="lp-note">{t("lp.rail.examReady")}</p>}
-              </>
-            )}
-          </section>
+          <div className="lp-rail-scroll">
+            <section className="lp-block">
+              <h2>{t("lp.rail.progress")}</h2>
+              <div className="lp-bar"><span style={{ width: `${Math.round(pct * 100)}%` }} /></div>
+              <p className="lp-note">{t("lp.rail.lessonsOf", { n: doneCount, total: lessons.length })}</p>
+              {nextStep && (
+                <>
+                  <span className="lp-eyebrow">{t("lp.rail.nextUp")}</span>
+                  <p className="lp-next">{nextStep.k === "exam" ? nextStep.n : nextStep.h}</p>
+                  <button type="button" className="lp-go" onClick={continueNext}>
+                    {t("lp.rail.continue")}
+                  </button>
+                  {nextStep.k === "exam" && <p className="lp-note">{t("lp.rail.examReady")}</p>}
+                </>
+              )}
+            </section>
 
-          <section className="lp-block">
-            <h2>{t("lp.rail.dailyGoal")}</h2>
-            <div className="lp-bar gold"><span style={{ width: `${Math.round(goalPct * 100)}%` }} /></div>
-            <p className="lp-note">{t("lp.rail.cards", { n: cardsToday, total: dailyGoal })}</p>
-            <p className="lp-note">
-              {cardsToday >= dailyGoal
-                ? t("lp.rail.goalMet")
-                : t("lp.rail.goalLeft", { n: dailyGoal - cardsToday })}
-            </p>
-            <button type="button" className="lp-go ghost" onClick={onOpenDailyTasks}>
-              <span className="lp-go-ic">{RAIL_ICONS.tasks}</span>
-              {t("lp.rail.viewTasks")}
-            </button>
-          </section>
+            <section className="lp-block">
+              <h2>{t("lp.rail.dailyGoal")}</h2>
+              <div className="lp-bar gold"><span style={{ width: `${Math.round(goalPct * 100)}%` }} /></div>
+              <p className="lp-note">{t("lp.rail.cards", { n: cardsToday, total: dailyGoal })}</p>
+              <p className="lp-note">
+                {cardsToday >= dailyGoal
+                  ? t("lp.rail.goalMet")
+                  : t("lp.rail.goalLeft", { n: dailyGoal - cardsToday })}
+              </p>
+              <button type="button" className="lp-go ghost" onClick={onOpenDailyTasks}>
+                <span className="lp-go-ic">{RAIL_ICONS.tasks}</span>
+                {t("lp.rail.viewTasks")}
+              </button>
+            </section>
 
-          {/* the running Pomo session — appears when the ticket is torn,
-              renders nothing while nothing is running */}
-          <PomoStatusBox session={session} onFinish={finish} />
+            {/* the running Pomo session — appears when the ticket is torn,
+                renders nothing while nothing is running */}
+            <PomoStatusBox session={session} onFinish={finish} />
+          </div>
         </aside>
       </div>
     </div>
