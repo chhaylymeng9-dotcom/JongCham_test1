@@ -26,6 +26,7 @@ import {
   getStudySeconds,
   getVouchers,
   setActivationLock,
+  setLessonComplete,
   setSession,
   syncDailyTasks,
   updateSession,
@@ -86,6 +87,8 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
   // A lesson node clicked on the home path lands here; the Lessons tab
   // opens that lesson and clears it again (see onConsumedOpen below).
   const [pendingLesson, setPendingLesson] = useState(null);
+  // Records the node that was just finished so LessonPath can pulse it
+  const [justDone, setJustDone] = useState(null);
   // Bumped after claimReward() so the harvest/claimedRewards props below
   // (read fresh from storage on every render, same as streak/studyDays)
   // pick up the change — claimReward itself has no state of its own.
@@ -406,11 +409,21 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         apples={getHarvest().available}
         dailyGoal={getDailyGoal()}
         cardsToday={getCardsStudiedToday()}
+        justDone={justDone}
+        onClearJustDone={() => setJustDone(null)}
         onBack={() => {
           setTab("decks");
           setView("dashboard");
         }}
-        onOpenLesson={(lessonId) => {
+        onOpenLesson={(lessonId, percent) => {
+          if (typeof percent === "number") {
+            const activeId = session.decks?.find((d) => d.deckId === session.activeDeckId)?.deckId ?? session.decks?.[0]?.deckId;
+            setLessonComplete(activeId, lessonId, percent);
+            refresh();
+            // Just updating the percent - the user relies on LessonPath's own state for pulsing
+            setJustDone(lessonId);
+            return;
+          }
           setPendingLesson(lessonId);
           setTab("lessons");
           setView("dashboard");
@@ -597,6 +610,7 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
           onProgressChange={refresh}
           initialOpenId={pendingLesson}
           onConsumedOpen={() => setPendingLesson(null)}
+          onCloseLesson={() => setView("home")}
         />
       )}
 

@@ -602,6 +602,9 @@ const STRINGS = {
   "lp.vouchers": { en: "Vouchers", km: "ប័ណ្ណរង្វាន់" },
   "lp.learn": { en: "Learn", km: "រៀន" },
   "lp.shop": { en: "Shop", km: "ហាង" },
+  "lp.more": { en: "More", km: "ច្រើនទៀត" },
+  "lp.leaderboard": { en: "Leaderboard", km: "តារាងចំណាត់ថ្នាក់" },
+  "lp.pomoMode": { en: "Pomo mode", km: "របៀបប៉ូម៉ូដូរ៉ូ" },
   "lp.finish": {
     en: "Your certificate opens when you pass the chapter exam.",
     km: "វិញ្ញាបនបត្ររបស់អ្នកនឹងបើក នៅពេលអ្នកប្រឡងជាប់។",

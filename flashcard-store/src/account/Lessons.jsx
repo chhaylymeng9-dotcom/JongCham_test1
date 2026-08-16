@@ -12,15 +12,13 @@ for one of them. Completion is per deck and persisted, so the dashboard
 can show real progress rather than a decorative bar.
 --------------------------------- */
 
-export default function Lessons({ deckId, deck, subject, completed, onProgressChange, initialOpenId, onConsumedOpen }) {
+export default function Lessons({ deckId, deck, subject, completed, onProgressChange, initialOpenId, onConsumedOpen, onCloseLesson }) {
   useStudyTimer();
   const { t, pick } = useI18n();
   const lessons = lessonsFor(subject);
   const [openId, setOpenId] = useState(initialOpenId ?? null);
   const [showSheet, setShowSheet] = useState(false);
 
-  // A lesson clicked on the home path arrives as initialOpenId; open it
-  // once, then hand the token back so later visits start on the list.
   useEffect(() => {
     if (initialOpenId) {
       setOpenId(initialOpenId);
@@ -49,8 +47,12 @@ export default function Lessons({ deckId, deck, subject, completed, onProgressCh
       <article className="animate-fade-in">
         <LinkButton
           onClick={() => {
-            setOpenId(null);
-            setShowSheet(false);
+            if (onCloseLesson) {
+              onCloseLesson();
+            } else {
+              setOpenId(null);
+              setShowSheet(false);
+            }
           }}
           className="mb-5 inline-block"
         >

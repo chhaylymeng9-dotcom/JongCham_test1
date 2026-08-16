@@ -1,5 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useI18n } from "../i18n.jsx";
+import FocusJourney from "../components/FocusJourney";
+import PomoStatusBox from "../components/PomoStatusBox";
+import LessonChat from "./LessonChat.jsx";
 import { PANDA } from "./panda.js";
 import "./lessonPath.css";
 
@@ -21,6 +25,24 @@ and one popover card open at a time.
    lesson, lesson, chest, lesson, lesson, chest, exam */
 const OFFS = [0, -2, -3, 0, 2, 3, -2];
 
+function LessonStar({ percent = 0, id }) {
+  const v = Math.max(0, Math.min(1, percent / 100));
+  const gid = "star-" + id;
+  return (
+    <svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true" className="done-star">
+      <defs>
+        <linearGradient id={gid} x1="0" y1="1" x2="0" y2="0">
+          <stop offset={v} stopColor="#F2C33C" />
+          <stop offset={v} stopColor="#D8D2C6" />
+        </linearGradient>
+      </defs>
+      <path d="M12 2 15 8.5 22 9.5 17 14.5 18.2 21.5 12 18.2 5.8 21.5 7 14.5 2 9.5 9 8.5Z"
+            fill={`url(#${gid})`} stroke="#1F1D18" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 const ICONS = {
   lesson: (
     <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -41,7 +63,7 @@ const ICONS = {
     </svg>
   ),
   lock: (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="4" y="10" width="16" height="10" rx="2.5" />
       <path d="M8 10V7a4 4 0 0 1 8 0v3" />
     </svg>
@@ -143,6 +165,19 @@ const SIDE_ICONS = {
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="10" />
       <path d="M12 6v6l4 2" />
+    </svg>
+  ),
+  more: (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="5" cy="12" r="2.1" />
+      <circle cx="12" cy="12" r="2.1" />
+      <circle cx="19" cy="12" r="2.1" />
+    </svg>
+  ),
+  leaderboard: (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 21v-7M12 21V9M19 21v-4" />
+      <path d="M9 6.5 12 3l3 3.5" />
     </svg>
   ),
 };
@@ -248,6 +283,37 @@ function BusToggle({ doneCount, t }) {
   );
 }
 
+/* the Pomo mode modal: a plain frame around FocusJourney, which draws
+   its own back (←) and close (✕) buttons. Portalled to <body> so no
+   ancestor overflow/transform clips it and the page's .lp-root-scoped
+   rules (.cap, .card, …) can't leak into FocusJourney's own class names.
+   With onStart, tearing the ticket hands the session over to the status
+   box in the rail and closes this modal by itself; without it, unmounting
+   is what stops the timer — never hide it while mounted. */
+function PomoModal({ open, onClose, onStart }) {
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+  return createPortal(
+    <div className="pomo-veil" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="pomo-panel" role="dialog" aria-modal="true" aria-label="Pomo mode">
+        <FocusJourney onClose={onClose} onStart={onStart} />
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 export default function LessonPath({
   deck,
   lessons,
@@ -256,16 +322,16 @@ export default function LessonPath({
   apples = 0,
   dailyGoal = 0,
   cardsToday = 0,
+  justDone = null,
+  onClearJustDone,
   onBack,
   onOpenLesson,
   onOpenExam,
   onOpenLessons,
   onOpenPractice,
-  onOpenCertificates,
   onOpenVouchers,
   onOpenProfile,
   onOpenDailyTasks,
-  onGoToCart,
 }) {
   const { t, pick } = useI18n();
   const deckName = pick(deck.name);
@@ -274,19 +340,20 @@ export default function LessonPath({
   const nowIdx = steps.findIndex((s) => s.state === "now");
 
   const [openIdx, setOpenIdx] = useState(null);
+  const [openNode, setOpenNode] = useState(null);
   const [geom, setGeom] = useState(null);
   const pathRef = useRef(null);
   const nodeRefs = useRef([]);
 
-  /* clicking anywhere closes the open card — the cards themselves
-     stop propagation so they stay open while you use them */
   useEffect(() => {
-    function away() {
-      setOpenIdx(null);
-    }
-    document.addEventListener("click", away);
-    return () => document.removeEventListener("click", away);
-  }, []);
+    if (!openNode) return;
+    const away = e => { if (!e.target.closest(".node-wrap")) setOpenNode(null); };
+    const esc  = e => { if (e.key === "Escape") setOpenNode(null); };
+    document.addEventListener("pointerdown", away);
+    window.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("pointerdown", away);
+                   window.removeEventListener("keydown", esc); };
+  }, [openNode]);
 
   /* measure node centres (getBoundingClientRect includes the translateX
      offsets) so the trail and mascot can follow the winding path */
@@ -312,7 +379,7 @@ export default function LessonPath({
     return () => window.removeEventListener("resize", measure);
   }, [steps.length]);
 
-  const trailD = geom ? curve(geom.pts) : "";
+  const trailD = geom ? curve(nowIdx >= 0 ? geom.pts.slice(nowIdx) : geom.pts) : "";
   const walkedD = geom && nowIdx >= 0 ? curve(geom.pts.slice(0, nowIdx + 1)) : "";
   const mascotTop = geom && nowIdx >= 0 ? Math.max(8, geom.pts[nowIdx].y - 150) : 0;
   const pct = lessons.length ? doneCount / lessons.length : 0;
@@ -322,37 +389,79 @@ export default function LessonPath({
   const nextStep = nowIdx >= 0 ? steps[nowIdx] : null;
   function continueNext() {
     if (!nextStep) return;
-    if (nextStep.k === "lesson") onOpenLesson(nextStep.lesson.id);
+    if (nextStep.k === "lesson") setLesson(nextStep.lesson);
     else onOpenExam();
   }
   const goalPct = dailyGoal > 0 ? Math.min(1, cardsToday / dailyGoal) : 0;
 
   const [pomoOpen, setPomoOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [morePos, setMorePos] = useState(null);
+  const moreBtnRef = useRef(null);
+  const moreTimer = useRef(null);
+  const openMore = () => {
+    clearTimeout(moreTimer.current);
+    const r = moreBtnRef.current?.getBoundingClientRect();
+    if (r) setMorePos({ top: r.top, left: r.right + 10 });
+    setMoreOpen(true);
+  };
+  const closeMoreSoon = () => {
+    clearTimeout(moreTimer.current);
+    moreTimer.current = setTimeout(() => setMoreOpen(false), 150);
+  };
+  useEffect(() => () => clearTimeout(moreTimer.current), []);
+  const [lesson, setLesson] = useState(null);
+  const [progress, setProgress] = useState({});
+
+  /* the running Pomo session — set the moment the ticket is torn in the
+     popup (onStart), kept by the status box in the rail; finish removes
+     the box when the last leg ends. Stable so the box never re-fires it. */
+  const [session, setSession] = useState(null);
+  const finish = useCallback(() => setSession(null), []);
+
+  const saveResult = useCallback(({ percent }) => {
+    if (lesson) {
+      setProgress(p => ({ ...p, [lesson.id]: percent }));
+      onOpenLesson(lesson.id, percent);
+    }
+    // setLesson(null); // Remove this to let onClose handle it
+  }, [lesson, onOpenLesson]);
+
+  useEffect(() => {
+    if (!justDone) return;
+    const el = document.querySelector(`[data-node="${justDone}"]`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    const t = setTimeout(() => {
+      if (onClearJustDone) onClearJustDone();
+    }, 1400);
+    return () => clearTimeout(t);
+  }, [justDone, onClearJustDone]);
+
+  const closeLesson = useCallback(() => {
+    setLesson(null);
+    setOpenNode(null);
+  }, []);
+
+  if (lesson) {
+    return <LessonChat onClose={closeLesson} onDone={saveResult} />;
+  }
   const sideItems = [
     { id: "learn", label: t("lp.learn"), onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
     { id: "lessons", label: t("account.tab.lessons"), onClick: onOpenLessons },
     { id: "practice", label: t("account.tab.practice"), onClick: onOpenPractice },
-    { id: "exam", label: t("account.tab.exam"), onClick: onOpenExam },
-    { id: "cert", label: t("account.tab.certificates"), onClick: onOpenCertificates },
+    { id: "leaderboard", label: t("lp.leaderboard") },
     { id: "quests", label: t("lp.dailyTasks"), onClick: onOpenDailyTasks },
     { id: "shop", label: t("lp.shop"), onClick: onOpenVouchers },
-    { id: "cart", label: t("nav.cart"), onClick: onGoToCart },
     { id: "profile", label: t("lp.myProfile"), onClick: onOpenProfile },
-    { id: "pomo", label: "Pomo mode", onClick: () => setPomoOpen(true) },
+  ];
+  const moreItems = [
+    { id: "pomo", label: t("lp.pomoMode"), onClick: () => setPomoOpen(true) },
+    { id: "exam", label: t("account.tab.exam"), onClick: onOpenExam },
   ];
 
   return (
     <div className="lp-root">
-      {pomoOpen && (
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 1000, background: "rgba(0,0,0,0.5)", display: "grid", placeItems: "center" }}>
-          <div style={{ width: "520px", height: "85vh", maxHeight: "800px", background: "white", borderRadius: "20px", position: "relative", marginTop: "20px" }}>
-             <button onClick={() => setPomoOpen(false)} style={{ position: "absolute", top: "-15px", right: "-15px", zIndex: 10, background: "#B8433F", border: "none", borderRadius: "50%", width: "40px", height: "40px", cursor: "pointer", display: "grid", placeItems: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.3)" }}>
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-             </button>
-             <iframe src="/drive.html" style={{ width: "100%", height: "100%", border: "none", borderRadius: "20px", overflow: "hidden" }} scrolling="no" />
-          </div>
-        </div>
-      )}
+      <PomoModal open={pomoOpen} onClose={() => setPomoOpen(false)} onStart={setSession} />
       <div className="lp-shell">
         {/* ============ left rail ============ */}
         <aside className="lp-side">
@@ -369,8 +478,41 @@ export default function LessonPath({
                 {it.label}
               </button>
             ))}
+            <button
+              ref={moreBtnRef}
+              type="button"
+              className={`lp-item${moreOpen || pomoOpen ? " active" : ""}`}
+              onMouseEnter={openMore}
+              onMouseLeave={closeMoreSoon}
+              onClick={() => (moreOpen ? setMoreOpen(false) : openMore())}
+            >
+              <span className="lp-ic">{SIDE_ICONS.more}</span>
+              {t("lp.more")}
+            </button>
           </nav>
         </aside>
+
+        {moreOpen && morePos && createPortal(
+          <div
+            className="lp-more-pop"
+            style={{ top: morePos.top, left: morePos.left }}
+            onMouseEnter={() => clearTimeout(moreTimer.current)}
+            onMouseLeave={closeMoreSoon}
+          >
+            {moreItems.map((it) => (
+              <button
+                key={it.id}
+                type="button"
+                className="lp-more-item"
+                onClick={() => { setMoreOpen(false); it.onClick(); }}
+              >
+                <span className="lp-ic">{SIDE_ICONS[it.id]}</span>
+                {it.label}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
 
         <div className="lp-main">
       <Scene />
@@ -401,13 +543,17 @@ export default function LessonPath({
           </svg>
 
           {steps.map((s, i) => {
+            const isDone = s.state === "done";
+            const hasScore = progress[s.lesson?.id] !== undefined;
+            const donePct = isDone ? (hasScore ? progress[s.lesson.id] : (completed[s.lesson.id] === true ? 100 : typeof completed[s.lesson.id] === "number" ? completed[s.lesson.id] : 0)) : 0;
+
             const tone = s.state === "lock" ? "grey" : s.k === "chest" ? "gold" : s.k === "exam" ? "red" : "";
-            const xp = s.k === "exam" ? 50 : s.k === "chest" ? 0 : 10;
+            const xp = s.k === "exam" ? 50 : s.k === "chest" ? 0 : isDone ? (donePct === 100 ? 3 : 5) : 10;
             const label =
               s.state === "lock" ? t("lp.locked") :
               s.k === "chest" ? <>{t("lp.open")} <span className="xp">+5 XP</span></> :
               s.k === "exam" ? <>{t("lp.startExam")} <span className="xp">+{xp} XP</span></> :
-              s.state === "done" ? <>{t("lp.practise")} <span className="xp">+5 XP</span></> :
+              isDone ? <>{t("lp.practise")} <span className="xp">+{xp} XP</span></> :
               <>{t("common.start")} <span className="xp">+{xp} XP</span></>;
 
             function go() {
@@ -421,11 +567,28 @@ export default function LessonPath({
               <div
                 key={i}
                 ref={(el) => (nodeRefs.current[i] = el)}
-                className={`node ${s.k} ${s.state}${openIdx === i ? " open" : ""}`}
+                className={`node-wrap node ${s.k} ${s.state}${openIdx === i ? " open" : ""}${openNode === i ? " pop" : ""}${justDone === s.lesson?.id ? " just-done" : ""}`}
                 data-off={s.off}
-                onClick={(e) => { e.stopPropagation(); setOpenIdx(openIdx === i ? null : i); }}
+                data-node={s.lesson?.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (s.k === "lesson" && s.state !== "lock") {
+                    setOpenNode(openNode === i ? null : i);
+                  } else {
+                    setOpenIdx(openIdx === i ? null : i);
+                  }
+                }}
               >
                 {s.state === "now" && <span className="bubble">{t("common.start")}</span>}
+                {openNode === i && (
+                  <div className="start-pop" role="dialog">
+                    <span className="tip" />
+                    <p className="lab">{t("lp.unitLesson", { u: 1, n: i + 1 })}</p>
+                    <button className="start-btn" onClick={() => { setOpenNode(null); setLesson(s.lesson); }}>
+                      {isDone ? t("lp.practise") : t("common.start")}&nbsp;&nbsp;+{xp} XP
+                    </button>
+                  </div>
+                )}
                 <span className="disc" />
                 {s.state === "now" && (
                   <svg className="ring" viewBox="0 0 154 154" aria-hidden="true">
@@ -440,7 +603,11 @@ export default function LessonPath({
                     />
                   </svg>
                 )}
-                <span className="cap">{ICONS[s.state === "lock" ? "lock" : s.k]}</span>
+                  <span className="cap">
+                    {s.k === "lesson" && isDone ? (
+                      <LessonStar id={s.lesson?.id || i} percent={donePct} />
+                    ) : ICONS[s.state === "lock" ? "lock" : s.k]}
+                  </span>
                 <span className="cap-label">{s.n}</span>
 
                 <div className={`card ${tone}`.trim()} onClick={(e) => e.stopPropagation()}>
@@ -514,6 +681,10 @@ export default function LessonPath({
               {t("lp.rail.viewTasks")}
             </button>
           </section>
+
+          {/* the running Pomo session — appears when the ticket is torn,
+              renders nothing while nothing is running */}
+          <PomoStatusBox session={session} onFinish={finish} />
         </aside>
       </div>
     </div>

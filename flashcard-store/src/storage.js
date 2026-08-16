@@ -86,11 +86,11 @@ export function getDeckProgress(deckId) {
   return getProgress()[deckId] || { lessons: {}, bestScore: null };
 }
 
-export function setLessonComplete(deckId, lessonId, done) {
+export function setLessonComplete(deckId, lessonId, status) {
   const all = getProgress();
   const deck = all[deckId] || { lessons: {}, bestScore: null };
   const lessons = { ...deck.lessons };
-  if (done) lessons[lessonId] = true;
+  if (status) lessons[lessonId] = status;
   else delete lessons[lessonId];
   writeStore("progress", { ...all, [deckId]: { ...deck, lessons } });
 }
