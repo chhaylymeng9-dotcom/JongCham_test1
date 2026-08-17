@@ -3,6 +3,7 @@ import { LANGUAGES, useI18n } from "../i18n.jsx";
 import { formatStudyTime } from "./studyTime.js";
 import { lessonsFor } from "../data/lessons.js";
 import { addStudyPlan, getDailyGoal, getStudyPlans, removeStudyPlan, setDailyGoal } from "../storage.js";
+import defaultAvatar from "../assets/default-avatar.jpg";
 import "./profile.css";
 
 /* ---------- Profile ----------
@@ -160,7 +161,6 @@ export default function Profile({
     e.target.value = "";
   }
 
-  const initial = (session.name || "?").trim().charAt(0).toUpperCase() || "?";
   const memberSince = stats?.memberSince
     ? new Date(stats.memberSince).toLocaleDateString(undefined, { month: "long", year: "numeric" })
     : null;
@@ -330,8 +330,7 @@ export default function Profile({
         <input ref={fileInput} type="file" accept="image/*" hidden onChange={pickAvatar} />
 
         <section className="jp-summary">
-          <div className="jp-summary-avatar" style={avatar ? { backgroundImage: `url(${avatar})` } : undefined}>
-            {!avatar && initial}
+          <div className="jp-summary-avatar" style={{ backgroundImage: `url(${avatar || defaultAvatar})` }}>
             <span className="jp-cam" role="button" aria-label="Change photo" onClick={() => fileInput.current?.click()}>
               <CamIcon />
             </span>
@@ -398,8 +397,7 @@ export default function Profile({
                 <section className="jp-panel">
                   <div className="jp-panel-body">
                     <div className="jp-idrow">
-                      <div className="jp-big-avatar" style={avatar ? { backgroundImage: `url(${avatar})` } : undefined}>
-                        {!avatar && initial}
+                      <div className="jp-big-avatar" style={{ backgroundImage: `url(${avatar || defaultAvatar})` }}>
                         <span className="jp-cam">
                           <CamIcon />
                         </span>

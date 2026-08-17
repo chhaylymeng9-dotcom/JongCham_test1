@@ -193,8 +193,10 @@ const COURSE_SUBJECTS = [
     g: (<span className="glyph">Aa</span>) },
   { k: "history", n: "History", c1: "#D6B96E", c2: "#9A7B32", learners: "5.8k",
     g: (<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M2.5 8 12 3.5 21.5 8" /><path d="M5 9v8M9.6 9v8M14.4 9v8M19 9v8" /><path d="M3 20.5h18" /></svg>) },
-  { k: "chemistry", n: "Chemistry", c1: "#9B7FD6", c2: "#5B3B8C", learners: "4.1k",
-    g: (<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M10 3v6.5L4.8 18a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3L14 9.5V3" /><path d="M9 3h6M7.5 14h9" /></svg>) },
+  // No "chemistry" entry: DECK_BY_ID lists it as a real store item, but
+  // data/lessons.js's COURSES has no chemistry curriculum — buying it
+  // here left the course with 0 lessons, which crashed Dashboard.jsx's
+  // Lessons tab reading a lesson's .title off nothing.
   { k: "physics", n: "Physics", c1: "#6F97D6", c2: "#3B5B8C", learners: "4.6k",
     g: (<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none" /><ellipse cx="12" cy="12" rx="10" ry="4.4" /><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(60 12 12)" /><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(120 12 12)" /></svg>) },
 ];
@@ -521,7 +523,7 @@ export default function LessonPath({
           {steps.map((s, i) => {
             const isDone = s.state === "done";
             const hasScore = progress[s.lesson?.id] !== undefined;
-            const donePct = isDone ? (hasScore ? progress[s.lesson.id] : (completed[s.lesson.id] === true ? 100 : typeof completed[s.lesson.id] === "number" ? completed[s.lesson.id] : 0)) : 0;
+            const donePct = isDone ? (hasScore ? progress[s.lesson?.id] : (completed[s.lesson?.id] === true ? 100 : typeof completed[s.lesson?.id] === "number" ? completed[s.lesson?.id] : 0)) : 0;
 
             const tone = s.state === "lock" ? "grey" : s.k === "chest" ? "gold" : s.k === "exam" ? "red" : "";
             const xp = s.k === "exam" ? 50 : s.k === "chest" ? 0 : isDone ? (donePct === 100 ? 3 : 5) : 10;

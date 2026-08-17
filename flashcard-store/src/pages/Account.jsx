@@ -537,6 +537,7 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         harvest={getHarvest()}
         claimedRewards={getClaimedRewards()}
         vouchers={getVouchers()}
+        streak={getStreak().current}
         onClaimReward={onClaimReward}
         onBack={() => setView("home")}
         onOpenDailyTasks={() => setView("dailyTasks")}
@@ -625,6 +626,14 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
   // Only needed when the Decks tab is open.
   const decksWithProgress = tab === "decks" ? session.decks.map(summarizeDeck) : [];
 
+  // Same sequential unlock rule as the path map's own node states
+  // (LessonPath.jsx): completed lessons, plus the single next one in line.
+  // Feeds Practice's "lesson set" mode, which only draws from what's
+  // actually reachable.
+  const completedLessonMap = progress.lessons ?? {};
+  const doneLessonCount = lessons.filter((l) => completedLessonMap[l.id]).length;
+  const unlockedLessonCount = lessons.length === 0 ? 0 : Math.min(doneLessonCount + 1, lessons.length);
+
   /* ---------- course decks: ported dashboard mockup, wired to real data ---------- */
   return (
     <Dashboard
@@ -660,7 +669,16 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         />
       )}
 
-      {tab === "practice" && <Practice deckId={activeDeckEntry.deckId} subject={activeDeckEntry.subject} />}
+      {tab === "practice" && (
+        <Practice
+          deckId={activeDeckEntry.deckId}
+          subject={activeDeckEntry.subject}
+          deckName={pick(deck.name)}
+          name={session.name}
+          cardCount={deck.capacity}
+          unlockedLessonCount={unlockedLessonCount}
+        />
+      )}
 
       {tab === "exam" && (
         <Exam

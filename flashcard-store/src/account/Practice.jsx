@@ -13,12 +13,22 @@ import {
 import { recordCardsStudied, recordReview } from "../storage.js";
 import { Alert, Badge, Button, Eyebrow, Input, LinkButton, Panel, ProgressBar, cx } from "../ui.jsx";
 import { useStudyTimer } from "./useStudyTimer.js";
+import PracticeModes from "../components/PracticeModes.jsx";
+import Exam, { QUESTION_COUNT as EXAM_QUESTION_COUNT, EXAM_MINUTES } from "./Exam.jsx";
 
 /* ---------- Practice ----------
-Four drill modes over the same question bank. Nothing here is scored into
-progress on purpose — practice should be somewhere you can be wrong
-cheaply, as often as you like.
+Six modes now: the original four drills over the same question bank
+(nothing here is scored into progress on purpose — practice should be
+somewhere you can be wrong cheaply, as often as you like), plus two full
+papers — a lesson-set quiz and a mock exam — that reuse the same
+unrecorded philosophy. See PracticeModes.jsx for the tab's visual design.
 --------------------------------- */
+
+// There's no per-lesson question bank in data/lessons.js (lessons are
+// reading content only) — the lesson-set drill instead draws this many
+// questions per unlocked lesson from the subject's regular question bank,
+// via the same QuizDrill used by the "mcq" mode.
+const QUESTIONS_PER_LESSON = 5;
 
 const MODES = [
   { id: "review", titleKey: "practice.mode.review", subKey: "practice.mode.reviewSub" },
@@ -27,98 +37,71 @@ const MODES = [
   { id: "match", titleKey: "practice.mode.match", subKey: "practice.mode.matchSub" },
 ];
 
-/* Icons for the mode-selection grid — see Dashboard.jsx / dashboard.css
-   (jd- prefixed classes) for the ported dashboard shell this nests inside. */
-function ModeIcon({ id }) {
-  if (id === "review")
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="5" width="14" height="14" rx="2" />
-        <path d="M21 7v10a2 2 0 0 1-2 2" />
-      </svg>
-    );
-  if (id === "quiz")
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="6" cy="7" r="2.5" />
-        <circle cx="6" cy="17" r="2.5" />
-        <path d="M11 7h8M11 17h8" />
-      </svg>
-    );
-  if (id === "type")
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="6" width="20" height="12" rx="2" />
-        <path d="M7 10h.01M11 10h.01M15 10h.01M8 14h8" />
-      </svg>
-    );
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 12H4M20 12h-5" />
-      <rect x="9" y="8" width="6" height="8" rx="1.5" />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg className="jd-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12h14M12 5l7 7-7 7" />
-    </svg>
-  );
-}
-
-export default function Practice({ deckId, subject }) {
+export default function Practice({ deckId, subject, deckName, name, cardCount, unlockedLessonCount = 0 }) {
   useStudyTimer();
   const { t } = useI18n();
   const [mode, setMode] = useState(null);
   const [round, setRound] = useState(0); // bumping this remounts the drill
 
+  const lessonSetCount = unlockedLessonCount * QUESTIONS_PER_LESSON;
+
+  function handleStart(key) {
+    if (key === "flip") return setMode("review");
+    if (key === "mcq") return setMode("quiz");
+    if (key === "type") return setMode("type");
+    if (key === "match") return setMode("match");
+    if (key === "lesson") return lessonSetCount > 0 && setMode("lessonSet");
+    if (key === "mock") return setMode("mock");
+  }
+
   if (!mode) {
     return (
-      <div>
-        <Eyebrow>{t("practice.eyebrow")}</Eyebrow>
-        <h2 className="font-display text-2xl mt-2 mb-2">{t("practice.title")}</h2>
-        <p className="text-sm text-ink/65 leading-relaxed mb-7 max-w-lg">{t("practice.subtitle")}</p>
-
-        <div className="jd-modes">
-          {MODES.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setMode(m.id)}
-              className={cx("jd-mode", m.hard && "jd-hard")}
-            >
-              <span className="jd-ic">
-                <ModeIcon id={m.id} />
-              </span>
-              <h4>{t(m.titleKey)}</h4>
-              <p>{t(m.subKey)}</p>
-              <span className="jd-foot">
-                {m.hard ? "Hardest mode" : "Practice"}
-                <ArrowIcon />
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <PracticeModes
+        stats={{
+          cards: cardCount,
+          // No tracking exists yet for "last mcq played" or a practice-mode
+          // best score (Practice is deliberately never scored into
+          // progress) — dashes rather than an invented number.
+          lastMcq: undefined,
+          bestType: "—",
+          bestMatch: undefined,
+          lessons: unlockedLessonCount,
+          lessonQuestions: lessonSetCount,
+          examQuestions: EXAM_QUESTION_COUNT,
+          examMinutes: EXAM_MINUTES,
+        }}
+        numerals="km"
+        kicker={t("practice.eyebrow")}
+        title={t("practice.title")}
+        sub={t("practice.subtitle")}
+        note={t("practice.note")}
+        onStart={handleStart}
+      />
     );
   }
 
   // `round` is the remount key — restarting a drill draws a fresh set.
   const restart = () => setRound((r) => r + 1);
+  const badgeLabel =
+    mode === "lessonSet" ? t("practice.mode.lessonSet")
+    : mode === "mock" ? null
+    : t(MODES.find((m) => m.id === mode).titleKey);
 
   return (
     <div className="animate-fade-in">
       <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
         <LinkButton onClick={() => setMode(null)}>← {t("practice.eyebrow")}</LinkButton>
-        <Badge>{t(MODES.find((m) => m.id === mode).titleKey)}</Badge>
+        {badgeLabel && <Badge>{badgeLabel}</Badge>}
       </div>
 
       {mode === "review" && <ReviewDrill key={round} subject={subject} onRestart={restart} />}
       {mode === "quiz" && <QuizDrill key={round} deckId={deckId} subject={subject} onRestart={restart} />}
       {mode === "type" && <TypeDrill key={round} deckId={deckId} subject={subject} onRestart={restart} />}
       {mode === "match" && <MatchDrill key={round} subject={subject} onRestart={restart} />}
+      {mode === "lessonSet" && (
+        <QuizDrill key={round} deckId={deckId} subject={subject} onRestart={restart} count={lessonSetCount} />
+      )}
+      {mode === "mock" && <Exam deckId={deckId} subject={subject} deckName={deckName} name={name} mock />}
     </div>
   );
 }
@@ -381,9 +364,9 @@ function WaveArt({ className }) {
 
 /* ---------- multiple choice ---------- */
 
-function QuizDrill({ deckId, subject, onRestart }) {
+function QuizDrill({ deckId, subject, onRestart, count = 8 }) {
   const { t, pick } = useI18n();
-  const questions = useMemo(() => buildChoiceQuestions(subject, 8, 1, deckId), [subject, deckId]);
+  const questions = useMemo(() => buildChoiceQuestions(subject, count, 1, deckId), [subject, deckId, count]);
   const [i, setI] = useState(0);
   const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);

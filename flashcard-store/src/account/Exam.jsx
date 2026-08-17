@@ -17,8 +17,9 @@ exist here.
 
 const MC_COUNT = 5;
 const TYPED_COUNT = 5;
-const QUESTION_COUNT = MC_COUNT + TYPED_COUNT;
+export const QUESTION_COUNT = MC_COUNT + TYPED_COUNT;
 const SECONDS_PER_QUESTION = 90;
+export const EXAM_MINUTES = Math.round((QUESTION_COUNT * SECONDS_PER_QUESTION) / 60);
 const PASS_RATIO = 0.7;
 
 function formatTime(s) {
@@ -45,7 +46,7 @@ function buildExamQuestions(subject, deckId) {
   return [...mc, ...typed];
 }
 
-export default function Exam({ deckId, subject, deckName, name, onFinished }) {
+export default function Exam({ deckId, subject, deckName, name, onFinished, mock = false }) {
   useStudyTimer();
   const { t, pick } = useI18n();
   const [attempt, setAttempt] = useState(0);
@@ -57,6 +58,7 @@ export default function Exam({ deckId, subject, deckName, name, onFinished }) {
       subject={subject}
       deckName={deckName}
       name={name}
+      mock={mock}
       onRetake={() => setAttempt((a) => a + 1)}
       onSubmitted={() => onFinished?.()}
       t={t}
@@ -67,7 +69,7 @@ export default function Exam({ deckId, subject, deckName, name, onFinished }) {
 
 /* ---------- running / submitted ---------- */
 
-function ExamRun({ deckId, subject, deckName, name, onRetake, onSubmitted, t, pick }) {
+function ExamRun({ deckId, subject, deckName, name, mock, onRetake, onSubmitted, t, pick }) {
   const questions = useMemo(() => buildExamQuestions(subject, deckId), [subject, deckId]);
   const certId = useMemo(() => Math.random().toString(36).slice(2, 8).toUpperCase(), []);
 
@@ -136,18 +138,20 @@ function ExamRun({ deckId, subject, deckName, name, onRetake, onSubmitted, t, pi
     const ratio = correct / QUESTION_COUNT;
     const passed = ratio >= PASS_RATIO;
 
-    recordExamScore(deckId, ratio);
-    recordDailyExamScore(Math.round(ratio * 100));
-    if (passed) {
-      saveCertificate({
-        certId,
-        deckId,
-        deckName,
-        name,
-        date: new Date().toISOString(),
-        score: correct,
-        total: QUESTION_COUNT,
-      });
+    if (!mock) {
+      recordExamScore(deckId, ratio);
+      recordDailyExamScore(Math.round(ratio * 100));
+      if (passed) {
+        saveCertificate({
+          certId,
+          deckId,
+          deckName,
+          name,
+          date: new Date().toISOString(),
+          score: correct,
+          total: QUESTION_COUNT,
+        });
+      }
     }
 
     setResult({ correct, total: QUESTION_COUNT, passed });
@@ -186,7 +190,7 @@ function ExamRun({ deckId, subject, deckName, name, onRetake, onSubmitted, t, pi
             <span>{t("exam.questionsBreakdown", { mc: MC_COUNT, typed: TYPED_COUNT })}</span>
           </div>
           <div>
-            <b>{Math.round((QUESTION_COUNT * SECONDS_PER_QUESTION) / 60)}</b>
+            <b>{EXAM_MINUTES}</b>
             <span>minutes max</span>
           </div>
           <div>
@@ -202,6 +206,11 @@ function ExamRun({ deckId, subject, deckName, name, onRetake, onSubmitted, t, pi
   if (phase === "submitted") {
     return (
       <div className="animate-fade-in">
+        {mock && (
+          <Alert tone="warn" className="mb-6 text-center">
+            {t("exam.mockNotRecorded")}
+          </Alert>
+        )}
         <Panel className="p-7 text-center mb-6 border-2 border-chalk/40">
           <Eyebrow className="!text-center">{result.passed ? t("exam.passed") : t("exam.failed")}</Eyebrow>
           <p className="font-mono text-5xl tabular-nums my-4">

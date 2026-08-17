@@ -325,6 +325,11 @@ const DEFAULT_Q = [
     why:"នៅ Synapse សារប្រសាទបន្តតាមរយៈ neurotransmitter។" }
 ];
 
+// exposed so callers can show an accurate "N questions" fact without
+// hardcoding a number that would drift if DEFAULT_Q ever changes —
+// every lesson uses this same built-in set today, whatever its subject
+export const DEFAULT_QUESTION_COUNT = DEFAULT_Q.length;
+
 /* ================================================================
    sound, synthesised so there are no files to ship
    ================================================================ */

@@ -1,226 +1,79 @@
-import { useEffect, useState } from "react";
-import { useI18n } from "../i18n.jsx";
-import { lessonsFor } from "../data/lessons.js";
+import { useState } from "react";
+import LessonFlow from "../components/LessonFlow.jsx";
+import LessonChat from "./LessonChat.jsx";
 import { setLessonComplete } from "../storage.js";
 import { useStudyTimer } from "./useStudyTimer.js";
-import LessonSheet from "../components/LessonSheet.jsx";
-import { Alert, Badge, Button, EmptyState, Eyebrow, LinkButton, Panel, ProgressBar, cx } from "../ui.jsx";
+import { LESSON_BODY, LESSON_QA } from "./lessonContent.js";
 
 /* ---------- Lessons ----------
-The written course behind a deck. A list of lessons, and a reading view
-for one of them. Completion is per deck and persisted, so the dashboard
-can show real progress rather than a decorative bar.
+Demo build, matching the "lesson-flow.html" reference exactly: CHAPTERS
+below is the reference's own dataset (chapters, states, scores), not
+this deck's real lessons. That's deliberate for now — it's how the
+design (chapter folding, all five row states, the gold rail) gets
+checked against the reference before real per-deck progress is wired
+back in as the chapter/lesson source. `deckId` and the quiz itself
+(LessonChat, via onStartQuiz) are still real; only the list's shape is
+the placeholder.
 --------------------------------- */
 
-export default function Lessons({ deckId, deck, subject, completed, onProgressChange, initialOpenId, onConsumedOpen, onCloseLesson }) {
+const CHAPTERS = [
+  {
+    n: 1,
+    title: "ស៊ីមណូស្ពែម និងអង់ស្យូស្ពែម",
+    lessons: [
+      { id: 1, n: 1, title: "ស៊ីមណូស្ពែម", state: "done", q: 8, min: 4, score: 100 },
+      { id: 2, n: 2, title: "អង់ស្យូស្ពែម", state: "done", q: 8, min: 4, score: 88 },
+    ],
+  },
+  {
+    n: 2,
+    title: "ការលូតលាស់ និងតំណបរំញោចរុក្ខជាតិ",
+    lessons: [
+      { id: 3, n: 3, title: "ដំណឹកនាំ និងការលូតលាស់នៅក្នុងរុក្ខជាតិ", state: "now", q: 8, min: 5, at: 5 },
+      { id: 4, n: 4, title: "តំណបរំញោច", state: "rev", q: 10, min: 6, score: 63 },
+    ],
+  },
+  {
+    n: 3,
+    title: "តម្រូវផ្សេងៗរបស់សារពាង្គកាយ",
+    lessons: [
+      { id: 5, n: 5, title: "តម្រូវប្រសាទ", state: "next", q: 14, min: 8, readMinutes: 12, chapterN: 3, subtitle: "Nervous Regulation" },
+      { id: 6, n: 6, title: "សរីរាង្គវិញ្ញាណ", state: "lock", q: 8, min: 4, needs: 5 },
+      { id: 7, n: 7, title: "ប្រព័ន្ធអង់ដូគ្រីន", state: "lock", q: 8, min: 4, needs: 6 },
+    ],
+  },
+];
+
+export default function Lessons({ deckId, onProgressChange }) {
   useStudyTimer();
-  const { t, pick } = useI18n();
-  const lessons = lessonsFor(subject);
-  const [openId, setOpenId] = useState(initialOpenId ?? null);
-  const [showSheet, setShowSheet] = useState(false);
+  const [quiz, setQuiz] = useState(null);
 
-  useEffect(() => {
-    if (initialOpenId) {
-      setOpenId(initialOpenId);
-      setShowSheet(false);
-      onConsumedOpen?.();
+  // Save is real; it just files under the reference's placeholder
+  // lesson ids (1-7) until real lessons replace CHAPTERS above.
+  function handleDone({ percent }) {
+    if (quiz) {
+      setLessonComplete(deckId, quiz.id, percent);
+      onProgressChange();
     }
-  }, [initialOpenId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  if (lessons.length === 0) {
-    return <EmptyState title={t("lesson.locked")} body={t("lesson.lockedBody")} />;
   }
 
-  const openIndex = lessons.findIndex((l) => l.id === openId);
-  const lesson = openIndex >= 0 ? lessons[openIndex] : null;
-
-  function toggle(lessonId, done) {
-    setLessonComplete(deckId, lessonId, done);
-    onProgressChange();
+  if (quiz) {
+    return <LessonChat onClose={() => setQuiz(null)} onDone={handleDone} />;
   }
-
-  if (lesson) {
-    const isDone = Boolean(completed[lesson.id]);
-    const next = lessons[openIndex + 1];
-
-    return (
-      <article className="animate-fade-in">
-        <LinkButton
-          onClick={() => {
-            if (onCloseLesson) {
-              onCloseLesson();
-            } else {
-              setOpenId(null);
-              setShowSheet(false);
-            }
-          }}
-          className="mb-5 inline-block"
-        >
-          ← {t("lesson.backToList")}
-        </LinkButton>
-
-        <div className="flex items-center gap-3 flex-wrap mb-3">
-          <span className="font-mono text-xs text-grease">
-            {String(openIndex + 1).padStart(2, "0")}
-          </span>
-          <Badge>{t("lesson.minutes", { n: lesson.minutes })}</Badge>
-          {isDone && <Badge tone="success">✓ {t("lesson.completed")}</Badge>}
-        </div>
-
-        <h2 className="font-display text-2xl md:text-3xl leading-tight mb-5">{pick(lesson.title)}</h2>
-
-        <Panel tone="cardstock" className="p-5 mb-8">
-          <Eyebrow>{t("lesson.objective")}</Eyebrow>
-          <p className="text-[15px] leading-relaxed mt-2">{pick(lesson.objective)}</p>
-        </Panel>
-
-        <div className="space-y-8">
-          {lesson.sections.map((section, i) => (
-            <section key={i}>
-              <h3 className="font-display text-xl mb-3">{pick(section.heading)}</h3>
-              <div className="space-y-4">
-                {section.body.map((p, j) => (
-                  <p key={j} className="text-[15px] leading-[1.75] text-ink/80">
-                    {pick(p)}
-                  </p>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-
-        {lesson.keyPoints?.length > 0 && (
-          <Panel className="p-5 mt-8">
-            <Eyebrow>{t("lesson.keyPoints")}</Eyebrow>
-            <ul className="mt-3 space-y-2.5">
-              {lesson.keyPoints.map((k, i) => (
-                <li key={i} className="flex gap-3 text-sm leading-relaxed">
-                  <span className="text-grease shrink-0 mt-px">▸</span>
-                  {pick(k)}
-                </li>
-              ))}
-            </ul>
-          </Panel>
-        )}
-
-        {lesson.examples?.length > 0 && (
-          <div className="mt-8">
-            <Eyebrow>{t("lesson.examples")}</Eyebrow>
-            <div className="space-y-3 mt-3">
-              {lesson.examples.map((ex, i) => (
-                <Worked key={i} example={ex} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {lesson.tip && (
-          <Alert tone="info" title={t("lesson.tip")} className="mt-8">
-            {pick(lesson.tip)}
-          </Alert>
-        )}
-
-        <div className="flex flex-wrap items-center gap-4 mt-9 pt-7 border-t border-ink/10">
-          <Button variant={isDone ? "outline" : "dark"} onClick={() => toggle(lesson.id, !isDone)}>
-            {isDone ? `✓ ${t("lesson.completed")}` : t("lesson.markDone")}
-          </Button>
-          <Button variant="ghost" onClick={() => setShowSheet((s) => !s)}>
-            {showSheet ? t("lessonSheet.hide") : t("lessonSheet.show")}
-          </Button>
-          {next && (
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setOpenId(next.id);
-                setShowSheet(false);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            >
-              {t("lesson.nextLesson")} →
-            </Button>
-          )}
-        </div>
-
-        {showSheet && (
-          <div className="mt-8 animate-fade-in">
-            <Eyebrow className="mb-3">{t("lessonSheet.eyebrow")}</Eyebrow>
-            <LessonSheet lesson={lesson} deck={deck} index={openIndex} />
-          </div>
-        )}
-      </article>
-    );
-  }
-
-  const doneCount = lessons.filter((l) => completed[l.id]).length;
 
   return (
-    <div>
-      <div className="flex items-end justify-between gap-4 mb-3">
-        <div>
-          <Eyebrow>{t("lesson.eyebrow")}</Eyebrow>
-          <p className="text-sm text-ink/65 mt-1.5">{t("lesson.count", { n: lessons.length })}</p>
-        </div>
-        <span className="font-mono text-sm text-ink/60 tabular-nums">
-          {doneCount}/{lessons.length}
-        </span>
-      </div>
-      <ProgressBar value={(doneCount / lessons.length) * 100} className="mb-7" />
-
-      <div className="space-y-3">
-        {lessons.map((l, i) => {
-          const isDone = Boolean(completed[l.id]);
-          return (
-            <button
-              key={l.id}
-              onClick={() => setOpenId(l.id)}
-              className={cx(
-                "w-full text-left border rounded-card p-5 flex items-start gap-4 transition-all",
-                isDone
-                  ? "border-chalk/30 bg-chalk/[0.04]"
-                  : "border-ink/15 hover:border-ink/35 hover:-translate-y-0.5"
-              )}
-            >
-              <span
-                className={cx(
-                  "shrink-0 w-9 h-9 rounded-full border flex items-center justify-center font-mono text-xs",
-                  isDone ? "bg-chalk border-chalk text-cardstock" : "border-ink/25 text-ink/60"
-                )}
-              >
-                {isDone ? "✓" : String(i + 1).padStart(2, "0")}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-display text-lg leading-snug">{pick(l.title)}</span>
-                <span className="block text-sm text-ink/65 mt-1.5 leading-relaxed">
-                  {pick(l.objective)}
-                </span>
-                <span className="label text-ink/40 mt-2.5 block">
-                  {t("lesson.minutes", { n: l.minutes })}
-                </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* Worked examples stay hidden until asked for — reading the solution
-   straight away is the whole failure mode this course warns about. */
-function Worked({ example }) {
-  const { t, pick } = useI18n();
-  const [shown, setShown] = useState(false);
-
-  return (
-    <div className="border border-ink/15 rounded-card p-5">
-      <p className="text-[15px] leading-relaxed mb-3">{pick(example.prompt)}</p>
-      {shown ? (
-        <p className="text-sm leading-relaxed text-ink/75 border-l-2 border-grease pl-4 animate-fade-in">
-          {pick(example.solution)}
-        </p>
-      ) : (
-        <LinkButton onClick={() => setShown(true)}>{t("practice.showAnswer")}</LinkButton>
-      )}
-    </div>
+    <LessonFlow
+      chapters={CHAPTERS}
+      bodies={LESSON_BODY}
+      qa={LESSON_QA}
+      course="Biology · ជីវវិទ្យា"
+      numerals="km"
+      exam={{
+        label: "ការប្រឡងបើកនៅ ៧ / ៧",
+        note: "បញ្ចប់មេរៀនទាំងអស់ ដើម្បីធ្វើការប្រឡង និងទទួលបានវិញ្ញាបនបត្រ។",
+        unlocked: false,
+      }}
+      onStartQuiz={(lesson) => setQuiz(lesson)}
+    />
   );
 }

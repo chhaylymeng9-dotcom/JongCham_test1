@@ -588,6 +588,45 @@ const STRINGS = {
     km: "សំណុំកាតនេះមិនមានវគ្គសិក្សាភ្ជាប់មកជាមួយទេ។",
   },
 
+  /* LessonStatus (the Lessons tab's list) */
+  "lessonStatus.lessonN": { en: "Lesson", km: "មេរៀនទី" },
+  "lessonStatus.complete": { en: "Complete", km: "បានបញ្ចប់" },
+  "lessonStatus.needsReview": { en: "Needs review", km: "ត្រូវការពិនិត្យឡើងវិញ" },
+  "lessonStatus.upNext": { en: "Up next", km: "បន្ទាប់" },
+  "lessonStatus.locked": { en: "Locked", km: "បានចាក់សោ" },
+  "lessonStatus.min": { en: "min", km: "នាទី" },
+  "lessonStatus.done": { en: "done", km: "បានបញ្ចប់" },
+  "lessonStatus.lastScore": { en: "Previous score", km: "ពិន្ទុលើកមុន" },
+  "lessonStatus.passBar": { en: "70% needed to pass", km: "ត្រូវការ ៧០% ដើម្បីជាប់" },
+  "lessonStatus.review": { en: "Review", km: "ពិនិត្យឡើងវិញ" },
+  "lessonStatus.practise": { en: "Practise", km: "អនុវត្ត" },
+  "lessonStatus.start": { en: "Start", km: "ចាប់ផ្តើម" },
+  "lessonStatus.needsPrev": {
+    en: "Finish the previous lesson to unlock this one",
+    km: "បញ្ចប់មេរៀនមុន ដើម្បីបើកមេរៀននេះ",
+  },
+  "lessonStatus.examTitle": { en: "Exam", km: "ការប្រឡង" },
+  "lessonStatus.examNote": {
+    en: "Finish all lessons to take the exam and earn a certificate.",
+    km: "បញ្ចប់មេរៀនទាំងអស់ ដើម្បីធ្វើការប្រឡង និងទទួលបានវិញ្ញាបនបត្រ។",
+  },
+  "lessonStatus.examReady": { en: "Exam unlocked", km: "ការប្រឡងបានបើក" },
+  "lessonStatus.examLocked": { en: "Exam locked", km: "ការប្រឡងបានចាក់សោ" },
+
+  /* LessonRead (the reading page) */
+  "lessonRead.sections": { en: "sections", km: "ផ្នែក" },
+  "lessonRead.read": { en: "Read", km: "អាន" },
+  "lessonRead.min": { en: "min", km: "នាទី" },
+  "lessonRead.ex": { en: "Exercise", km: "លំហាត់" },
+  "lessonRead.q": { en: "questions", km: "សំណួរ" },
+  "lessonRead.selfCheck": { en: "Self-check", km: "ឆ្លើយដោយខ្លួនឯង" },
+  "lessonRead.selfHint": {
+    en: "Try answering in your head first, then tap to check.",
+    km: "សាកល្បងឆ្លើយក្នុងចិត្តសិន ទើបចុចមើលចម្លើយ។",
+  },
+  "lessonRead.ready": { en: "Ready?", km: "រួចរាល់ហើយឬនៅ?" },
+  "lessonRead.start": { en: "Start exercise", km: "ចាប់ផ្តើមលំហាត់" },
+
   // ---------- lesson path ----------
   "lp.unitLesson": { en: "Chapter {u}, Lesson {n}", km: "ជំពូកទី {u}, មេរៀនទី {n}" },
   "lp.reward": { en: "Reward", km: "រង្វាន់" },
@@ -648,6 +687,11 @@ const STRINGS = {
     en: "No scores are recorded here — practise as often as you like before the exam.",
     km: "គ្មានការកត់ត្រាពិន្ទុនៅទីនេះទេ — អនុវត្តបានតាមចិត្តមុនពេលប្រឡង។",
   },
+  "practice.note": {
+    en: "Practice never touches your course progress or your best exam score — only the exam does.",
+    km: "លំហាត់អនុវត្តមិនប៉ះពាល់ដល់វឌ្ឍនភាពវគ្គសិក្សា ឬពិន្ទុប្រឡងល្អបំផុតរបស់អ្នកទេ — មានតែការប្រឡងទេដែលកត់ត្រា។",
+  },
+  "practice.mode.lessonSet": { en: "Lesson set", km: "លំហាត់អនុវត្ត" },
   "practice.mode.review": { en: "Flip review", km: "ត្រឡប់មើល" },
   "practice.mode.reviewSub": { en: "Read one side, recall the other", km: "អានម្ខាង នឹកចាំម្ខាងទៀត" },
   "practice.mode.quiz": { en: "Multiple choice", km: "ជម្រើសច្រើន" },
@@ -699,6 +743,7 @@ const STRINGS = {
   "exam.resultScore": { en: "{score} of {total} correct", km: "ត្រូវ {score} ក្នុងចំណោម {total}" },
   "exam.needed": { en: "You need {n} correct to certify.", km: "អ្នកត្រូវការចម្លើយត្រូវ {n} ដើម្បីទទួលវិញ្ញាបនបត្រ។" },
   "exam.retake": { en: "Retake exam", km: "ប្រឡងម្តងទៀត" },
+  "exam.mockNotRecorded": { en: "Mock result — not recorded.", km: "លទ្ធផលសាកល្បង — មិនត្រូវបានកត់ត្រា។" },
   "exam.review": { en: "Review your answers", km: "ពិនិត្យចម្លើយរបស់អ្នក" },
   "exam.hideReview": { en: "Hide review", km: "លាក់ការពិនិត្យ" },
   "exam.yourAnswer": { en: "You answered", km: "អ្នកបានឆ្លើយ" },

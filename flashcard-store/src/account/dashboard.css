@@ -55,19 +55,13 @@ doesn't reach into them.
    centered column, which is what made everything read as oversized. */
 .jd-wrap{ max-width: 1080px; margin: 0 auto; padding: 0 32px; }
 
-.jd-label{
-  font-family: var(--type); font-size: 10.5px; font-weight: 700;
-  letter-spacing: .18em; text-transform: uppercase; color: var(--faint);
-  display: block;
-}
-
 /* ---------------- identity chip + dropdown ---------------- */
 /* margin-left:auto on .jd-chip (not justify-content here) keeps the chip
    pinned right whether it's the only child (Home.jsx) or shares the row
    with .jd-back (Dashboard.jsx) — space-between would left-align a lone
    child instead, since a position:absolute .jd-menu sibling doesn't count
    as a second flex item. */
-.jd-account{ position: relative; display: flex; align-items: center; margin-bottom: 18px; }
+.jd-account{ position: relative; display: flex; align-items: center; margin-bottom: 34px; }
 
 .jd-back{
   display: flex; align-items: center; gap: 8px;
@@ -86,7 +80,7 @@ doesn't reach into them.
 }
 .jd-chip:hover, .jd-chip.jd-open{ border-color: var(--hair-2); background: #FCFBF7; }
 .jd-chip .jd-avatar{
-  width: 26px; height: 26px; border-radius: 50%; background: var(--green); color: #fff; flex: none;
+  width: 26px; height: 26px; border-radius: 50%; background: var(--green) center/cover no-repeat; color: #fff; flex: none;
   display: grid; place-items: center; font-family: var(--type); font-size: 12px; font-weight: 700;
 }
 .jd-chip svg.jd-caret{ color: var(--muted); transition: transform .18s var(--e); }
@@ -102,7 +96,10 @@ doesn't reach into them.
 }
 .jd-menu.jd-open{ opacity: 1; visibility: visible; transform: none; }
 .jd-menu .jd-who{ display: flex; align-items: center; gap: 11px; padding: 10px 10px 12px; border-bottom: 1px solid var(--hair); margin-bottom: 6px; }
-.jd-menu .jd-who .jd-avatar{ width: 34px; height: 34px; font-size: 14px; }
+.jd-menu .jd-who .jd-avatar{
+  width: 34px; height: 34px; border-radius: 50%; background: var(--green) center/cover no-repeat; color: #fff;
+  flex: none; display: grid; place-items: center; font-family: var(--type); font-size: 14px; font-weight: 700;
+}
 .jd-menu .jd-who h5{ margin: 0; font-size: 13.5px; font-weight: 600; }
 .jd-menu .jd-who span{ font-size: 12px; color: var(--muted); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .jd-menu .jd-code{ display: flex; align-items: center; gap: 10px; padding: 9px 10px; font-size: 12.5px; color: var(--muted); }
@@ -121,7 +118,6 @@ doesn't reach into them.
 
 /* ---------------- deck head ---------------- */
 .jd-head{ padding: 4px 0 22px; }
-.jd-head .jd-label{ margin-bottom: 9px; }
 .jd-title{
   font-family: var(--type); font-weight: 700; font-size: clamp(28px, 4vw, 40px);
   line-height: 1.05; letter-spacing: -.03em; margin: 0;
@@ -131,41 +127,6 @@ doesn't reach into them.
   letter-spacing: .12em; color: var(--muted); border: 1px solid var(--hair);
   border-radius: 6px; padding: 3px 9px; background: var(--sheet);
 }
-
-.jd-about{
-  display: flex; gap: 12px; align-items: flex-start;
-  background: var(--amber-soft); border: 1px solid var(--amber-line); border-radius: 13px;
-  padding: 14px 17px; margin-bottom: 26px; font-size: 13.5px; color: #6E5720;
-}
-.jd-about svg{ flex: none; margin-top: 2px; color: var(--amber); }
-.jd-about b{ font-weight: 600; }
-
-/* ---------------- stats ---------------- */
-.jd-stats{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
-.jd-stat{ background: var(--sheet); border: 1px solid var(--hair); border-radius: 14px; padding: 15px 17px 17px; }
-.jd-stat .jd-label{ margin-bottom: 9px; }
-.jd-stat .jd-value{
-  font-family: var(--type); font-size: 25px; font-weight: 700; line-height: 1.1;
-  letter-spacing: -.02em; display: flex; align-items: baseline; gap: 6px;
-}
-.jd-stat .jd-value small{ font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
-.jd-stat .jd-sub{ font-size: 12px; color: var(--muted); margin-top: 5px; }
-.jd-track{ height: 4px; background: #EFEBE1; border-radius: 99px; overflow: hidden; margin-top: 11px; }
-.jd-track i{ display: block; height: 100%; background: var(--green); border-radius: 99px; transition: width .6s var(--e); }
-
-/* ---------------- tabs ---------------- */
-.jd-tabs{ display: flex; gap: 8px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--hair); margin-bottom: 26px; }
-.jd-tabs button{
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--sheet); border: 1px solid var(--hair); border-radius: 999px;
-  height: 38px; padding: 0 18px; cursor: pointer; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--body);
-  transition: all .18s var(--e);
-}
-.jd-tabs button:hover{ border-color: var(--hair-2); background: #FCFBF7; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(34,31,26,.08); }
-.jd-tabs button:active{ transform: translateY(0) scale(.95); box-shadow: none; }
-.jd-tabs button.jd-on{ background: var(--green); border-color: var(--green); color: #fff; }
-.jd-tabs button em{ font-style: normal; font-family: var(--type); font-size: 11px; color: var(--faint); }
-.jd-tabs button.jd-on em{ color: rgba(255,255,255,.6); }
 
 /* ---------------- layout ---------------- */
 .jd-panel{ background: var(--sheet); border: 1px solid var(--hair); border-radius: 16px; overflow: hidden; margin-bottom: 20px; }
@@ -179,27 +140,6 @@ doesn't reach into them.
   from{ opacity: 0; transform: translateY(14px); }
   to{ opacity: 1; transform: translateY(0); }
 }
-.jd-continue{
-  background: var(--sheet); color: var(--ink); border: 1px solid var(--hair); border-radius: 16px;
-  padding: 24px; margin-bottom: 20px; position: relative; overflow: hidden;
-  animation: jd-rise .5s var(--e) both;
-}
-.jd-continue::after{
-  content: ""; position: absolute; right: -70px; top: -70px; width: 220px; height: 220px;
-  border: 1px solid rgba(34,31,26,.06); border-radius: 50%;
-}
-.jd-continue .jd-label{ color: var(--faint); }
-.jd-continue h3{ font-family: var(--type); font-size: 22px; font-weight: 700; margin: 9px 0 4px; color: var(--ink); letter-spacing: -.02em; }
-.jd-continue p{ margin: 0 0 18px; font-size: 13.5px; color: var(--muted); }
-.jd-cbtn{
-  display: inline-flex; align-items: center; gap: 9px; background: var(--brass-dark); color: #fff;
-  border: 0; border-radius: 11px; height: 45px; padding: 0 21px; cursor: pointer;
-  font: inherit; font-size: 14.5px; font-weight: 600; position: relative; z-index: 1;
-  transition: transform .14s var(--e), background-color .18s var(--e), box-shadow .14s var(--e);
-}
-.jd-cbtn:hover{ background: #6E5426; transform: translateY(-2px); box-shadow: 0 8px 18px rgba(92,69,32,.28); }
-.jd-cbtn:active{ transform: translateY(0) scale(.97); box-shadow: none; }
-
 /* streak + today's goal, set inside the hero card */
 .jd-hrule{ border: 0; border-top: 1px solid var(--hair); margin: 22px 0 18px; position: relative; }
 .jd-today{ display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr; gap: 22px; position: relative; }
@@ -274,28 +214,6 @@ doesn't reach into them.
 .jd-ubtn:hover{ background: #fff; border-color: var(--hair-2); }
 .jd-ubtn.jd-solid{ background: var(--green); border-color: var(--green); color: #fff; }
 
-/* ---------------- practice modes ---------------- */
-.jd-modes{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.jd-mode{
-  position: relative; text-align: left; background: var(--sheet); border: 1px solid var(--hair);
-  border-radius: 15px; padding: 20px; cursor: pointer; font: inherit; color: var(--ink);
-  transition: transform .18s var(--e), box-shadow .18s var(--e), border-color .18s var(--e);
-}
-.jd-mode:hover{ transform: translateY(-2px); border-color: var(--hair-2); box-shadow: 0 10px 26px rgba(34,31,26,.07); }
-.jd-mode .jd-ic{
-  width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; margin-bottom: 14px;
-  background: var(--green-soft); color: var(--green); border: 1px solid var(--green-line);
-}
-.jd-mode h4{ font-family: var(--type); font-size: 17px; font-weight: 700; letter-spacing: -.01em; margin: 0 0 4px; }
-.jd-mode p{ margin: 0 0 14px; font-size: 13px; color: var(--muted); }
-.jd-mode .jd-foot{
-  display: flex; align-items: center; gap: 10px; font-family: var(--type); font-size: 11px;
-  letter-spacing: .08em; text-transform: uppercase; color: var(--faint);
-}
-.jd-mode .jd-arrow{ margin-left: auto; color: var(--muted); opacity: 0; transform: translateX(-4px); transition: all .2s var(--e); }
-.jd-mode:hover .jd-arrow{ opacity: 1; transform: none; }
-.jd-mode.jd-hard .jd-ic{ background: var(--amber-soft); color: var(--amber); border-color: var(--amber-line); }
-
 /* ---------------- exam ---------------- */
 .jd-exam-row{ display: flex; align-items: center; gap: 16px; }
 .jd-exam-icon{
@@ -334,18 +252,13 @@ doesn't reach into them.
 .jd-due-row span{ font-size: 12.5px; color: var(--muted); }
 .jd-due-row .jd-n{ font-family: var(--type); font-size: 15px; font-weight: 700; color: var(--amber); }
 
-@media (prefers-reduced-motion: reduce){ .jd-continue, .jd-todaycol{ animation: none !important; } }
+@media (prefers-reduced-motion: reduce){ .jd-todaycol{ animation: none !important; } }
 
-@media (max-width: 900px){
-  .jd-stats{ grid-template-columns: 1fr 1fr; }
-  .jd-modes{ grid-template-columns: 1fr; }
-}
 @media (max-width: 700px){
   .jd-today{ grid-template-columns: 1fr; gap: 20px; }
   .jd-today .jd-tdiv{ display: none; }
 }
 @media (max-width: 560px){
-  .jd-stats{ grid-template-columns: 1fr; }
   .jd-rules{ grid-template-columns: 1fr; }
 }
 /* ---------------- lesson path (gamified unit map) ----------------

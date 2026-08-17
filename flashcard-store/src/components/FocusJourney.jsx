@@ -69,8 +69,12 @@ const CSS = `
   @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
   /* ---------- the map ---------- */
+  /* pulled up into .screen's 66px top padding so the map runs to the top
+     of the panel, with the corner nav buttons floating over it (they're
+     position:absolute over everything, own opaque backgrounds) instead
+     of sitting above it over a stretch of empty paper */
   .map-wrap{position:relative;border-radius:22px;overflow:hidden;background:#F2EFE6;
-            border:1px solid var(--hair);box-shadow:0 4px 0 var(--hair)}
+            border:1px solid var(--hair);box-shadow:0 4px 0 var(--hair);margin-top:-50px}
   /* cap the map so the button under it stays on screen on short laptops */
   .map-wrap svg{display:block;width:100%;height:auto;max-height:44vh;
                 user-select:none;-webkit-user-select:none}
@@ -163,7 +167,14 @@ const CSS = `
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.15)}
   .btn:disabled{background:var(--track);color:var(--faint);border-color:transparent;
                 box-shadow:0 4px 0 var(--hair-2);cursor:not-allowed;transform:none}
-  .stack{display:grid;gap:11px;margin-top:10px}
+  /* pinned to the bottom of the scrolling panel so the step's CTA is
+     never left half-clipped below the fold — a screen tall enough to
+     scroll (e.g. step 2, with the map + chips + route rail above it)
+     used to leave "Check in" cut off with no visible scrollbar hinting
+     that more was below */
+  .stack{position:sticky;bottom:0;z-index:5;display:grid;gap:11px;
+         margin:10px -20px -16px;padding:14px 20px 16px;
+         background:linear-gradient(rgba(247,244,237,0),var(--paper) 22px)}
 
   /* chips */
   .chips{display:flex;gap:9px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
@@ -1295,7 +1306,7 @@ export default function FocusJourney({ onClose, onStart }) {
 
       {/* the two corner controls: no header bar, just the buttons */}
       <nav className="nav" hidden={askOpen}>
-        <button className="nav-btn" type="button" aria-label="Back" hidden={step === 0}
+        <button className="nav-btn" id="navBack" type="button" aria-label="Back" hidden={step === 0}
                 onClick={() => go(Math.max(0, step - 1))}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
