@@ -323,6 +323,7 @@ export default function LessonPath({
   onOpenVouchers,
   onOpenShop,
   onOpenPlans,
+  onAddDeck,
   trial = { started: false, active: false, daysLeft: 0 },
   trialDays = 7,
   hasPlan = false,
@@ -751,6 +752,7 @@ export default function LessonPath({
               price={COURSE_PRICE}
               onSelect={onSwitchCourse}
               onBuy={onBuyCourse}
+              onAddDeck={onAddDeck}
             />
             <span className="lp-stat">
               {RAIL_ICONS.streak}

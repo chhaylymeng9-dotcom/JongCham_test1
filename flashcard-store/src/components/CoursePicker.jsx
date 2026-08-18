@@ -86,6 +86,10 @@ const CSS = `/* ================================================================
   .drop-row.add .tile{background:var(--track);color:var(--muted);
                       border:1.5px dashed var(--hair-2)}
   .drop-row.add b{font-weight:600}
+  .drop-row .add-t{flex:1;min-width:0}
+  .drop-row .add-t b{display:block}
+  .drop-row .add-t i{display:block;margin-top:1px;font-style:normal;font-size:11.5px;
+                     font-weight:500;color:var(--faint)}
 
   /* ---------- the catalogue ----------
      Portalled to <body> (see the component below) so the path's nodes
@@ -293,7 +297,7 @@ export function StarsPill({ stars = 0, onClick, label = "Top up stars" }) {
  * (an <svg> element or a <span className="glyph">) and `on` means already owned.
  */
 export default function CoursePicker({
-  subjects, current, stars = 0, price = 300, onSelect, onBuy
+  subjects, current, stars = 0, price = 300, onSelect, onBuy, onAddDeck
 }) {
   const list = React.useMemo(
     () => (subjects && subjects.length ? subjects : DEFAULT_SUBJECTS), [subjects]);
@@ -374,8 +378,30 @@ export default function CoursePicker({
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      strokeWidth="2.6" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
               </span>
-              <b>Add a new course</b>
+              <span className="add-t">
+                <b>Add a new course</b>
+                <i>Buy it with stars</i>
+              </span>
             </button>
+
+            {/* the other way in: a printed box comes with an activation
+                code, which unlocks its deck without spending anything */}
+            {onAddDeck && (
+              <button className="drop-row add" role="menuitem"
+                      onClick={() => { setOpen(false); onAddDeck(); }}>
+                <span className="tile">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4Z" />
+                    <path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9" />
+                  </svg>
+                </span>
+                <span className="add-t">
+                  <b>Add a new deck</b>
+                  <i>Redeem a box code</i>
+                </span>
+              </button>
+            )}
           </div>
         )}
       </div>

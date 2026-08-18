@@ -531,6 +531,7 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         onOpenVouchers={() => setView("vouchers")}
         onOpenShop={() => setView("shop")}
         onOpenPlans={() => setView("plans")}
+        onAddDeck={() => { setProfileTab("personal"); setView("profile"); }}
         trial={getProTrial()}
         trialDays={TRIAL_DAYS}
         hasPlan={Boolean(session.plan)}
