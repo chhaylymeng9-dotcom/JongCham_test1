@@ -444,6 +444,7 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         deck={deck}
         lessons={activeLessons}
         completed={activeCompleted}
+        name={session.name}
         streak={getStreak().current}
         apples={getHarvest().available}
         dailyGoal={getDailyGoal()}

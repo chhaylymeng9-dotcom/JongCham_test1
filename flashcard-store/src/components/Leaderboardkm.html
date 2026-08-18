@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>តារាងពិន្ទុ — JongCham</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Siemreap&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────────────────
+   តារាងពិន្ទុ — standings, not a list.
+   Hierarchy: where you stand → the ladder → the top → the table.
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --paper:#F7F5EF; --card:#FFFFFF; --ink:#23271F; --muted:#8B8877; --faint:#B4B0A2;
+  --line:#E7E3D7; --hair:#F1EEE4;
+  --green:#2F3A2E; --green-2:#3D4C3A; --green-soft:#EAF0E6;
+  --gold:#F2C33C; --gold-deep:#C8931B; --gold-soft:#FBEFCC;
+  --red:#C2503C; --red-soft:#FBEDE9;
+  --shadow-1:0 1px 0 rgba(35,39,31,.04), 0 6px 18px rgba(35,39,31,.05);
+  --shadow-2:0 18px 44px rgba(35,39,31,.16);
+  --font:"Siemreap","Khmer OS Siemreap","Noto Sans Khmer",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font);line-height:1.6;
+     -webkit-font-smoothing:antialiased;padding:32px 22px 120px;
+     font-variant-numeric:tabular-nums}
+.page{max-width:960px;margin:0 auto}
+
+/* ── title row + view switch ──────────────────────────────── */
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.kick{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 0 4px}
+h1{font-size:25px;margin:0}
+.seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:99px;padding:4px;
+     box-shadow:var(--shadow-1)}
+.seg button{font:inherit;font-size:13px;color:var(--muted);background:none;border:0;border-radius:99px;
+            padding:8px 16px;cursor:pointer;transition:all .16s ease;white-space:nowrap}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--green);color:#fff}
+
+/* ── where you stand ──────────────────────────────────────── */
+.stand{margin:18px 0 16px;border-radius:24px;padding:24px 26px;color:#fff;position:relative;
+  overflow:hidden;box-shadow:var(--shadow-2);
+  background:linear-gradient(135deg,var(--green) 0%,var(--green-2) 62%,#46573F 100%)}
+.stand::before,.stand::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+.stand::before{width:340px;height:340px;right:-90px;top:-160px;background:rgba(255,255,255,.05)}
+.stand::after{width:220px;height:220px;right:110px;bottom:-150px;background:rgba(242,195,60,.10)}
+.stand .in{position:relative;z-index:1;display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;gap:24px;align-items:center}
+
+.rankbox{text-align:center;padding-right:24px;border-right:1px solid rgba(255,255,255,.14)}
+.rankbox .lab{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+              color:rgba(255,255,255,.5);display:block}
+.rankbox .big{font-size:46px;line-height:1.15;display:block}
+.rankbox .of{font-size:12px;color:rgba(255,255,255,.55)}
+
+.standt .nm{font-size:17px;display:block;line-height:1.45}
+.standt .sub{font-size:13px;color:rgba(255,255,255,.66);display:block;margin-top:2px}
+.gap{margin-top:14px}
+.gap .bar{height:7px;border-radius:99px;background:rgba(255,255,255,.16);overflow:hidden}
+.gap .bar i{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--gold),#F7D46E)}
+.gap .cap{display:flex;justify-content:space-between;font-size:12px;
+  color:rgba(255,255,255,.66);margin-top:7px}
+.gap b{color:var(--gold)}
+
+/* the countdown ring */
+.clock{display:grid;place-items:center;gap:6px;text-align:center;min-width:104px}
+.clock .ring{position:relative;width:84px;height:84px}
+.clock svg{transform:rotate(-90deg)}
+.clock .mid{position:absolute;inset:0;display:grid;place-items:center;line-height:1.2}
+.clock .mid b{font-size:19px;display:block}
+.clock .mid span{font-size:10.5px;color:rgba(255,255,255,.6)}
+.clock .lab{font-size:11px;color:rgba(255,255,255,.6)}
+
+/* ── the ladder ───────────────────────────────────────────── */
+.ladder{background:var(--card);border:1px solid var(--line);border-radius:20px;
+  padding:18px 22px 20px;box-shadow:var(--shadow-1);margin-bottom:16px}
+.lhead{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+  flex-wrap:wrap;margin-bottom:26px}
+.lhead .t{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.lhead .need{font-size:12.5px;color:var(--muted)}
+.lhead .need b{color:var(--ink)}
+
+.rail{position:relative}
+.track{position:absolute;left:10%;right:10%;top:25px;height:4px;border-radius:99px;
+  background:repeating-linear-gradient(90deg,#E4E0D2 0 5px,transparent 5px 11px)}
+.track .fill{position:absolute;left:0;top:0;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,#B08258 0%,#9AA3A8 46%,#E0A81E 100%)}
+.you{position:absolute;top:12px;transform:translateX(-50%);z-index:2;
+  width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;
+  font-size:12px;display:grid;place-items:center;border:3px solid var(--card);
+  box-shadow:0 4px 12px rgba(35,39,31,.2)}
+.you::after{content:"";position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);
+  width:0;height:0;border:5px solid transparent;border-top-color:var(--green)}
+
+.nodes{display:grid;grid-template-columns:repeat(5,1fr);position:relative;z-index:1}
+.lg{display:grid;place-items:center;gap:9px;text-align:center}
+.lg .well{width:54px;height:54px;border-radius:50%;background:var(--paper);
+  display:grid;place-items:center;border:2px solid transparent;transition:all .2s ease}
+.lg.done .well{background:#fff;border-color:var(--line)}
+.lg.on .well{background:#fff;border-color:var(--gold);
+  box-shadow:0 0 0 5px var(--gold-soft), var(--shadow-1)}
+.lg .nm{font-size:12.5px;color:var(--faint);line-height:1.35}
+.lg.done .nm{color:var(--muted)}
+.lg.on .nm{color:var(--ink)}
+.lg .th{font-size:10.5px;color:var(--faint);opacity:.85;letter-spacing:.02em}
+.lg .tick{position:absolute;margin:34px 0 0 34px;width:17px;height:17px;border-radius:50%;
+  background:var(--green);color:#fff;display:grid;place-items:center}
+.lg.locked .well{opacity:.55}
+.lg.locked .nm,.lg.locked .th{opacity:.75}
+
+/* ── podium ───────────────────────────────────────────────── */
+.podium{display:grid;grid-template-columns:1fr 1.18fr 1fr;gap:14px;align-items:end;margin-bottom:16px}
+.pod{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px 14px 16px;
+  text-align:center;box-shadow:var(--shadow-1);position:relative;overflow:hidden}
+.pod::after{content:"";position:absolute;left:0;right:0;top:0;height:4px}
+.pod.g::after{background:linear-gradient(90deg,#E9C34A,#F7DE93,#C8931B)}
+.pod.s::after{background:linear-gradient(90deg,#B9C0C4,#E4E8EA,#98A1A6)}
+.pod.b::after{background:linear-gradient(90deg,#C99568,#EBC9A6,#A8703F)}
+.pod.g{padding-top:26px;transform:translateY(-8px)}
+.pod .av{width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;
+  font-size:19px;color:#fff;position:relative}
+.pod.g .av{width:68px;height:68px;font-size:23px}
+.pod .medal{position:absolute;right:-6px;bottom:-4px;width:26px;height:26px;border-radius:50%;
+  display:grid;place-items:center;font-size:11px;color:#3A2E08;border:2px solid #fff}
+.pod.g .medal{background:linear-gradient(140deg,#F7D46E,#D9A417)}
+.pod.s .medal{background:linear-gradient(140deg,#DDE2E4,#A8B0B4)}
+.pod.b .medal{background:linear-gradient(140deg,#E5BE9B,#B2794A)}
+.pod b{display:block;font-size:14.5px;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .xp{display:block;font-size:13px;color:var(--muted);margin-top:3px}
+.pod .xp em{font-style:normal;color:var(--ink)}
+.pod .delta{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;margin-top:8px;
+  padding:3px 9px;border-radius:99px;background:var(--hair);color:var(--muted)}
+.pod .delta.up{background:var(--green-soft);color:var(--green)}
+.pod .delta.dn{background:var(--red-soft);color:var(--red)}
+
+/* ── the table ────────────────────────────────────────────── */
+.table{background:var(--card);border:1px solid var(--line);border-radius:22px;
+  box-shadow:var(--shadow-1);overflow:hidden}
+.thead{display:grid;grid-template-columns:66px 44px minmax(0,1fr) 92px 128px;gap:12px;
+  padding:12px 20px;background:#FCFBF7;border-bottom:1px solid var(--line);
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.thead .r{text-align:right}
+.row{display:grid;grid-template-columns:66px 44px minmax(0,1fr) 92px 128px;gap:12px;
+  padding:13px 20px;align-items:center;border-bottom:1px solid var(--hair);
+  transition:background .14s ease}
+.row:last-child{border-bottom:0}
+.row:hover{background:#FCFBF7}
+.rank{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:14px}
+.rank .mv{font-size:10px;opacity:.9}
+.row .av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
+  font-size:16px;color:#fff}
+.who b{display:block;font-size:14.5px;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who span{display:block;font-size:11.5px;color:var(--faint);margin-top:1px}
+.delta{font-size:12px;color:var(--muted);text-align:right}
+.delta.up{color:var(--green)}
+.delta.dn{color:var(--red)}
+.xpcell{text-align:right}
+.xpcell b{font-size:15px}
+.xpcell span{font-size:11.5px;color:var(--faint);margin-left:4px}
+.xpcell .meter{height:4px;border-radius:99px;background:var(--hair);margin-top:6px;overflow:hidden}
+.xpcell .meter i{display:block;height:100%;background:#D8D4C6;border-radius:99px}
+.row.me{background:linear-gradient(90deg,var(--green-soft),#F4F8F1)}
+.row.me:hover{background:var(--green-soft)}
+.row.me .xpcell .meter i{background:var(--green)}
+.row.me .who b::after{content:"អ្នក";font-size:10px;letter-spacing:.08em;color:var(--green);
+  background:#fff;border:1px solid #CFDCC9;border-radius:5px;padding:1px 6px;margin-left:8px;
+  vertical-align:2px}
+
+.zone{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;
+  padding:9px 20px;font-size:11.5px;background:#FBFAF6;border-bottom:1px solid var(--hair)}
+.zone i{height:1px;background:currentColor;opacity:.22}
+.zone.up{color:var(--green)}
+.zone.dn{color:var(--red);background:var(--red-soft)}
+
+/* ── the bar that follows you ─────────────────────────────── */
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:12px 22px;
+  background:rgba(247,245,239,.93);backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  transform:translateY(105%);transition:transform .28s cubic-bezier(.22,1,.36,1)}
+.sticky.on{transform:none}
+.sticky .in{max-width:960px;margin:0 auto;display:grid;
+  grid-template-columns:auto auto minmax(0,1fr) auto;gap:14px;align-items:center}
+.sticky .rk{font-size:15px;color:var(--muted)}
+.sticky .av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  background:var(--green);color:#fff;font-size:15px}
+.sticky b{font-size:14.5px}
+.sticky .need{font-size:12.5px;color:var(--muted)}
+.sticky .need em{font-style:normal;color:var(--ink)}
+
+.foot{margin-top:16px;font-size:12.5px;color:var(--muted);display:flex;gap:10px;align-items:center;
+  background:#FCFBF7;border:1px dashed var(--line);border-radius:16px;padding:13px 16px}
+
+@media (max-width:820px){
+  .stand .in{grid-template-columns:auto minmax(0,1fr);row-gap:18px}
+  .clock{grid-column:1 / -1;justify-self:start;display:flex;align-items:center;gap:14px}
+  .thead,.row{grid-template-columns:46px 40px minmax(0,1fr) 104px}
+  .thead .dcol,.delta{display:none}
+}
+@media (max-width:560px){
+  body{padding:22px 14px 110px}
+  h1{font-size:21px}
+  .stand{padding:20px 18px;border-radius:20px}
+  .rankbox{padding-right:16px}
+  .rankbox .big{font-size:38px}
+  .podium{grid-template-columns:1fr;align-items:stretch}
+  .pod.g{order:-1;transform:none}
+  .ladder .rail::before{display:none}
+  .lg .xpn{display:none}
+  .gap .cap{flex-direction:column;gap:3px}
+  .thead{display:none}
+  .row{grid-template-columns:36px 40px minmax(0,1fr) 92px;gap:10px;padding:12px 13px}
+  .xpcell .meter{display:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top">
+    <div>
+      <p class="kick">Leaderboard</p>
+      <h1>តារាងពិន្ទុ</h1>
+    </div>
+    <div class="seg" id="seg">
+      <button class="on" data-v="week">សប្តាហ៍នេះ</button>
+      <button data-v="last">សប្តាហ៍មុន</button>
+      <button data-v="friends">មិត្តភក្តី</button>
+    </div>
+  </div>
+
+  <!-- where you stand -->
+  <section class="stand">
+    <div class="in">
+      <div class="rankbox">
+        <span class="lab">ចំណាត់ថ្នាក់</span>
+        <span class="big" id="myRank">៦</span>
+        <span class="of">ក្នុងចំណោម <span id="total">១៥</span></span>
+      </div>
+
+      <div class="standt">
+        <span class="nm" id="myName">ម៉ីង</span>
+        <span class="sub" id="myLeague">លីគមាស · សប្តាហ៍ទី ២៣</span>
+        <div class="gap">
+          <div class="bar"><i id="gapBar"></i></div>
+          <div class="cap">
+            <span id="gapText">នៅខ្វះ <b>១២០ ពិន្ទុ</b> ដើម្បីឡើងទី ៥</span>
+            <span id="myXp">១,៧២០ ពិន្ទុ</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="clock">
+        <div class="ring">
+          <svg width="84" height="84" viewBox="0 0 84 84">
+            <circle cx="42" cy="42" r="36" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="7"/>
+            <circle id="arc" cx="42" cy="42" r="36" fill="none" stroke="#F2C33C" stroke-width="7"
+                    stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="70"/>
+          </svg>
+          <div class="mid"><b id="cd">៥</b><span id="cdu">ថ្ងៃ</span></div>
+        </div>
+        <span class="lab">រហូតដល់បញ្ចប់</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- the ladder -->
+  <section class="ladder">
+    <div class="lhead">
+      <span class="t">ដំណើរឡើងលីគ</span>
+      <span class="need" id="nextNeed"></span>
+    </div>
+    <div class="rail">
+      <div class="track"><i class="fill" id="fill"></i></div>
+      <span class="you" id="you">ម</span>
+      <div class="nodes" id="nodes"></div>
+    </div>
+  </section>
+
+  <!-- the top three -->
+  <div class="podium" id="podium"></div>
+
+  <!-- everyone -->
+  <section class="table">
+    <div class="thead">
+      <span>ចំណាត់</span><span></span><span>អ្នកសិក្សា</span>
+      <span class="r dcol">និន្នាការ</span><span class="r">ពិន្ទុ</span>
+    </div>
+    <div id="rows"></div>
+  </section>
+
+  <p class="foot">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--faint)"
+         stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.1"/></svg>
+    ពិន្ទុកំណត់ឡើងវិញរាល់យប់ថ្ងៃអាទិត្យ។ ៥ នាក់ខាងលើឡើងលីគពេជ្រ · ៥ នាក់ចុងក្រោយធ្លាក់ទៅលីគប្រាក់។
+  </p>
+</div>
+
+<!-- your row, when it scrolls out of sight -->
+<div class="sticky" id="sticky">
+  <div class="in">
+    <span class="rk" id="sRank">៦</span>
+    <span class="av" id="sAv">ម</span>
+    <b id="sName">ម៉ីង</b>
+    <span class="need" id="sNeed">នៅខ្វះ <em>១២០ ពិន្ទុ</em> ដើម្បីឡើងទី ៥</span>
+  </div>
+</div>
+
+<script>
+/* ── Khmer digits ─────────────────────────────────────────── */
+const KD = "០១២៣៤៥៦៧៨៩";
+const kh = n => String(n).replace(/[0-9]/g, d => KD[+d]);
+const xpf = n => kh(n.toLocaleString("en-US"));
+
+/* ── leagues, with the points each one starts at ──────────── */
+const LEAGUES = [
+  { n:"សំរឹទ្ធ", c:"#B08258", at:0    },
+  { n:"ប្រាក់",  c:"#9AA3A8", at:500  },
+  { n:"មាស",    c:"#E0A81E", at:1200 },
+  { n:"ផ្លាទីន", c:"#7FA8A0", at:2200 },
+  { n:"ពេជ្រ",   c:"#6E9BC4", at:3500 },
+];
+const CUR = 2;
+
+/* one emblem per league — five ranks should not be five identical badges */
+const EMBLEM = {
+  0:c=>`<path d="M17 22l-4-4.5h8z" fill="${c}"/>`,                                   /* one chevron */
+  1:c=>`<path d="M17 18.5l-4-4.5h8z" fill="${c}"/><path d="M17 25l-4-4.5h8z" fill="${c}"/>`,
+  2:c=>`<path d="M17 12l2 4.4 4.8.6-3.5 3.4.9 4.8L17 22.9l-4.2 2.3.9-4.8L10.2 17l4.8-.6z" fill="${c}"/>`,
+  3:c=>`<path d="M17 11l5.5 6-5.5 8-5.5-8z" fill="${c}" opacity=".55"/>
+        <path d="M17 11l5.5 6-5.5 8-5.5-8z" stroke="${c}" stroke-width="1.6" fill="none"/>`,
+  4:c=>`<path d="M11 15h12l-6 10z" fill="${c}" opacity=".5"/>
+        <path d="M11 15h12l-6 10zM14 15l3 10M20 15l-3 10M11 15l6-4 6 4" stroke="${c}"
+              stroke-width="1.5" fill="none" stroke-linejoin="round"/>`,
+};
+
+const emblem = (i, c, size) => `<svg width="${size}" height="${size * 1.12}" viewBox="0 0 34 38" fill="none">
+  <defs><linearGradient id="lg${i}" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="${c}" stop-opacity=".30"/>
+    <stop offset="1" stop-color="${c}" stop-opacity=".08"/></linearGradient></defs>
+  <path d="M17 2.5l13.5 4.8v12.4c0 8.2-5.8 13.5-13.5 15.4C9.3 33.2 3.5 27.9 3.5 19.7V7.3z"
+        fill="url(#lg${i})"/>
+  <path d="M17 2.5l13.5 4.8v12.4c0 8.2-5.8 13.5-13.5 15.4C9.3 33.2 3.5 27.9 3.5 19.7V7.3z"
+        stroke="${c}" stroke-width="2"/>
+  ${EMBLEM[i](c)}</svg>`;
+
+const TICK = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg>`;
+
+document.getElementById("nodes").innerHTML = LEAGUES.map((l, i) => `
+  <div class="lg ${i === CUR ? "on" : i < CUR ? "done" : "locked"}">
+    <span class="well">${emblem(i, l.c, i === CUR ? 34 : 30)}
+      ${i < CUR ? `<span class="tick">${TICK}</span>` : ""}</span>
+    <span class="nm">${l.n}</span>
+    <span class="th">${l.at ? xpf(l.at) + "+" : "ចាប់ផ្តើម"}</span>
+  </div>`).join("");
+
+/* ── the week ─────────────────────────────────────────────── */
+const PEOPLE = [
+  { name:"សុវណ្ណ រតនា",   xp:2480, mv:+1, streak:14 },
+  { name:"ចាន់ ដារ៉ា",     xp:2315, mv:-1, streak:9  },
+  { name:"ស្រី ពិសី",      xp:2190, mv:+2, streak:21 },
+  { name:"វិចិត្រ សុភា",    xp:1975, mv:0,  streak:6  },
+  { name:"ម៉េង ចន្ទ្រា",    xp:1840, mv:+3, streak:11 },
+  { name:"ម៉ីង",           xp:1720, mv:-2, streak:7, me:true },
+  { name:"នី សុផាត",       xp:1655, mv:+1, streak:4  },
+  { name:"ភក្តី វណ្ណា",     xp:1490, mv:-1, streak:12 },
+  { name:"គឹម សុខា",      xp:1320, mv:+4, streak:3  },
+  { name:"ធីតា មករា",     xp:1185, mv:0,  streak:8  },
+  { name:"សំណាង ប៊ុនធឿន", xp:1040, mv:-3, streak:2  },
+  { name:"លីដា ចន្ថា",     xp:920,  mv:+1, streak:5  },
+  { name:"ពៅ សិរីវឌ្ឍន៍",  xp:760,  mv:-2, streak:1  },
+  { name:"អេង សុវត្ថិ",    xp:615,  mv:0,  streak:2  },
+  { name:"ណារី សម្បត្តិ",   xp:430,  mv:-4, streak:1  },
+];
+const UP = 5, DOWN = 5;
+const TOP = PEOPLE[0].xp;
+
+/* a stable colour per learner, so avatars are not all identical */
+const TINTS = [["#3E5139","#5E7455"],["#4A6B78","#6E93A0"],["#7A5A6E","#9E7B90"],
+               ["#8A5A3B","#B07E58"],["#4F5B6B","#78869A"],["#5C6B3A","#84955C"]];
+const tint = s => { let h = 0; for (const c of s) h = (h * 31 + c.codePointAt(0)) >>> 0;
+  const [a, b] = TINTS[h % TINTS.length];
+  return `background:linear-gradient(140deg,${a},${b})`; };
+const initial = n => n.trim().slice(0, 1);
+
+const arrow = mv => mv > 0 ? "▲" : mv < 0 ? "▼" : "•";
+const dcls  = mv => mv > 0 ? "up" : mv < 0 ? "dn" : "";
+
+/* podium */
+document.getElementById("podium").innerHTML = [1, 0, 2].map(i => {
+  const p = PEOPLE[i], r = i + 1, tone = ["g", "s", "b"][i];
+  return `<div class="pod ${tone}">
+    <div class="av" style="${tint(p.name)}">${initial(p.name)}
+      <span class="medal">${kh(r)}</span></div>
+    <b>${p.name}</b>
+    <span class="xp"><em>${xpf(p.xp)}</em> ពិន្ទុ</span>
+    <span class="delta ${dcls(p.mv)}">${arrow(p.mv)} ${p.mv ? kh(Math.abs(p.mv)) : "គ្មានប្តូរ"}</span>
+  </div>`;
+}).join("");
+
+/* the table */
+let html = "";
+PEOPLE.forEach((p, i) => {
+  const r = i + 1;
+  if (r <= 3) return;
+  if (r === UP + 1)
+    html += `<div class="zone up"><i></i><span>ឡើងលីគពេជ្រ · ${kh(UP)} នាក់ខាងលើ</span><i></i></div>`;
+  if (r === PEOPLE.length - DOWN + 1)
+    html += `<div class="zone dn"><i></i><span>ធ្លាក់លីគប្រាក់ · ${kh(DOWN)} នាក់ចុងក្រោយ</span><i></i></div>`;
+
+  html += `<div class="row ${p.me ? "me" : ""}">
+    <span class="rank">${kh(r)} <span class="mv ${dcls(p.mv)}" style="color:${
+      p.mv > 0 ? "var(--green)" : p.mv < 0 ? "var(--red)" : "var(--faint)"}">${arrow(p.mv)}</span></span>
+    <span class="av" style="${tint(p.name)}">${initial(p.name)}</span>
+    <span class="who"><b>${p.name}</b><span>ស្ទ្រីក ${kh(p.streak)} ថ្ងៃ</span></span>
+    <span class="delta ${dcls(p.mv)}">${p.mv ? arrow(p.mv) + " " + kh(Math.abs(p.mv)) : "—"}</span>
+    <span class="xpcell"><b>${xpf(p.xp)}</b><span>ពិន្ទុ</span>
+      <span class="meter"><i style="width:${Math.round(p.xp / TOP * 100)}%"></i></span></span>
+  </div>`;
+});
+document.getElementById("rows").innerHTML = html;
+
+/* ── your standing ────────────────────────────────────────── */
+const meIdx = PEOPLE.findIndex(p => p.me), me = PEOPLE[meIdx];
+const ahead = PEOPLE[meIdx - 1], need = ahead ? ahead.xp - me.xp : 0;
+document.getElementById("myRank").textContent = kh(meIdx + 1);
+document.getElementById("total").textContent  = kh(PEOPLE.length);
+document.getElementById("myName").textContent = me.name;
+document.getElementById("myXp").textContent   = xpf(me.xp) + " ពិន្ទុ";
+document.getElementById("gapBar").style.width = (ahead ? me.xp / ahead.xp * 100 : 100) + "%";
+document.getElementById("gapText").innerHTML  =
+  ahead ? `នៅខ្វះ <b>${xpf(need)} ពិន្ទុ</b> ដើម្បីឡើងទី ${kh(meIdx)}` : "អ្នកនាំមុខគេ";
+document.getElementById("sRank").textContent  = kh(meIdx + 1);
+document.getElementById("sAv").textContent    = initial(me.name);
+document.getElementById("sName").textContent  = me.name;
+document.getElementById("sNeed").innerHTML    =
+  ahead ? `នៅខ្វះ <em>${xpf(need)} ពិន្ទុ</em> ដើម្បីឡើងទី ${kh(meIdx)}` : "អ្នកនាំមុខគេ";
+
+/* ── where you sit on the ladder itself ───────────────────── */
+(function ladder(){
+  const nextL = LEAGUES[CUR + 1];
+  const from  = LEAGUES[CUR].at, to = nextL ? nextL.at : from;
+  const frac  = nextL ? Math.max(0, Math.min(1, (me.xp - from) / (to - from))) : 1;
+  /* node centres sit at 10 %, 30 %, 50 %, 70 %, 90 % of the rail */
+  const pos = 10 + 20 * (CUR + frac);
+  document.getElementById("you").style.left  = pos + "%";
+  document.getElementById("you").textContent = initial(me.name);
+  document.getElementById("fill").style.width = ((pos - 10) / 80 * 100) + "%";
+  document.getElementById("nextNeed").innerHTML = nextL
+    ? `នៅខ្វះ <b>${xpf(to - me.xp)} ពិន្ទុ</b> ដើម្បីឡើងលីគ${nextL.n}`
+    : "អ្នកឈរនៅលីគខ្ពស់បំផុត";
+})();
+
+/* ── the countdown, and the ring around it ────────────────── */
+(function tick(){
+  const now = new Date(), end = new Date(now);
+  end.setDate(now.getDate() + ((7 - now.getDay()) % 7));
+  end.setHours(23, 59, 59, 999);
+  const ms = end - now, d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5);
+  document.getElementById("cd").textContent  = d ? kh(d) : kh(h);
+  document.getElementById("cdu").textContent = d ? "ថ្ងៃ" : "ម៉ោង";
+  const frac = 1 - ms / (7 * 864e5);
+  document.getElementById("arc").setAttribute("stroke-dashoffset", 226 * (1 - frac));
+  setTimeout(tick, 60000);
+})();
+
+/* ── show the sticky bar once your row is off screen ──────── */
+const myRow = document.querySelector(".row.me");
+new IntersectionObserver(([e]) =>
+  document.getElementById("sticky").classList.toggle("on", !e.isIntersecting),
+  { rootMargin: "-70px 0px -90px 0px" }).observe(myRow);
+
+/* the three views */
+const seg = document.getElementById("seg");
+seg.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  seg.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+});
+</script>
+</body>
+</html>

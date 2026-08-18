@@ -3,12 +3,14 @@ import React from "react";
 /* ─────────────────────────────────────────────────────────────
    PracticeModes — the Practice tab.
 
-   Six modes in two groups: four card drills, two full papers.
-   Every class is prefixed `pm-` and scoped under `.pm-root`.
+   Six modes in two groups: four card drills (four across), two full
+   papers (two across, tile beside the words). Every card is just a
+   tile, a title and one short line — no description, no pips, no level
+   tag, no badge. Every class is prefixed `pm-` and scoped under
+   `.pm-root`.
 
    <PracticeModes
-     stats={{ cards:50, lastMcq:"ម្សិលមិញ", bestType:82, bestMatch:"0:48",
-              lessons:7, lessonQuestions:64, examQuestions:40, examMinutes:60 }}
+     stats={{ cards:50, lessonQuestions:64, examQuestions:40, examMinutes:60 }}
      numerals="km"
      onStart={key => …}   // "flip" | "mcq" | "type" | "match" | "lesson" | "mock"
    />
@@ -22,57 +24,60 @@ const CSS = `
   --pm-blue:#4A6B78; --pm-blue-soft:#E7F0F2; --pm-plum:#7A5A6E; --pm-plum-soft:#F4EBF1;
   --pm-shadow:0 1px 0 rgba(35,39,31,.04), 0 6px 18px rgba(35,39,31,.05);
   --pm-kh:"Siemreap","Khmer OS Siemreap","Noto Sans Khmer",system-ui,sans-serif;
-  color:var(--pm-ink);line-height:1.6;
+  color:var(--pm-ink);line-height:1.5;
 }
 .pm-root *{box-sizing:border-box}
 
 .pm-root .pm-kick{font-size:11px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--pm-faint);margin:0 0 6px}
-.pm-root .pm-h1{font-size:27px;margin:0 0 8px;letter-spacing:0}
-.pm-root .pm-sub{margin:0 0 4px;font-size:14.5px;color:var(--pm-muted)}
+  color:var(--pm-faint);margin:0 0 5px}
+.pm-root .pm-h1{font-size:22px;margin:0 0 5px;letter-spacing:0}
+.pm-root .pm-sub{margin:0;font-size:13.5px;color:var(--pm-muted)}
 
 .pm-root .pm-label{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--pm-faint);margin:26px 0 10px}
-.pm-root .pm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  color:var(--pm-faint);margin:18px 0 8px}
+
+/* card drills: four across, tile stacked above the words */
+.pm-root .pm-grid.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.pm-root .pm-grid.cards .pm-mode{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:14px}
+.pm-root .pm-grid.cards .pm-art{width:42px;height:36px}
+
+/* full papers: two across, tile beside the words */
+.pm-root .pm-grid.papers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pm-root .pm-grid.papers .pm-mode{display:grid;grid-template-columns:auto minmax(0,1fr);
+  align-items:center;gap:14px;padding:14px 16px}
+.pm-root .pm-grid.papers .pm-art{width:56px;height:48px}
 
 .pm-root .pm-mode{position:relative;background:var(--pm-card);border:1px solid var(--pm-line);
-  border-radius:20px;padding:18px;box-shadow:var(--pm-shadow);cursor:pointer;text-align:left;
-  font:inherit;color:inherit;display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;
-  align-items:start;transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
+  border-radius:16px;box-shadow:var(--pm-shadow);cursor:pointer;text-align:left;
+  font:inherit;color:inherit;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
 .pm-root .pm-mode:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(35,39,31,.10);
   border-color:#DCD7C7}
 .pm-root .pm-mode:active{transform:translateY(-1px)}
-.pm-root .pm-art{width:78px;height:66px;border-radius:14px;display:grid;place-items:center;flex:none}
+.pm-root .pm-art{border-radius:12px;display:grid;place-items:center;flex:none}
 .pm-root .pm-mode.green .pm-art{background:var(--pm-green-soft)}
 .pm-root .pm-mode.blue  .pm-art{background:var(--pm-blue-soft)}
 .pm-root .pm-mode.amber .pm-art{background:var(--pm-amber-soft)}
 .pm-root .pm-mode.plum  .pm-art{background:var(--pm-plum-soft)}
-.pm-root .pm-mode h3{margin:2px 0 5px;font-family:var(--pm-kh);font-size:16.5px;
-  line-height:1.55;letter-spacing:0}
-.pm-root .pm-d{margin:0;font-family:var(--pm-kh);font-size:13.5px;color:var(--pm-muted);line-height:1.7}
-.pm-root .pm-foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
-.pm-root .pm-pips{display:flex;gap:4px;align-items:center}
-.pm-root .pm-pips i{width:14px;height:5px;border-radius:99px;background:#E4E0D2;display:block}
-.pm-root .green .pm-pips i.on{background:var(--pm-green)}
-.pm-root .blue  .pm-pips i.on{background:var(--pm-blue)}
-.pm-root .amber .pm-pips i.on{background:var(--pm-amber)}
-.pm-root .plum  .pm-pips i.on{background:var(--pm-plum)}
-.pm-root .pm-lvl{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--pm-faint)}
-.pm-root .pm-stat{font-family:var(--pm-kh);font-size:12.5px;color:var(--pm-muted);
-  margin-left:auto;display:inline-flex;align-items:center;gap:6px}
-.pm-root .pm-stat b{color:var(--pm-ink)}
-.pm-root .pm-arrow{position:absolute;right:16px;top:16px;color:var(--pm-faint);opacity:0;
+.pm-root .pm-mode .pm-art svg{width:70%;height:70%}
+.pm-root .pm-mode h3{margin:0 0 3px;font-family:var(--pm-kh);font-size:14.5px;
+  line-height:1.4;letter-spacing:0}
+.pm-root .pm-grid.papers .pm-mode h3{font-size:15.5px}
+.pm-root .pm-line{margin:0;font-family:var(--pm-kh);font-size:12.5px;color:var(--pm-muted)}
+.pm-root .pm-line b{color:var(--pm-ink);font-weight:600}
+.pm-root .pm-arrow{position:absolute;right:12px;top:12px;color:var(--pm-faint);opacity:0;
   transform:translateX(-4px);transition:all .2s ease}
 .pm-root .pm-mode:hover .pm-arrow{opacity:1;transform:none}
-.pm-root .pm-badge{position:absolute;right:14px;top:14px;font-size:9.5px;letter-spacing:.12em;
-  text-transform:uppercase;background:var(--pm-gold-soft);color:#6B4E06;border-radius:5px;padding:3px 7px}
-.pm-root .pm-mode:hover .pm-badge{opacity:0}
 
-.pm-root .pm-note{margin-top:20px;display:flex;align-items:center;gap:10px;font-size:13px;
+.pm-root .pm-note{margin-top:14px;display:flex;align-items:center;gap:9px;font-size:12.5px;
   color:var(--pm-muted);background:#FCFBF7;border:1px dashed var(--pm-line);
-  border-radius:16px;padding:14px 18px}
+  border-radius:14px;padding:10px 16px}
 
-@media (max-width:780px){.pm-root .pm-grid{grid-template-columns:1fr}}
+@media (max-width:900px){.pm-root .pm-grid.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){
+  .pm-root .pm-grid.cards{grid-template-columns:1fr}
+  .pm-root .pm-grid.papers{grid-template-columns:1fr}
+}
 `;
 
 const KD = "០១២៣៤៥៦៧៨៩";
@@ -109,43 +114,24 @@ const ART = {
     <path d="M41 25v6.4l4 2.4" stroke="#23271F" strokeWidth="2.4" strokeLinecap="round"/></svg>,
 };
 
-const ARROW = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+const ARROW = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
   strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>;
 
 /** The six modes, with the Khmer copy fixed. Only the stats come from outside. */
 export function defaultGroups(stats = {}, num = toKm) {
-  const s = {
-    cards: 0, lastMcq: "—", bestType: 0, bestMatch: "—",
-    lessons: 0, lessonQuestions: 0, examQuestions: 0, examMinutes: 0, ...stats,
-  };
+  const s = { cards: 0, lessonQuestions: 0, examQuestions: 0, examMinutes: 0, ...stats };
   return [
-    { label: "កាតហ្វឹកហាត់ · Card drills", modes: [
-      { key:"flip", accent:"green", badge:"Easiest", level:"Warm up", pips:1,
-        title:"រំលឹកកាត",
-        desc:"អានម្ខាង រួចចាំម្ខាងទៀត។ គ្មានពិន្ទុ គ្មានសម្ពាធ។",
-        stat:<>កាត <b>{num(s.cards)}</b></> },
-      { key:"mcq", accent:"blue", level:"Steady", pips:2,
-        title:"ជ្រើសរើសចម្លើយ",
-        desc:"ជ្រើសចម្លើយត្រូវពីក្នុងបួន។ ចម្លើយខុសនឹងវិលមកម្តងទៀត។",
-        stat:<>លើកមុន · <b>{s.lastMcq}</b></> },
-      { key:"type", accent:"amber", level:"Hardest", pips:3,
-        title:"សរសេរចម្លើយ",
-        desc:"គ្មានជម្រើសឱ្យជ្រើសទេ — ដឹង ឬមិនដឹង។",
-        stat:<>ល្អបំផុត <b>{num(s.bestType)}%</b></> },
-      { key:"match", accent:"plum", level:"Quick", pips:2,
-        title:"ផ្គូផ្គងគូ",
-        desc:"ភ្ជាប់ពាក្យនីមួយៗទៅចម្លើយរបស់វា ប្រណាំងនឹងម៉ោង។",
-        stat:<>ល្អបំផុត <b>{num(s.bestMatch)}</b></> },
+    { label: "កាតហ្វឹកហាត់ · Card drills", layout: "cards", modes: [
+      { key:"flip", accent:"green", title:"រំលឹកកាត", line:<>កាត <b>{num(s.cards)}</b></> },
+      { key:"mcq", accent:"blue", title:"ជ្រើសរើសចម្លើយ", line:"ជ្រើសពី ៤" },
+      { key:"type", accent:"amber", title:"សរសេរចម្លើយ", line:"គ្មានជម្រើស" },
+      { key:"match", accent:"plum", title:"ផ្គូផ្គងគូ", line:"ប្រណាំងម៉ោង" },
     ]},
-    { label: "ធ្វើតេស្តពេញលេញ · Full papers", modes: [
-      { key:"lesson", accent:"green", level:"Lesson set", pips:2,
-        title:"លំហាត់អនុវត្ត",
-        desc:"សំណួរដូចក្នុងមេរៀន — ធ្វើម្តងទៀតបានគ្រប់ពេល ដោយពិន្ទុមិនត្រូវបានកត់ត្រា។",
-        stat:<>មេរៀន <b>{num(s.lessons)}</b> · សំណួរ <b>{num(s.lessonQuestions)}</b></> },
-      { key:"mock", accent:"blue", level:"Mock exam", pips:3,
-        title:"វិញ្ញាសា",
-        desc:"វិញ្ញាសាពេញលេញ ដូចថ្ងៃប្រឡង — មានកំណត់ម៉ោង តែពិន្ទុមិនត្រូវបានកត់ត្រា។",
-        stat:<>សំណួរ <b>{num(s.examQuestions)}</b> · <b>{num(s.examMinutes)}</b> នាទី</> },
+    { label: "ធ្វើតេស្តពេញលេញ · Full papers", layout: "papers", modes: [
+      { key:"lesson", accent:"green", title:"លំហាត់អនុវត្ត",
+        line:<>សំណួរពីមេរៀន · <b>{num(s.lessonQuestions)}</b></> },
+      { key:"mock", accent:"blue", title:"វិញ្ញាសា",
+        line:<>សំណួរ <b>{num(s.examQuestions)}</b> · <b>{num(s.examMinutes)}</b> នាទី</> },
     ]},
   ];
 }
@@ -171,23 +157,15 @@ export default function PracticeModes({
       {list.map(g => (
         <React.Fragment key={g.label}>
           <p className="pm-label">{g.label}</p>
-          <div className="pm-grid">
+          <div className={"pm-grid " + g.layout}>
             {g.modes.map(m => (
               <button key={m.key} className={"pm-mode " + m.accent}
                       onClick={() => onStart && onStart(m.key)}>
-                {m.badge && <span className="pm-badge">{m.badge}</span>}
                 <span className="pm-arrow">{ARROW}</span>
                 <span className="pm-art">{ART[m.key]}</span>
                 <span>
                   <h3>{m.title}</h3>
-                  <p className="pm-d">{m.desc}</p>
-                  <span className="pm-foot">
-                    <span className="pm-pips">
-                      {[0,1,2].map(i => <i key={i} className={i < m.pips ? "on" : ""} />)}
-                    </span>
-                    <span className="pm-lvl">{m.level}</span>
-                    <span className="pm-stat">{m.stat}</span>
-                  </span>
+                  <p className="pm-line">{m.line}</p>
                 </span>
               </button>
             ))}

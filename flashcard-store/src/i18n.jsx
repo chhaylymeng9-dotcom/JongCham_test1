@@ -1019,7 +1019,7 @@ const LangContext = createContext(null);
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(() => {
     const saved = readStore("lang", null);
-    return saved === "km" || saved === "en" ? saved : "en";
+    return saved === "km" || saved === "en" ? saved : "km";
   });
 
   useEffect(() => {

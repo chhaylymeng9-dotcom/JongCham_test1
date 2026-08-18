@@ -5,6 +5,8 @@ import FocusJourney from "../components/FocusJourney";
 import PomoStatusBox from "../components/PomoStatusBox";
 import CoursePicker, { StarsPill } from "../components/CoursePicker";
 import LessonChat from "./LessonChat.jsx";
+import Leaderboard from "../components/Leaderboard.jsx";
+import { friendStandings, lastWeekStandings, leagueIndexFor, weekStandings } from "../data/leaderboardDemo.js";
 import { PANDA } from "./panda.js";
 import "./lessonPath.css";
 
@@ -286,6 +288,7 @@ export default function LessonPath({
   deck,
   lessons,
   completed,
+  name = "",
   streak = 0,
   dailyGoal = 0,
   cardsToday = 0,
@@ -319,6 +322,14 @@ export default function LessonPath({
   const [openIdx, setOpenIdx] = useState(null);
   const [openNode, setOpenNode] = useState(null);
   const [geom, setGeom] = useState(null);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [lbView, setLbView] = useState("week");
+
+  const lbStandings =
+    lbView === "last" ? lastWeekStandings(name)
+    : lbView === "friends" ? friendStandings(name, streak)
+    : weekStandings(name, streak);
+  const lbMe = lbStandings.find((p) => p.me);
   const pathRef = useRef(null);
   const nodeRefs = useRef([]);
 
@@ -423,10 +434,10 @@ export default function LessonPath({
     return <LessonChat onClose={closeLesson} onDone={saveResult} />;
   }
   const sideItems = [
-    { id: "learn", label: t("lp.learn"), onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
+    { id: "learn", label: t("lp.learn"), onClick: () => { setShowLeaderboard(false); window.scrollTo({ top: 0, behavior: "smooth" }); } },
     { id: "lessons", label: t("account.tab.lessons"), onClick: onOpenLessons },
     { id: "practice", label: t("account.tab.practice"), onClick: onOpenPractice },
-    { id: "leaderboard", label: t("lp.leaderboard") },
+    { id: "leaderboard", label: t("lp.leaderboard"), onClick: () => setShowLeaderboard(true) },
     { id: "quests", label: t("lp.dailyTasks"), onClick: onOpenDailyTasks },
     { id: "shop", label: t("lp.shop"), onClick: onOpenVouchers },
     { id: "profile", label: t("lp.myProfile"), onClick: onOpenProfile },
@@ -449,7 +460,11 @@ export default function LessonPath({
               <button
                 key={it.id}
                 type="button"
-                className={`lp-item${it.id === "learn" ? " active" : ""}`}
+                className={`lp-item${
+                  (it.id === "learn" && !showLeaderboard) || (it.id === "leaderboard" && showLeaderboard)
+                    ? " active"
+                    : ""
+                }`}
                 onClick={it.onClick}
               >
                 <span className="lp-ic">{SIDE_ICONS[it.id]}</span>
@@ -492,27 +507,55 @@ export default function LessonPath({
           document.body
         )}
 
-        <div className="lp-main">
-      <Scene />
+        <div className={`lp-main${showLeaderboard ? " lp-main--board" : ""}`}>
+      {!showLeaderboard && <Scene />}
 
       {/* ============ header ============ */}
-      <header className="top">
-        <div className="col">
-          <div className="bar">
-            <button className="back" aria-label={t("common.back")} onClick={(e) => { e.stopPropagation(); onBack(); }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5M11 5l-6 7 6 7" />
-              </svg>
-            </button>
-            <span className="t">
-              <span className="lab">{t("lp.unitLesson", { u: 1, n: currentLesson })}</span>
-              <h1>{deckName}</h1>
-            </span>
+      {!showLeaderboard && (
+        <header className="top">
+          <div className="col">
+            <div className="bar">
+              <button className="back" aria-label={t("common.back")} onClick={(e) => { e.stopPropagation(); onBack(); }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5M11 5l-6 7 6 7" />
+                </svg>
+              </button>
+              <span className="t">
+                <span className="lab">{t("lp.unitLesson", { u: 1, n: currentLesson })}</span>
+                <h1>{deckName}</h1>
+              </span>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
+      {showLeaderboard ? (
+        <div className="col">
+          <button
+            type="button"
+            className="lb-back"
+            aria-label={t("common.back")}
+            onClick={(e) => { e.stopPropagation(); setShowLeaderboard(false); }}
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M11 5l-6 7 6 7" />
+            </svg>
+            {t("lp.learn")}
+          </button>
+          <Leaderboard
+            people={lbStandings}
+            leagueIndex={lbMe ? leagueIndexFor(lbMe.xp) : 0}
+            week={23}
+            promote={5}
+            relegate={5}
+            view={lbView}
+            onViewChange={setLbView}
+            numerals="km"
+          />
+        </div>
+      ) : (
       <div className="col">
+        <>
         {/* ============ the path ============ */}
         <div className="path" ref={pathRef}>
           <svg className="trail" width={geom?.w ?? 0} height={geom?.h ?? 0} viewBox={geom ? `0 0 ${geom.w} ${geom.h}` : undefined} aria-hidden="true">
@@ -608,7 +651,9 @@ export default function LessonPath({
         </div>
 
         <p className="finish">{t("lp.finish")}</p>
+        </>
       </div>
+        )}
         </div>
 
         {/* ============ right rail ============

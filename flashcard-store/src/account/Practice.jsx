@@ -59,13 +59,6 @@ export default function Practice({ deckId, subject, deckName, name, cardCount, u
       <PracticeModes
         stats={{
           cards: cardCount,
-          // No tracking exists yet for "last mcq played" or a practice-mode
-          // best score (Practice is deliberately never scored into
-          // progress) — dashes rather than an invented number.
-          lastMcq: undefined,
-          bestType: "—",
-          bestMatch: undefined,
-          lessons: unlockedLessonCount,
           lessonQuestions: lessonSetCount,
           examQuestions: EXAM_QUESTION_COUNT,
           examMinutes: EXAM_MINUTES,
