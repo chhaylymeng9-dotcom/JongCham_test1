@@ -36,16 +36,20 @@ const CSS = `
 .pm-root .pm-label{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
   color:var(--pm-faint);margin:18px 0 8px}
 
-/* card drills: four across, tile stacked above the words */
-.pm-root .pm-grid.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.pm-root .pm-grid.cards .pm-mode{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:14px}
-.pm-root .pm-grid.cards .pm-art{width:42px;height:36px}
+/* card drills: four across, tile stacked above the words. The cards carry
+   a line of description and a meta row now, so they are taller and the
+   words have room to breathe. */
+.pm-root .pm-grid.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.pm-root .pm-grid.cards .pm-mode{display:flex;flex-direction:column;align-items:flex-start;
+  gap:12px;padding:18px 18px 16px;min-height:186px}
+.pm-root .pm-grid.cards .pm-mode > span:last-child{display:flex;flex-direction:column;flex:1;width:100%}
+.pm-root .pm-grid.cards .pm-art{width:52px;height:46px}
 
 /* full papers: two across, tile beside the words */
-.pm-root .pm-grid.papers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pm-root .pm-grid.papers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .pm-root .pm-grid.papers .pm-mode{display:grid;grid-template-columns:auto minmax(0,1fr);
-  align-items:center;gap:14px;padding:14px 16px}
-.pm-root .pm-grid.papers .pm-art{width:56px;height:48px}
+  align-items:center;gap:16px;padding:18px 20px;min-height:118px}
+.pm-root .pm-grid.papers .pm-art{width:60px;height:52px}
 
 .pm-root .pm-mode{position:relative;background:var(--pm-card);border:1px solid var(--pm-line);
   border-radius:16px;box-shadow:var(--pm-shadow);cursor:pointer;text-align:left;
@@ -60,11 +64,24 @@ const CSS = `
 .pm-root .pm-mode.amber .pm-art{background:var(--pm-amber-soft)}
 .pm-root .pm-mode.plum  .pm-art{background:var(--pm-plum-soft)}
 .pm-root .pm-mode .pm-art svg{width:70%;height:70%}
-.pm-root .pm-mode h3{margin:0 0 3px;font-family:var(--pm-kh);font-size:14.5px;
+.pm-root .pm-mode h3{margin:0 0 4px;font-family:var(--pm-kh);font-size:15.5px;
   line-height:1.4;letter-spacing:0}
-.pm-root .pm-grid.papers .pm-mode h3{font-size:15.5px}
+.pm-root .pm-grid.papers .pm-mode h3{font-size:16.5px}
+/* one line on what the drill actually asks of you */
+.pm-root .pm-desc{margin:0;font-family:var(--pm-kh);font-size:12.5px;line-height:1.5;
+  color:var(--pm-muted)}
 .pm-root .pm-line{margin:0;font-family:var(--pm-kh);font-size:12.5px;color:var(--pm-muted)}
 .pm-root .pm-line b{color:var(--pm-ink);font-weight:600}
+
+/* the meta row: how much there is, and roughly how long it takes */
+.pm-root .pm-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:12px;
+  padding-top:11px;border-top:1px solid var(--pm-line)}
+.pm-root .pm-grid.cards .pm-meta{margin-top:auto}
+.pm-root .pm-chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--pm-kh);
+  font-size:11.5px;color:var(--pm-muted);background:#FAF9F4;border:1px solid var(--pm-line);
+  border-radius:999px;padding:4px 10px;white-space:nowrap}
+.pm-root .pm-chip b{color:var(--pm-ink);font-weight:600}
+.pm-root .pm-chip svg{flex:none;opacity:.75}
 .pm-root .pm-arrow{position:absolute;right:12px;top:12px;color:var(--pm-faint);opacity:0;
   transform:translateX(-4px);transition:all .2s ease}
 .pm-root .pm-mode:hover .pm-arrow{opacity:1;transform:none}
@@ -117,21 +134,44 @@ const ART = {
 const ARROW = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
   strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>;
 
+const CLOCK = (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" /><path d="M12 7v5.4l3.4 2" />
+  </svg>
+);
+
+/* a rough minute estimate, so a card can say how long it takes without
+   anyone having to time it: seconds per question, rounded up */
+const mins = (n, secs) => Math.max(1, Math.round((n * secs) / 60));
+
 /** The six modes, with the Khmer copy fixed. Only the stats come from outside. */
 export function defaultGroups(stats = {}, num = toKm) {
   const s = { cards: 0, lessonQuestions: 0, examQuestions: 0, examMinutes: 0, ...stats };
+  const clock = (n) => ({ icon: CLOCK, text: <>≈ {num(n)} នាទី</> });
+
   return [
     { label: "កាតហ្វឹកហាត់ · Card drills", layout: "cards", modes: [
-      { key:"flip", accent:"green", title:"រំលឹកកាត", line:<>កាត <b>{num(s.cards)}</b></> },
-      { key:"mcq", accent:"blue", title:"ជ្រើសរើសចម្លើយ", line:"ជ្រើសពី ៤" },
-      { key:"type", accent:"amber", title:"សរសេរចម្លើយ", line:"គ្មានជម្រើស" },
-      { key:"match", accent:"plum", title:"ផ្គូផ្គងគូ", line:"ប្រណាំងម៉ោង" },
+      { key:"flip", accent:"green", title:"រំលឹកកាត",
+        desc:"មើលមុខកាត នឹករកចម្លើយ រួចត្រឡប់មើល។",
+        meta:[{ text:<>កាត <b>{num(s.cards)}</b></> }, clock(mins(s.cards, 8))] },
+      { key:"mcq", accent:"blue", title:"ជ្រើសរើសចម្លើយ",
+        desc:"ជ្រើសចម្លើយត្រឹមត្រូវពីជម្រើសបួន។",
+        meta:[{ text:"ជម្រើស ៤" }, clock(mins(s.cards, 10))] },
+      { key:"type", accent:"amber", title:"សរសេរចម្លើយ",
+        desc:"វាយចម្លើយដោយខ្លួនឯង គ្មានជម្រើសជួយ។",
+        meta:[{ text:"គ្មានជម្រើស" }, clock(mins(s.cards, 14))] },
+      { key:"match", accent:"plum", title:"ផ្គូផ្គងគូ",
+        desc:"ភ្ជាប់គូឲ្យអស់ ក្នុងពេលកំណត់។",
+        meta:[{ text:"ប្រណាំងម៉ោង" }, clock(2)] },
     ]},
     { label: "ធ្វើតេស្តពេញលេញ · Full papers", layout: "papers", modes: [
       { key:"lesson", accent:"green", title:"លំហាត់អនុវត្ត",
-        line:<>សំណួរពីមេរៀន · <b>{num(s.lessonQuestions)}</b></> },
+        desc:"សំណួរដកស្រង់ពីមេរៀនដែលអ្នករៀនរួច — គ្មានកំណត់ពេល។",
+        meta:[{ text:<>សំណួរ <b>{num(s.lessonQuestions)}</b></> }, clock(mins(s.lessonQuestions, 40))] },
       { key:"mock", accent:"blue", title:"វិញ្ញាសា",
-        line:<>សំណួរ <b>{num(s.examQuestions)}</b> · <b>{num(s.examMinutes)}</b> នាទី</> },
+        desc:"វិញ្ញាសាពេញ ដូចថ្ងៃប្រឡងពិត តែពិន្ទុមិនត្រូវរាប់។",
+        meta:[{ text:<>សំណួរ <b>{num(s.examQuestions)}</b></> }, clock(s.examMinutes)] },
     ]},
   ];
 }
@@ -165,7 +205,18 @@ export default function PracticeModes({
                 <span className="pm-art">{ART[m.key]}</span>
                 <span>
                   <h3>{m.title}</h3>
-                  <p className="pm-line">{m.line}</p>
+                  {m.desc && <p className="pm-desc">{m.desc}</p>}
+                  {m.line && <p className="pm-line">{m.line}</p>}
+                  {m.meta && (
+                    <span className="pm-meta">
+                      {m.meta.map((chip, i) => (
+                        <span key={i} className="pm-chip">
+                          {chip.icon}
+                          {chip.text}
+                        </span>
+                      ))}
+                    </span>
+                  )}
                 </span>
               </button>
             ))}

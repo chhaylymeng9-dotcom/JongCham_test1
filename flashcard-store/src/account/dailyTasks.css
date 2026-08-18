@@ -1,6 +1,12 @@
 /* ---------- Daily tasks page ----------
 Same design system as dashboard.css / profile.css / vouchers.css (same
 variable names, same scoped-root convention).
+
+One column, two cards: the harvest and the task list. The page used to
+be a hero, two task panels, a dark apple wallet and a side note card —
+six containers, with the apple count printed in two of them. Everything
+about the harvest now lives in the hero, and the bonuses are rows in the
+task list rather than boxes bolted to the bottom of it.
 --------------------------------- */
 
 .dt-root {
@@ -31,12 +37,17 @@ variable names, same scoped-root convention).
 
 .dt-root, .dt-root *{ box-sizing: border-box; }
 .dt-root button:focus-visible{ outline: 2px solid var(--green); outline-offset: 2px; }
+/* fill the viewport: the app's global paper is the store's mint (#EDF4F2),
+   this page's is warm cream — a short page used to show both, split across
+   the fold. The account area hides the site header and footer, so the view
+   is the whole window. */
 .dt-root{
+  min-height: 100vh;
   background: var(--paper); color: var(--ink);
   font-family: var(--sans); font-size: 15px; line-height: 1.55;
-  -webkit-font-smoothing: antialiased; padding: 0 0 40px;
+  -webkit-font-smoothing: antialiased; padding: 0 0 48px;
 }
-.dt-wrap{ max-width: 1020px; margin: 0 auto; padding: 0 24px; }
+.dt-wrap{ max-width: 720px; margin: 0 auto; padding: 0 24px; }
 
 .dt-bar-top{ display: flex; align-items: center; gap: 14px; padding: 28px 0 6px; }
 .dt-close{
@@ -45,18 +56,68 @@ variable names, same scoped-root convention).
 }
 .dt-close:hover{ border-color: var(--hair-2); background: #FCFBF7; }
 .dt-bar-top h1{ font-family: var(--type); font-size: 22px; font-weight: 700; letter-spacing: -.03em; margin: 0; }
-.dt-lede{ color: var(--muted); font-size: 13.5px; margin: 0 0 26px; max-width: 58ch; }
+.dt-lede{ color: var(--muted); font-size: 13.5px; margin: 0 0 22px; max-width: 58ch; }
 
-.dt-cols{ display: grid; grid-template-columns: 1fr 300px; gap: 18px; align-items: start; }
+/* ---------------- the harvest hero ----------------
+   Tree and sack (moved here from the vouchers page — the streak that
+   grows the tree is a daily-task concern), the count, the day line and
+   how far the next reward is. The grove markup is AppleTree.jsx's, so
+   its .jv-* inner classes are restated here scoped under .dt-root. */
+.dt-hero{
+  background: var(--sheet); border: 1px solid var(--hair); border-radius: 22px;
+  padding: 22px; margin-bottom: 16px; display: flex; align-items: center; gap: 26px;
+}
+.dt-root .jv-grove{
+  position: relative; flex: none; width: 190px; height: 210px; border-radius: 18px;
+  overflow: hidden; background: linear-gradient(#F1EFE7, #EAE6DA); border: 1px solid var(--hair);
+  display: grid; place-items: end center;
+}
+.dt-root .jv-grove .jv-tree-svg{ position: relative; z-index: 1; }
+.dt-root .jv-sack{ position: absolute; left: 57%; bottom: 18px; z-index: 2; }
+.dt-root .jv-over{
+  position: absolute; top: -8px; right: -14px; background: var(--apple); color: #fff;
+  font-family: var(--type); font-size: 10px; font-weight: 700; border-radius: 999px;
+  padding: 3px 7px; box-shadow: 0 3px 9px rgba(28,26,21,.25);
+}
+.dt-hinfo{ flex: 1; min-width: 0; }
+.dt-count{ display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.dt-count b{ font-family: var(--type); font-size: 42px; font-weight: 700; letter-spacing: -.045em; line-height: 1; }
+.dt-count .dt-u{ font-family: var(--type); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--apple); }
+.dt-hsub{ margin: 0 0 14px; font-size: 13.5px; color: var(--muted); }
+.dt-dayline{ display: flex; align-items: center; gap: 12px; padding-top: 13px; border-top: 1px solid var(--hair); }
+.dt-dayk{ font-family: var(--type); font-size: 18px; font-weight: 700; letter-spacing: -.03em; }
+.dt-dayt{ flex: 1; font-size: 12.5px; color: var(--muted); }
 
-.dt-panel{ background: var(--sheet); border: 1px solid var(--hair); border-radius: 20px; overflow: hidden; margin-bottom: 18px; }
-.dt-phead{ display: flex; align-items: center; gap: 12px; padding: 17px 22px; border-bottom: 1px solid var(--hair); }
+/* how close the next voucher is — the old dark wallet card, folded in */
+.dt-next{ margin-top: 14px; }
+.dt-nrow{ display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px;
+  color: var(--muted); margin-bottom: 7px; }
+.dt-nrow span{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dt-nrow b{ flex: none; color: var(--ink); font-weight: 600; }
+.dt-nbar{ height: 6px; background: var(--track); border-radius: 99px; overflow: hidden; }
+.dt-nbar i{ display: block; height: 100%; border-radius: 99px; background: var(--green);
+  transition: width .7s var(--e); }
+.dt-link{
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 15px; padding: 0;
+  border: 0; background: none; cursor: pointer; color: var(--green);
+  font: inherit; font-size: 13.5px; font-weight: 600;
+}
+.dt-link svg{ transition: transform .16s var(--e); }
+.dt-link:hover svg{ transform: translateX(3px); }
+
+/* ---------------- the one panel ---------------- */
+.dt-panel{ background: var(--sheet); border: 1px solid var(--hair); border-radius: 22px;
+  overflow: hidden; margin-bottom: 18px; }
+.dt-phead{ display: flex; align-items: baseline; gap: 12px; padding: 17px 22px 13px; }
 .dt-phead h2{ font-family: var(--type); font-size: 14px; font-weight: 700; margin: 0; flex: 1; }
-.dt-phead .dt-when{ font-family: var(--type); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
-.dt-pbody{ padding: 6px 22px 4px; }
+.dt-phead .dt-when{ font-family: var(--type); font-size: 10px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--faint); }
+/* the "This week" heading, second half of the same card */
+.dt-phead.dt-split{ border-top: 1px solid var(--hair); margin-top: 4px; padding-top: 18px; }
+.dt-pbody{ padding: 0 22px 6px; }
 
 /* ---------------- a task row ---------------- */
-.dt-task{ display: flex; align-items: center; gap: 15px; padding: 16px 0; border-bottom: 1px solid var(--hair); }
+.dt-task{ display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid var(--hair); }
 .dt-task:last-child{ border-bottom: 0; }
 .dt-box{
   width: 26px; height: 26px; flex: none; border-radius: 9px; border: 1.8px solid var(--hair-2);
@@ -70,6 +131,12 @@ variable names, same scoped-root convention).
 .dt-bar{ display: block; height: 4px; background: var(--track); border-radius: 99px; overflow: hidden; margin-top: 8px; max-width: 230px; }
 .dt-bar i{ display: block; height: 4px; border-radius: 99px; background: var(--green); transition: width .6s var(--e); }
 
+/* a bonus row — same rhythm as a task, dashed box so it reads as extra */
+.dt-task.dt-boost .dt-box{ border-style: dashed; background: none; }
+.dt-task.dt-boost b{ font-weight: 500; color: var(--muted); }
+.dt-task.dt-boost.dt-done .dt-box{ border-style: solid; }
+.dt-task.dt-boost.dt-done b{ color: var(--muted); }
+
 .dt-reward{
   display: inline-flex; align-items: center; gap: 6px; flex: none; font-family: var(--type);
   font-size: 13.5px; font-weight: 700; color: var(--apple); background: var(--apple-soft);
@@ -77,16 +144,8 @@ variable names, same scoped-root convention).
 }
 .dt-task.dt-done .dt-reward{ background: var(--green-soft); border-color: var(--green-line); color: var(--green); }
 
-/* ---------------- the day/week bonus ---------------- */
-.dt-bonus{ display: flex; align-items: center; gap: 15px; padding: 16px 22px; background: var(--paper); border-top: 1px solid var(--hair); }
-.dt-bonus.dt-ready .dt-reward{ background: var(--apple); border-color: var(--apple); color: #fff; }
-.dt-bonus .dt-t{ flex: 1; }
-.dt-bonus b{ display: block; font-size: 14px; font-weight: 600; }
-.dt-bonus span{ font-size: 12.5px; color: var(--muted); }
-.dt-weekbonus{ margin: 16px -22px -20px; border-radius: 0; }
-
 /* ---------------- the week ---------------- */
-.dt-week{ display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; padding: 4px 0; }
+.dt-week{ display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; padding: 2px 0 12px; }
 .dt-wd{ text-align: center; }
 .dt-wd em{ display: block; font-family: var(--type); font-size: 9.5px; font-style: normal; letter-spacing: .1em; color: var(--faint); margin-bottom: 7px; }
 .dt-dot{
@@ -96,35 +155,12 @@ variable names, same scoped-root convention).
 .dt-dot.dt-on{ background: var(--green); color: #fff; }
 .dt-dot.dt-today{ background: var(--sheet); border-color: var(--green); border-style: dashed; color: var(--green); }
 
-/* ---------------- side: apple wallet ---------------- */
-.dt-wallet{
-  background: var(--green); color: #F1EEE7; border: 1px solid var(--green); border-radius: 20px;
-  padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden;
-}
-.dt-wallet::after{ content: ""; position: absolute; right: -70px; top: -80px; width: 210px; height: 210px; border: 1px solid rgba(241,238,231,.12); border-radius: 50%; }
-.dt-idx{ font-family: var(--type); font-size: 10px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: rgba(241,238,231,.42); display: block; margin-bottom: 14px; }
-.dt-wcount{ display: flex; align-items: baseline; gap: 10px; position: relative; }
-.dt-wcount b{ font-family: var(--type); font-size: 48px; font-weight: 700; letter-spacing: -.05em; line-height: 1; color: #fff; }
-.dt-wcount span{ font-family: var(--type); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--sage); }
-.dt-wallet p{ margin: 12px 0 0; font-size: 12.5px; color: rgba(241,238,231,.6); position: relative; }
-.dt-wnext{ margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(241,238,231,.15); position: relative; }
-.dt-wrow{ display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: rgba(241,238,231,.65); margin-bottom: 7px; }
-.dt-wrow span{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dt-wrow b{ color: #fff; font-weight: 600; flex: none; }
-.dt-wbar{ height: 5px; background: rgba(241,238,231,.14); border-radius: 99px; overflow: hidden; }
-.dt-wbar i{ display: block; height: 5px; border-radius: 99px; background: var(--sage); transition: width .7s var(--e); }
-.dt-wgo{
-  width: 100%; margin-top: 16px; height: 40px; border: 0; border-radius: 10px; background: rgba(241,238,231,.14);
-  color: #fff; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; position: relative;
-  transition: background-color .18s var(--e);
-}
-.dt-wgo:hover{ background: rgba(241,238,231,.22); }
-
-.dt-sidecard{ background: var(--sheet); border: 1px solid var(--hair); border-radius: 18px; padding: 20px; }
-.dt-sidecard h3{ font-family: var(--type); font-size: 13.5px; margin: 0 0 12px; }
-.dt-sidecard ul{ margin: 0; padding-left: 17px; font-size: 12.5px; color: var(--muted); }
-.dt-sidecard li{ margin-bottom: 7px; }
-.dt-sidecard li b{ color: var(--ink); font-weight: 600; }
+/* ---------------- the rules of the game, as a footnote ---------------- */
+.dt-notes{ margin: 0; padding: 0 4px; list-style: none; font-size: 12.5px; color: var(--muted); }
+.dt-notes li{ position: relative; padding-left: 16px; margin-bottom: 6px; }
+.dt-notes li::before{ content: ""; position: absolute; left: 3px; top: 8px; width: 4px; height: 4px;
+  border-radius: 50%; background: var(--hair-2); }
+.dt-notes b{ color: var(--ink); font-weight: 600; }
 
 .dt-toast{
   position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 120px); z-index: 80;
@@ -133,6 +169,43 @@ variable names, same scoped-root convention).
 }
 .dt-toast.dt-show{ transform: translate(-50%, 0); }
 
-@media (max-width: 880px){ .dt-cols{ grid-template-columns: 1fr; } }
-@media (max-width: 560px){ .dt-wrap{ padding: 0 16px; } }
+@media (max-width: 560px){
+  .dt-wrap{ padding: 0 16px; }
+  .dt-hero{ flex-direction: column; align-items: stretch; text-align: center; gap: 18px; padding: 18px; }
+  .dt-root .jv-grove{ width: 100%; margin: 0 auto; }
+  .dt-count{ justify-content: center; }
+  .dt-dayline{ justify-content: center; flex-wrap: wrap; }
+  .dt-nrow{ text-align: left; }
+  .dt-link{ align-self: center; }
+  .dt-hinfo{ display: flex; flex-direction: column; }
+  .dt-task{ gap: 12px; }
+  .dt-phead, .dt-pbody{ padding-left: 16px; padding-right: 16px; }
+}
 @media (prefers-reduced-motion: reduce){ .dt-root *{ transition: none !important; } }
+
+/* ---------------- the Learn rail's cards, on phones ----------------
+   Chapter progress and Today's goal live in the Learn view's right rail.
+   Below 960px that rail drops beneath the illustrated map, where they go
+   unseen — so they are relayed onto this page instead and hidden in the
+   rail. Above 960px the rail still owns them and this block is off. */
+.dt-relay{ display: none; }
+@media (max-width: 960px){
+  .dt-relay{ display: grid; gap: 12px; margin-bottom: 18px; }
+  .dt-relay .dt-mini{ padding: 16px 18px 18px; margin: 0; }
+  .dt-relay .dt-mini h2{ font-family: var(--type); font-size: 10.5px; font-weight: 700;
+        letter-spacing: .16em; text-transform: uppercase; color: var(--faint); margin: 0 0 12px; }
+  .dt-mbar{ height: 10px; border-radius: 999px; background: var(--track); overflow: hidden; }
+  .dt-mbar span{ display: block; height: 100%; border-radius: 999px; background: #4E9B60;
+        transition: width .5s var(--e); }
+  .dt-mbar.dt-gold span{ background: linear-gradient(90deg, #F0C255, #D9A22F); }
+  .dt-mnote{ margin: 9px 0 0; font-size: 13px; color: var(--muted); }
+  .dt-meyebrow{ display: block; margin-top: 14px; font-family: var(--type); font-size: 10px;
+        font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+  .dt-mnext{ margin: 4px 0 0; font-size: 15px; font-weight: 700; color: var(--ink); }
+  .dt-mgo{ width: 100%; margin-top: 14px; padding: 12px 0; border: 0; border-radius: 14px;
+        background: #4E9B60; box-shadow: 0 4px 0 #3B8A4B; color: #fff; cursor: pointer;
+        font-family: var(--sans); font-size: 13px; font-weight: 800; letter-spacing: .08em;
+        text-transform: uppercase; transition: background .15s var(--e), transform .12s var(--e); }
+  .dt-mgo:hover{ background: #55B069; }
+  .dt-mgo:active{ transform: translateY(2px); box-shadow: 0 1px 0 #3B8A4B; }
+}

@@ -263,7 +263,9 @@ export function claimReward(rewardId, cost) {
 A separate balance from apples, spent from the Learn view to add a new
 course directly (see CoursePicker in LessonPath.jsx) rather than
 through a real-money checkout. Seeded so the picker is usable right
-away — there's no earning rule yet, only spending. */
+away. Three ways in, all through the star shop (StarShop.jsx, opened by
+clicking the stars pill): a simulated top-up purchase, one free daily
+claim, and trading apples from the harvest. */
 const STARS_SEED = 1000;
 
 export function getStars() {
@@ -279,6 +281,84 @@ export function spendStars(amount) {
   if (balance < amount) return false;
   writeStore("stars_balance", balance - amount);
   return true;
+}
+
+// Credits the balance. The caller decides where the stars came from —
+// this doesn't take payment (the shop's checkout is a simulation, same
+// as Plans.jsx's) and doesn't check anything.
+export function addStars(amount) {
+  if (!(amount > 0)) return false;
+  writeStore("stars_balance", getStars() + Math.round(amount));
+  return true;
+}
+
+/* the free daily claim — one per calendar day, keyed by date so it
+   resets on its own, the same trick recordCardsStudied uses. */
+export const DAILY_STARS = 50;
+
+export function dailyStarsClaimed() {
+  return readStore("stars_daily_claim", null) === dateKey();
+}
+
+// Returns how many stars were credited, or 0 if today's is already taken.
+export function claimDailyStars() {
+  if (dailyStarsClaimed()) return 0;
+  writeStore("stars_daily_claim", dateKey());
+  addStars(DAILY_STARS);
+  return DAILY_STARS;
+}
+
+/* apples → stars. Apples are the slow currency (a streak past 100 days,
+   or daily tasks) and normally buy vouchers via claimReward; this is a
+   second thing to spend them on, so it books the cost the same way — by
+   adding to apples_spent, which getHarvest() subtracts. */
+export const STARS_PER_APPLE = 200;
+
+// Returns the stars credited, or 0 if the harvest can't cover it.
+export function exchangeApplesForStars(apples = 1) {
+  if (!(apples > 0)) return 0;
+  if (getHarvest().available < apples) return 0;
+  writeStore("apples_spent", readStore("apples_spent", 0) + apples);
+  const stars = apples * STARS_PER_APPLE;
+  addStars(stars);
+  return stars;
+}
+
+/* ---------- the Pro free trial ----------
+One free week of Pro, started from the profile or the plans page and kept
+per browser (the same limit the activation lock has — clearing site data
+resets it, real enforcement needs an account server). Like session.plan
+itself this is cosmetic: nothing in the app is actually gated, so the
+trial changes what the plan panel says, not what works. */
+export const TRIAL_DAYS = 7;
+
+export function getProTrial() {
+  const startedAt = readStore("pro_trial_started", null);
+  if (typeof startedAt !== "string") {
+    return { started: false, active: false, expired: false, daysLeft: 0, startedAt: null, endsAt: null };
+  }
+  const start = new Date(startedAt);
+  if (Number.isNaN(start.getTime())) {
+    return { started: false, active: false, expired: false, daysLeft: 0, startedAt: null, endsAt: null };
+  }
+  const endsAt = new Date(start.getTime() + TRIAL_DAYS * 864e5);
+  const msLeft = endsAt.getTime() - Date.now();
+  return {
+    started: true,
+    active: msLeft > 0,
+    expired: msLeft <= 0,
+    // a trial with 30 minutes left still reads as "1 day left", not "0"
+    daysLeft: Math.max(0, Math.ceil(msLeft / 864e5)),
+    startedAt,
+    endsAt: endsAt.toISOString(),
+  };
+}
+
+// Returns the fresh trial, or null if this browser already had one.
+export function startProTrial() {
+  if (readStore("pro_trial_started", null)) return null;
+  writeStore("pro_trial_started", new Date().toISOString());
+  return getProTrial();
 }
 
 /* ---------- daily goal ----------

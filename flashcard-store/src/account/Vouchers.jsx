@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { REWARDS } from "../data/rewards.js";
-import { AppleGrove } from "./AppleTree.jsx";
 import "./vouchers.css";
 
 /* ---------- Vouchers ----------
@@ -91,24 +90,10 @@ function apples(n) {
   return `${n} apple${n === 1 ? "" : "s"}`;
 }
 
-export default function Vouchers({ harvest, claimedRewards, vouchers, streak = 0, onClaimReward, onBack, onOpenDailyTasks }) {
+export default function Vouchers({ harvest, claimedRewards, vouchers, onClaimReward, onBack, onOpenDailyTasks }) {
   const [filter, setFilter] = useState("all");
   const [detail, setDetail] = useState(null);
   const [toast, setToast] = useState("");
-
-  // the tree's own state text — mirrors the mockup's day-driven copy, but
-  // "picked since day 100" uses the real apple count (which can also
-  // include daily-task apples) rather than recomputing it from the day
-  const dayLabel =
-    streak === 0 ? "No streak — the tree waits" :
-    streak < 100 ? `${100 - streak} days to your first apple` :
-    streak === 100 ? "Your tree is fruiting" :
-    "One apple a day, every day you study";
-  const harvestSub =
-    streak === 0 ? "Your apples stay safe. Start again to grow the tree back." :
-    streak < 100 ? "Reach 100 days and your tree starts to fruit." :
-    streak === 100 ? "From tomorrow, one apple falls every day you study." :
-    `Picked ${apples(harvest.available)} since day 100.`;
 
   const codeFor = (rewardId) => vouchers.find((v) => v.rewardId === rewardId)?.code ?? null;
   const claimedAtFor = (rewardId) => vouchers.find((v) => v.rewardId === rewardId)?.claimedAt ?? null;
@@ -144,21 +129,6 @@ export default function Vouchers({ harvest, claimedRewards, vouchers, streak = 0
             <CloseIcon />
           </button>
           <h1>Vouchers &amp; offers</h1>
-        </div>
-
-        <div className="jv-harvest">
-          <AppleGrove day={streak} apples={harvest.available} />
-          <div className="jv-hinfo">
-            <div className="jv-count">
-              <b>{harvest.available}</b>
-              <span className="jv-u">apples</span>
-            </div>
-            <p className="jv-hsub">{harvestSub}</p>
-            <div className="jv-dayline">
-              <span className="jv-dayk">Day {streak}</span>
-              <span className="jv-dayt">{dayLabel}</span>
-            </div>
-          </div>
         </div>
 
         <div className="jv-filters">

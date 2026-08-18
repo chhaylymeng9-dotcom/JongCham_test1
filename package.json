@@ -1,0 +1,29 @@
+{
+  "name": "flashcard-store-(3)",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chhaylymeng9-dotcom/JongCham.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chhaylymeng9-dotcom/JongCham/issues"
+  },
+  "homepage": "https://github.com/chhaylymeng9-dotcom/JongCham#readme",
+  "dependencies": {
+    "ai": "^7.0.66",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
+}

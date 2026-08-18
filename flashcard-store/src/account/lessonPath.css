@@ -28,9 +28,11 @@
 /* ---------- page shell: left rail + main column ----------
    A Duolingo-style pinned rail on the left; the path scrolls beside it.
    The floating app nav is hidden while the rail is on screen, so the
-   rail only needs a small top margin for its logo. Hidden below 960px,
-   where the path takes the full width. */
-.lp-root .lp-shell{display:flex;align-items:flex-start}
+   rail only needs a small top margin for its logo. Below 960px the rail
+   becomes a bottom tab bar rather than disappearing — App.jsx hides its
+   own nav for the whole signed-in account page, so hiding this one too
+   left phones with no way out of the Learn view. */
+.lp-root .lp-shell{display:flex;align-items:flex-start;min-height:100vh}
 /* clip keeps the scenery from spilling over the rail; `clip` (not
    `hidden`) leaves the sticky header working against the viewport.
    `relative` anchors the scenery, which now lives here as a backdrop. */
@@ -51,13 +53,40 @@
 .lp-root .lp-logo{display:block;padding:0 12px;font-family:var(--type);font-size:23px;
        font-weight:700;letter-spacing:-.04em;color:#4CA45F}
 .lp-root .lp-nav{display:flex;flex-direction:column;gap:6px;margin-top:20px}
-.lp-root .lp-item{display:flex;align-items:center;gap:13px;width:100%;padding:9px 12px;
-       border:2px solid transparent;border-radius:12px;background:none;cursor:pointer;
+/* the rail buttons. Hover nudges the row across, pops its icon and wipes
+   a soft wash in from the left — enough motion to feel like a game menu,
+   short enough not to get in the way of someone who clicks fast.
+
+   The wash is a background the element paints itself, grown with
+   background-size. As an overlaying pseudo-element it covered the label:
+   the icon is an element and could be lifted above it, but the label is a
+   bare text node, and text nodes can't take a z-index. */
+.lp-root .lp-item{position:relative;display:flex;align-items:center;gap:13px;width:100%;padding:9px 12px;
+       border:2px solid transparent;border-radius:12px;cursor:pointer;
+       background:linear-gradient(#FFFFFF,#FFFFFF) no-repeat left center / 0% 100%;
+       /* the row keeps a 2px transparent border for its active state, and a
+          background only reaches the padding box by default — leaving that
+          border strip paper-coloured, a pale line above and below the wash */
+       background-origin:border-box;background-clip:border-box;
        text-align:left;font-family:var(--sans);font-size:13px;font-weight:700;
        letter-spacing:.06em;text-transform:uppercase;color:#8A8474;
-       transition:background .15s var(--e),color .15s var(--e),border-color .15s var(--e)}
-.lp-root .lp-item:hover{background:#EFEADD;color:var(--ink)}
-.lp-root .lp-item.active{border-color:var(--hair-2);background:var(--sheet);color:var(--ink)}
+       transition:background-size .26s var(--e),color .15s var(--e),
+                  border-color .15s var(--e),box-shadow .18s var(--e),transform .18s var(--pop)}
+.lp-root .lp-item:hover{background-size:100% 100%;color:var(--ink);transform:translateX(3px);
+       border-color:var(--hair);box-shadow:0 2px 8px rgba(28,26,21,.07)}
+.lp-root .lp-item:active{transform:translateX(3px) scale(.97)}
+.lp-root .lp-item .lp-ic{transition:transform .28s var(--pop)}
+.lp-root .lp-item:hover .lp-ic{transform:scale(1.16) rotate(-7deg)}
+
+/* the page you are on. The white card is the hover state now, so "you are
+   here" is carried by the green type and a tab on the rail's edge — it was
+   odd for LEARN to sit in a permanent white box you couldn't hover away. */
+.lp-root .lp-item.active{background-size:0% 100%;border-color:transparent;color:#3E8F52}
+.lp-root .lp-item.active .lp-ic{color:#3E8F52}
+.lp-root .lp-item.active::after{content:"";position:absolute;left:-12px;top:50%;
+       width:4px;height:20px;border-radius:0 4px 4px 0;background:#4CA45F;
+       transform:translateY(-50%)}
+.lp-root .lp-item.active:hover{transform:none;box-shadow:none;background-size:100% 100%}
 
 /* the "More" flyout — portalled to <body> (see .pomo-panel below for why),
    so it's styled with plain hex values instead of .lp-root's CSS vars */
@@ -80,9 +109,8 @@
 @media (min-width:961px){
   .lp-root .top .col,.lp-root .lp-main > .col{margin:0 auto}
 }
-@media (max-width:960px){
-  .lp-root .lp-side{display:none}
-}
+/* (below 960px the side rail turns into a bottom tab bar — see the
+   "rail as a bottom tab bar" block further down) */
 
 /* ---------- sticky deck header ----------
    Compact rounded bar like the reference: back arrow and a small
@@ -97,9 +125,12 @@
            color:#fff;cursor:pointer;display:grid;place-items:center;flex:none}
 .lp-root .top .back:hover{background:rgba(255,255,255,.15)}
 .lp-root .top .t{flex:1;min-width:0}
-.lp-root .top .lab{font-family:var(--type);font-size:10px;font-weight:700;letter-spacing:.18em;
-          text-transform:uppercase;color:rgba(255,255,255,.75);display:block}
-.lp-root .top h1{font-size:19px;color:#fff;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* the header reads as a title, not as a receipt — the typewriter face is
+   right for numbers and labels, but the course name is a name */
+.lp-root .top .lab{font-family:var(--sans);font-size:10.5px;font-weight:800;letter-spacing:.16em;
+          text-transform:uppercase;color:rgba(255,255,255,.8);display:block}
+.lp-root .top h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.01em;
+          color:#fff;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ---------- the winding path ----------
    Narrower than the prototype's 700px: the right rail now takes the
@@ -109,8 +140,14 @@
 /* the scenery is the page backdrop: flush against both rails and the
    top/bottom edges instead of a rounded card. It stops at .lp-main's
    right edge on its own, so no inset is needed at any width. */
-.lp-root .scene{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.lp-root .scene svg{position:absolute;left:0;width:100%;display:block}
+/* the tiled meadow (MEADOW_TILE in LessonPath.jsx) fills the whole
+   backdrop; the mountains-and-sky drawing sits on top of its first
+   stretch, at its own proportions rather than stretched to the height of
+   however many lessons the course has */
+.lp-root .scene{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+       background-color:#A3CFA2;background-repeat:repeat-y;background-position:top left;
+       background-size:100% auto}
+.lp-root .scene svg{position:absolute;top:0;left:0;width:100%;height:auto;display:block}
 
 /* the dotted trail that joins the nodes */
 /* behind the nodes — the dots were being drawn over the circles */
@@ -284,17 +321,27 @@
 .lp-root .lp-rail-scroll{flex:1;min-height:0;overflow-y:auto;display:flex;
        flex-direction:column;gap:16px}
 
-/* the stat strip across the top of the rail */
-.lp-root .lp-stats{display:flex;gap:8px}
-.lp-root .lp-stat{flex:none;min-width:150px;height:70px;box-sizing:border-box;
-       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-       padding:10px 18px;border:2px solid var(--hair);border-radius:14px;background:var(--sheet);
-       cursor:pointer;transition:border-color .15s var(--e)}
-.lp-root .lp-stat:hover{border-color:var(--green-line)}
-.lp-root .lp-stat b{font-family:var(--type);font-size:19px;font-weight:700;letter-spacing:-.03em;
-       color:var(--ink);line-height:1.1}
-.lp-root .lp-stat i{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.08em;
-       text-transform:uppercase;color:var(--muted);white-space:nowrap}
+/* the stat strip across the top of the rail.
+   It holds three 150px-wide pills (course picker, streak, stars) inside a
+   320px rail, so it has to wrap and let them shrink — left rigid, the
+   strip spilled past the rail and gave the whole page a sideways scroll. */
+.lp-root .lp-stats{display:flex;flex-wrap:wrap;gap:8px}
+.lp-root .lp-stats > *{flex:1 1 128px;min-width:0;max-width:100%}
+.lp-root .lp-stats .drop-wrap{display:flex}
+.lp-root .lp-stats .course-btn,.lp-root .lp-stats .pill{min-width:0;width:100%}
+/* the streak pill — icon beside the count, the same shape the stars pill
+   uses, so the tree gets room to be a tree instead of a green dot */
+.lp-root .lp-stat{flex:1 1 128px;min-width:0;height:70px;box-sizing:border-box;
+       display:flex;flex-direction:row;align-items:center;justify-content:center;gap:9px;
+       padding:10px 14px;border:2px solid var(--hair);border-radius:14px;background:var(--sheet);
+       cursor:pointer;transition:border-color .15s var(--e),transform .14s var(--e)}
+.lp-root .lp-stat:hover{border-color:var(--green-line);transform:translateY(-1px)}
+.lp-root .lp-stat > svg{flex:none}
+.lp-root .lp-stat-t{min-width:0;text-align:center}
+.lp-root .lp-stat b{display:block;font-family:var(--type);font-size:19px;font-weight:700;
+       letter-spacing:-.03em;color:var(--ink);line-height:1.1}
+.lp-root .lp-stat i{display:block;margin-top:2px;font-style:normal;font-size:9.5px;font-weight:800;
+       letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 
 .start-pop{position:absolute;top:calc(100% + 16px);left:50%;transform:translateX(-50%);
            width:230px;z-index:60;background:#3E8F52;border-radius:16px;
@@ -315,27 +362,29 @@
 .start-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(31,29,24,.16)}
 
 /* a card in the rail */
-.lp-root .lp-block{padding:18px;border:2px solid var(--hair);border-radius:18px;background:var(--sheet)}
-.lp-root .lp-block h2{font-family:var(--type);font-size:13px;font-weight:700;letter-spacing:.1em;
+/* the rail blocks sit beside the map, not on their own page — compact
+   enough that progress, the goal and the trial all fit without scrolling */
+.lp-root .lp-block{padding:14px 15px;border:2px solid var(--hair);border-radius:16px;background:var(--sheet)}
+.lp-root .lp-block h2{font-family:var(--type);font-size:11.5px;font-weight:700;letter-spacing:.1em;
        text-transform:uppercase;color:var(--body)}
-.lp-root .lp-block .lp-bar{margin-top:12px}
+.lp-root .lp-block .lp-bar{margin-top:9px}
 
 /* progress bars — green for the chapter, brass for the daily goal */
-.lp-root .lp-bar{height:10px;border-radius:999px;background:var(--track);overflow:hidden}
+.lp-root .lp-bar{height:8px;border-radius:999px;background:var(--track);overflow:hidden}
 .lp-root .lp-bar > span{display:block;height:100%;border-radius:999px;background:#4CA45F;
        transition:width .4s var(--e)}
 .lp-root .lp-bar.gold > span{background:var(--brass-mid)}
 
-.lp-root .lp-note{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
-.lp-root .lp-eyebrow{display:block;margin-top:16px;font-family:var(--type);font-size:10px;
+.lp-root .lp-note{margin:6px 0 0;font-size:12px;line-height:1.45;color:var(--muted)}
+.lp-root .lp-eyebrow{display:block;margin-top:12px;font-family:var(--type);font-size:10px;
        font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
-.lp-root .lp-next{margin:2px 0 0;font-size:15px;font-weight:700;color:var(--ink);line-height:1.35}
+.lp-root .lp-next{margin:2px 0 0;font-size:14px;font-weight:700;color:var(--ink);line-height:1.35}
 
 /* the rail's buttons: the same pressed-pill language as the node cards,
    scaled down to fit the column */
 .lp-root .lp-go{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
-       height:46px;margin-top:14px;border:0;border-radius:999px;background:#4CA45F;
-       font:inherit;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+       height:40px;margin-top:11px;border:0;border-radius:999px;background:#4CA45F;
+       font:inherit;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
        color:#fff;cursor:pointer;box-shadow:0 4px 0 #3B8A4B;transition:all .12s var(--e)}
 .lp-root .lp-go:hover{background:#55B069}
 .lp-root .lp-go:active{transform:translateY(2px);box-shadow:0 1px 0 #3B8A4B}
@@ -344,15 +393,140 @@
 .lp-root .lp-go.ghost:active{box-shadow:0 1px 0 var(--brass-line)}
 .lp-root .lp-go-ic{display:grid;place-items:center;width:21px;height:21px;flex:none}
 
+/* ---------- a course with no lessons yet ----------
+   Sits where the path would be, on the same scenery, so the page still
+   looks like the Learn view rather than a broken one. */
+.lp-root .lp-empty{position:relative;z-index:1;max-width:420px;margin:80px auto 120px;
+       padding:26px 24px 24px;text-align:center;background:rgba(255,255,255,.94);
+       border:2px solid var(--hair);border-radius:22px;
+       box-shadow:0 10px 30px rgba(28,26,21,.12)}
+.lp-root .lp-empty-mark{display:grid;place-items:center;width:60px;height:60px;margin:0 auto 14px;
+       border-radius:20px;background:var(--track)}
+.lp-root .lp-empty h2{font-family:var(--type);font-size:19px;color:var(--green);margin:0 0 8px}
+.lp-root .lp-empty p{margin:0;font-size:13.5px;line-height:1.6;color:var(--body)}
+.lp-root .lp-empty-acts{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.lp-root .lp-empty-acts .lp-go{margin-top:0}
+
+/* ---------- the Pro trial card in the rail ----------
+   The offer where people actually are. Gold like the rest of the
+   plan/star furniture, quieter than the Continue button so it never
+   competes with the thing they came here to do. */
+.lp-root .lp-trial{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;
+       border:2px solid var(--brass-line);border-radius:16px;background:var(--brass-soft);
+       cursor:pointer;text-align:left;font:inherit;color:var(--brass);
+       transition:transform .16s var(--e),box-shadow .16s var(--e),border-color .16s var(--e)}
+.lp-root .lp-trial:hover{transform:translateY(-2px);border-color:var(--brass-mid);
+       box-shadow:0 6px 16px rgba(201,164,75,.24)}
+.lp-root .lp-trial:active{transform:translateY(1px)}
+.lp-root .lp-trial.on{background:#FFF9E9}
+.lp-root .lp-trial-mark{width:34px;height:34px;flex:none;display:grid;place-items:center;
+       border-radius:11px;background:#fff;border:1px solid var(--brass-line)}
+.lp-root .lp-trial-t{flex:1;min-width:0}
+.lp-root .lp-trial-t b{display:block;font-family:var(--sans);font-size:13px;font-weight:800;
+       letter-spacing:.01em;color:#6E5720;line-height:1.3}
+.lp-root .lp-trial-t span{display:block;margin-top:2px;font-size:11.5px;color:#94794A}
+.lp-root .lp-trial > svg{flex:none;transition:transform .16s var(--e)}
+.lp-root .lp-trial:hover > svg{transform:translateX(3px)}
+
 /* below 1180px the rail would squeeze the path, so it drops under it and
-   spreads to the full width instead of pinning */
+   spreads to the full width instead of pinning.
+   Both columns need an explicit 100% flex-basis to break the line: the
+   rail is flex:none, so with only `width:100%` the main column (min-width:0)
+   simply shrank to nothing beside it instead of pushing it onto its own row —
+   which is what collapsed the leaderboard into a sliver. And the rail's
+   100vh has to go once it is static, or it leaves a viewport-tall gap. */
 @media (max-width:1180px){
   .lp-root .lp-shell{flex-wrap:wrap}
-  .lp-root .lp-rail{position:static;width:100%;max-height:none;overflow:visible;
+  .lp-root .lp-main{flex:1 1 100%;margin:0 auto}
+  .lp-root .lp-main.lp-main--board{max-width:none}
+  .lp-root .lp-rail{position:static;flex:1 1 100%;width:100%;height:auto;max-height:none;
+         overflow:visible;border-left:0;
          padding:0 24px 32px;flex-direction:row;flex-wrap:wrap;align-items:flex-start}
   .lp-root .lp-stats{flex:1 1 100%}
-  .lp-root .lp-rail-scroll{flex:1 1 100%;overflow:visible;flex-direction:row;flex-wrap:wrap}
+  .lp-root .lp-stats > *{flex:0 1 auto}
+  .lp-root .lp-rail-scroll{flex:1 1 100%;overflow:visible;flex-direction:row;flex-wrap:wrap;
+         align-items:flex-start}
   .lp-root .lp-block{flex:1 1 260px}
+  /* the trial card joins the row of rail cards rather than stretching
+     the full width of the page on its own */
+  .lp-root .lp-trial{flex:1 1 260px}
+}
+
+/* ---------- the rail as a bottom tab bar ----------
+   Under 960px the left column can't stay: it becomes the phone-style bar
+   pinned to the bottom, icons over short labels. .lp-shell keeps clear of
+   it with bottom padding, and the leaderboard's own sticky bar rides
+   above it rather than underneath. */
+@media (max-width:960px){
+  /* the fixed stat bar is 88px tall with its padding — the shell has to
+     clear that, or the first thing under it slides beneath the bar */
+  .lp-root .lp-shell{padding-bottom:78px;padding-top:74px}
+
+  /* ---------- the stat strip as a phone header ----------
+     Duolingo puts the course, the streak and the currency in one compact
+     row across the top. The markup keeps them in the right rail (which
+     sits under the map on small screens), so they are lifted out of flow
+     and pinned up there instead — labels off, icon + number only. */
+  .lp-root .lp-stats{position:fixed;top:0;left:0;right:0;z-index:55;
+         flex-wrap:nowrap;gap:8px;align-items:center;padding:8px 12px;
+         background:var(--paper);border-bottom:2px solid var(--hair)}
+  /* undo the rail layout's stretch: in one row they size to their content */
+  .lp-root .lp-stats > *{flex:0 0 auto;width:auto}
+  .lp-root .lp-stats .course-btn,.lp-root .lp-stats .pill{width:auto}
+  .lp-root .lp-stats .course-btn{height:44px;min-width:0;padding:0 10px;gap:7px;
+         border-radius:12px;box-shadow:0 2px 0 var(--hair)}
+  .lp-root .lp-stats .course-btn .tile{width:28px;height:28px;border-radius:9px}
+  .lp-root .lp-stats .course-btn .tile svg{width:20px;height:20px}
+  .lp-root .lp-stats .course-btn .nm{font-size:12.5px}
+  .lp-root .lp-stats .pill,.lp-root .lp-stat{height:44px;min-width:0;padding:0 12px;
+         flex-direction:row;align-items:center;gap:7px;border-width:1px;border-radius:12px;
+         box-shadow:0 2px 0 var(--hair)}
+  .lp-root .lp-stats .pill i,.lp-root .lp-stat i{display:none}
+  .lp-root .lp-stats .pill b,.lp-root .lp-stat b{font-size:15.5px}
+  .lp-root .lp-stats .pill .star{width:21px}
+  .lp-root .lp-stats .pill-btn .plus{width:20px;height:20px;top:-6px;right:-6px}
+  .lp-root .lp-stats .lp-stat > svg{width:24px;height:24px}
+  /* chapter progress + today's goal move to the Daily tasks page at this
+     width (see dailyTasks.css .dt-relay) — under the map they were never
+     seen. The Pomo status box stays: it reports a session running now. */
+  .lp-root .lp-rail-scroll .lp-block{display:none}
+  /* with the two blocks gone the rail is just the trial card and the Pomo
+     status — both belong above the map, not after twenty lesson nodes */
+  .lp-root .lp-rail{order:-1;padding:0 16px 14px}
+  .lp-root .lp-rail-scroll{gap:10px}
+  .lp-root .lp-trial{flex:1 1 100%;padding:11px 13px}
+  .lp-root .lp-trial-t b{font-size:12.5px}
+  .lp-root .lp-trial-t span{font-size:11px}
+
+  /* the picker sits at the left end of the bar now, so its dropdown
+     hangs from the left edge instead of running off it */
+  .lp-root .lp-stats .drop{right:auto;left:0;width:min(270px,calc(100vw - 24px))}
+  .lp-root .lp-stats .drop .tip{right:auto;left:26px}
+  /* the map's green header sticks below the new bar, not under it */
+  .lp-root .top{top:82px}
+  .lp-root .lb-back{margin-top:12px}
+  .lp-root .lp-side{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:60;
+         width:100%;height:auto;overflow:visible;padding:6px 6px max(6px,env(safe-area-inset-bottom));
+         border-right:0;border-top:2px solid var(--hair);
+         box-shadow:0 -6px 20px rgba(28,26,21,.07)}
+  .lp-root .lp-logo{display:none}
+  .lp-root .lp-nav{flex-direction:row;justify-content:space-between;gap:2px;margin-top:0}
+  .lp-root .lp-item{flex:1 1 0;min-width:0;flex-direction:column;gap:3px;
+         padding:6px 2px;border-radius:12px;font-size:8.5px;letter-spacing:.02em;
+         text-align:center;line-height:1.2;overflow:hidden;text-overflow:ellipsis}
+  /* in the bottom bar the row can't slide sideways — it lifts instead,
+     and the current-page tab moves under the icon */
+  .lp-root .lp-item:hover{transform:translateY(-2px)}
+  .lp-root .lp-item:active{transform:translateY(1px) scale(.96)}
+  .lp-root .lp-item.active::after{left:50%;top:auto;bottom:-2px;width:18px;height:3px;
+         border-radius:3px;transform:translateX(-50%)}
+  .lp-root .lp-item .lp-ic{width:22px;height:22px}
+  .lp-root .lb-sticky{bottom:78px}
+}
+@media (max-width:560px){
+  /* labels stop fitting eight across — the icons carry it */
+  .lp-root .lp-item{font-size:0;gap:0;padding:9px 2px}
+  .lp-root .lp-item .lp-ic{width:24px;height:24px}
 }
 
 @media (max-width:760px){
@@ -390,3 +564,4 @@
 @media (prefers-reduced-motion:reduce){
   .pomo-veil,.pomo-panel{animation:none}
 }
+

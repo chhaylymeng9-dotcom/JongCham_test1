@@ -6,9 +6,9 @@
  *                 onSelect={setCurrent} onBuy={(k, price) => …} />
  *   <StarsPill stars={stars} />
  *
- * Self-contained: styles and the pixel star are embedded, so there is nothing
- * to import and no asset to copy. Khmer glyphs need the Siemreap font in the
- * host page:
+ * Self-contained: the styles and the clover that marks the currency are
+ * drawn inline, so there is nothing to import and no asset to copy. Khmer
+ * glyphs need the Siemreap font in the host page:
  *   <link href="https://fonts.googleapis.com/css2?family=Siemreap&display=swap" rel="stylesheet">
  */
 import React from "react";
@@ -45,6 +45,20 @@ const CSS = `/* ================================================================
   .pill b{font-family:var(--type);font-size:17px;font-weight:700;line-height:1}
   .pill i{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.12em;
           text-transform:uppercase;color:var(--muted);display:block;margin-top:2px}
+
+  /* the balance pill as a button — opens the star shop (StarShop.jsx).
+     The "+" corner is the affordance: a pill that only ever showed a
+     number looked like a readout, so nobody would think to click it. */
+  .pill-btn{position:relative;cursor:pointer;font:inherit;color:var(--ink);
+            transition:all .14s var(--e)}
+  .pill-btn:hover{border-color:#E3C77E;transform:translateY(-1px);
+                  box-shadow:0 4px 0 var(--hair)}
+  .pill-btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--hair)}
+  .pill-btn .plus{position:absolute;top:-7px;right:-7px;width:24px;height:24px;
+                  border-radius:50%;display:grid;place-items:center;color:#3B2C08;
+                  background:linear-gradient(180deg,#F0C255,#C9922A);
+                  box-shadow:0 2px 0 #A8791F;transition:transform .16s var(--pop)}
+  .pill-btn:hover .plus{transform:scale(1.14) rotate(90deg)}
 
   /* ---------- the dropdown ---------- */
   .drop-wrap{position:relative}
@@ -131,8 +145,10 @@ const CSS = `/* ================================================================
              display:grid;place-items:center;background:var(--green-btn);color:#fff}
   .sub.on{border-color:var(--green-line);background:#F6FAF6}
 
-  /* ---------- the price ---------- */
-  .star{width:17px;height:auto;flex:none;display:block;border-radius:4px}
+  /* ---------- the price ----------
+     The currency mark is drawn in the Star component below, so there is
+     nothing to size or crop here. */
+  .star{flex:none;display:block}
   .price{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 12px 5px 9px;
          border-radius:999px;background:var(--brass-soft);color:var(--brass);
          font-family:var(--type);font-size:13px;font-weight:700;line-height:1}
@@ -155,8 +171,7 @@ const CSS = `/* ================================================================
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 `;
 
-/* the Rumdoul flower (Cambodia’s national flower), embedded so there is no asset to ship */
-const STAR = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAQCAwMDAgQDAwMEBAQEBQkGBQUFBQsICAYJDQsNDQ0LDAwOEBQRDg8TDwwMEhgSExUWFxcXDhEZGxkWGhQWFxb/2wBDAQQEBAUFBQoGBgoWDwwPFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhb/wAARCACFAIwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD7+HSigdKKACiiigAooooAKOKRjgZPFeb/ABK+If2UvYaM24jIecdT/u+g9/yrz8yzPDZfR9rXfour9DWjRnVlyxO+vtT0+zJW5u4Y2H8JYZ/LrXOax49023mWKzjM5J5dvlUfh1rxC71HULpi8l1KpYkkKxHfuazrqO5IzHczqW6kSHmvzvH8ZZpVTWGpqC6PeX+X4HrUcvop++7n0n4Y8SWWrpsyIp/+eZP3voa2hivmnwzc3emlZIJXGOSCxOa9s+HXiePVrVbed/36j5STy3sfevb4c4pnipLC45JVHs+kvLyf5nNi8Eoe/T2Orooor7k80KKKKACkPWlpG60AKOlFA6UUAFFFFABRRUGp3SWWnzXcn3YYy5HrgdKmUlGLk9kCV3Y5H4qa+9vB/ZNm+JJBmdh1Cnov49/b615Zc2pYs7DLHuK6S8+0Xly1zcHdLK29znuSaqm0OCSp+tfjObZnLMMXKtL4VpFdl/wd2fS4agqVPl6nNNp7cHaeuKl/s9lRW2nn2ro/snOR61ZWxJt1bb+FcnNdGygrnKRWxRSSDj6Vp6Dcz2F8s0eQQex6HPWrzWhy3GRg8gVCsBDg7R9MdaylumtGiXA9h8Mammq6UlwpBcDEgHr/APXrRrzr4Xai1vqn2JziOcYGf73avRa/YMizH6/gY1ZfEtH6r/Pc+exNH2VRx6BRRRXsHOFI3WlpG60AKOlFA6UUAFFFFABXPfEycxeG/KDY+0TpGfpncf8A0GuhrkPjI5i8O20uMhbxQfxVq8zOpuGXVnH+Vm+GSdaN+5y4VSnDe+PzpFjVsDJA6cVlDUADnJyant9RQxZ3DHv9K/FFJNn0jZobFD7efbFXo0Bt1yM8VlRXQbJyDxV23u08heRyMc120l7oc42WDgkZxjmqtxbkNkL1/SrMt1HgqDUMk6F+TjHf8a5p7jUk9BtmzW11FOpw0bBh+HNeswuJIlcdGUGvILm4XYSOTj0r1nSgRplsG6iFM/kK+74HqNqvDp7r/M8nNErxZYooor788kKRutLSN1oAUdKKB0ooAKKKKACue+KVg2o+B76KNd0kSCZAPVDu/kDXQ0jAMpVgCCMEHvWOIoxrUpUpbSTX3lQk4yUl0Pm5p3EYKtkdV5pumyXtzcmC1TeM5LngLx3rb8b+HZtJ8WTabCD5MjebAw/55nPH4HI/CtLw5p0cFvtAIx1yOc4r8KxmBqUcRKlLTldmfTUEppS6DNO0S5MQ33wDDqFj4H61SvX1K31pdKVY5JWQOr78Aqc4PPToa7CJQoAFeY/E6/1Gw+PnhCOOCR9OvraSOWVG4ikDNgMO+QwwexFOnSlJNRdrK+/+Z0RpxlKx09xY64kO5YInOOQkvP4ZAqlDqThmjnRopEOHjYYIrtYSHiHA6Vm+JtIi1C33qqrOn+rcjn6H2riq05JtxYuVbGTook1PWrSxjGWuZVU4/hXqT+AzXtqgKoA4AGBXnnwS0GWIS65exlZDmC3RuqgH5m/EjH4H1r0Sv1vg/L5YXL/az+Kpr8un+fzPn8wq89Wy6BRRRX1hwBSN1paRutACjpRQOlUvEGq2ejaXJf30myKMfix7ADuTUznGEXKTskNJt2RanlighaWaRY0QZZmOAPxrl9W8dabAxjsVN0w43Z2p+Hc15d4/8bajrd6ylzFbIT5cCH5QPU+p96wbPVpPOVSQq59ea+CzPiurKTp4NWX83V+i6f1selRwSSvU+49cPi/U5/mR44gecKgOPzqG48VapEm43oHPOUXH8q4iz1FWh4ftWT4+1WWLQZwjMGddin0LED+tfLyzbNHK7rS+9nYqVHZRRTuvFOp654mn1uSQv5sm2IYAAiGQox9OfxrtPDeuRTxgXC7M8Z/CvM/DskMtuI1Ko6Dha1lupYl2pLjvzWFaE6rdRyvJ7+p2U/d0S0PVkkQxkxkEfWvO/ioGb4m+Ecg7Wkk/Arg1DZeLpLJts8u8DgjODUmrX9hrniTw7qiTsG077WZEOOd0agZ+hxXGoXm4y00Z002lqd5pUpeEDnp1q9IUEfzMOPWuOXxXZW6FFlTp61Xl8RT3zbIW2IcZOK55cy2Vw5Ls7zwx4ms9L1oWFxOfs9yPlxyEcc/qAa7C31/SJmCpfxAnsx2/zrwqe4WCW3uPvGOVWdj9cf1rc1CYIjHcBg8819HlvFeOwFBUOVTiu97+l/8AgHn4rLqVSfMnZs9qVlZQysCDyCDwaWvCvDvjzUtEvlQv5tsWwyMcr/8AW/CvYPCmv2Gv6eLmyk5GPMjJ5Q/1HvX6Bk3EOFzNcsfdmt4v9O54uJwk6D11Xc1aRutLSN1r3zlEkdY4md2CqgyzHoB614p8TPEj67qxCMRawEi3Q8fVvqf5V6F8VL+SDR0sIWIa7P7zH/PMdR+JIH515Vf2m7Llea+C4rzSTqfUqb0Wsv0X6/cergKCt7R/I5jU2Yc7cH+dZ5k2jcV5znpW5qVucgtzzWTfIEcgk5B9K+Spwvc7J6IvaPeSEbM4B9/as34qXLr4beYsQY5Ecn0GRTtMl8tyTwPU9uKsa3DBqGlzW1xtdJVKtkdQeK7qWEVSNjn5uWaZxWn6ojukkZdXBwdozk1B4n+JPhzRoGXUdTVrqMf8e1t+8kbjoQOB+JFcXqvgzXNU1C78P3OtPZWsUYMTxEo06knHzDnAA5/Ctr4VfAnwjoyJLr15cay27PkyN5cCD02j5m/E/hW0KOEpwcq0m2uiX9foexT9k7N6o5618ZfEr4kat/Znw58OpbxiTE2oXKiQQD1Z2GxD7AMfSvbPhL8HbzRdMnuvEni3U9Z1y+jCS3PmlYYFHOyOM8YB7kZPoOldpob6TpGnQ2mlQQW1rEPkigjCIv4Dir9vrcSt94HHOK8/G5jKVJ0qUVCHpq/Vm/t7rlirI8K8V6pq3gTxamk+MYIYLa6fbp2txIRbXH+zKCT5Tj6kd+BXV2HiA2pUzvGS+Cu08H6HvXbeNdM8P+M/DVzoHiG1S6srsYZc4ZDjhlbqrDsRXzZqngDxh8J7l7Cz1K41bwsHJtZmOXtVJ+44H3CP7w+U+gPFOnDDYui5J8lRdOj812fl9wL3me03niEXUQRcINyrtP8AFnvWpquqSpA3Jct0B715X4EivZLyGS8leXd8y5bcAPr612+rXDySLEnGR1HpXjVYW5vuManxJCG9M8uwqY29zxXV/DnxBe6LqscsMhCggAHoR3B9jXLWlpu2q+c8c/jW7pVo6rgHKgcZ+lbYd1KNRVIO0lqmc9VKS5ZdT6R0PUINU0yK9tz8kq9M8qe4PuDVputed/BrU2juG0yV8rOCyezqOfzX/wBBr0Rutfs+VY5Y7CQrrd7+q3Pmq9L2VRxOJ8egz6+ykcRwKo/Ek/4Vy93Ybl+VTwK63xMyDxFdB2UfKnBP+yK5nXdZt7dTHbqJpMdjwPxr8pzurbNa7k/tfkfQYRfuIq3Q53WbBBGxJwV79K4vX7i0tuPM3sD0Wt/xE+oagxMshRD/AArwK5i+0vZ1BOfWrpNuOiFO1zBm11i5jRSM1dsbzzGG9jg9qqajZ7AWjXmqUImjlJPP04xzW0Kk4PV3MpqLK/xNuZNNittahQtHbPtm46IT1/A4qhp3izzArK/7t8bSTxyOOa6O9hXUNNe1u498cilWHqK8R8aaZrng/UWjtneTT5STGrjdH/8AWP0rWVGFfW9mbYWoo+5I9qttfZYwfP4z2PHWrX/CVRww+YZRxznNUP2evgT4r+JHw2TxdP4hh0OO7mdbG3e0aYTxqceYTuXALAgYB6Zrz79oHQ/FPwt8Yr4b1p4ZjJAtxb3luG8qeMkjIDcggggj/Gt62R4iNJVJr3WbQrUJ1HGMtT0oeOo0kMsrkBRkbjiszVPiCb6C4ilbc1whijQnJ+bgfzrwp9bv747GdsZ6561u+CrS5uNXSafdshO7OPevPqYKnSV29jpbsm7nqvhWaDQrZYgGkwAMk+1dppXkaiVliYbsc15yi3F/II442VR3rq/C1hd2DpNE7kjtjjtXBWm5u0Voc8G73e53lpprBlGzpWrY2WB6Hpg/SpPCeoQ3aLHcL5cnGT2P0roxpwKblA6cEd6xi0i5RT1KXhaU2GtQTgYEciv+vP6E17Ia8pSx+ctgg7G/lXqFg/mWEEmc74lP5ivvuCq7lTrUuiaf33/yPEzOFpRkc98R/B0Hiex8yC5ey1GFf3Fwh4OOQrjuufxHavNrKG4tr5tO1e1NrqMYw8bdJP8AbQ9GU+or3EdKpa3pGm6va+RqNnHcIDldw5Q+qkcg/SvVzjhyhj5e2p+7U79/X/Mxw2OnRXK9Ynj13aIwYkAGsa+04sSQAe4OK9R1D4fKATpmrTRDHEdynmr/AN9cN+prB1DwN4oQ4jisLkesdwU/Rl/rXy88gzCjpyXXlr/wTr+tUp63seY3+kBmJYYHtxmsi40nyv8AV/jmvVJfAvi6UkHS4VHvdJilh+FXiK5P+kXVhaqevzNI35AAfrURyfHydlSf5CdamvtHkrQCJDvxmug8EfCW7+IKodYga20AkeZK64e4H92LPr/e7ds1694W+EugadOl1qkkmqTochZRtiB/3B1/Emu+RFRAiKFVRgADAA9K+hy3h2UWp4l/Jfqzmq4v+T7ytoWm2OjaNa6VpltHbWdlCsNvDGMLGijAA/AV5P8Atj/CZfiX4JtbmyAXVdElaWFguWlhYfvI/rwrD3X3r2Og19PXoQrUXSls1Y5KdSVOanHdH5/6V8K9NtVDSySTsO2ABXTaV4RWMrFFb+Wo4wB719E/E74ZvdX8mteG4o/NlJe4siQodu7ITwCe4PBrirK2Wyufs1/BJaTg4MdyhjbP49fwr8nzfL8dg6jU03Ho+h9Hhq9Our317HKaH4cVML5eMjA46cV1ml6AgUdK39PtYTGCApB7j6VoRW0adFxxXiRcnqzqaS0MN9IWJQEUjH6c1Paahe2C8kSxj+E9RV7Urqyto/8ASbuOMk5AZxk+2KhsdA1rxNIsemwSWVmeHvrmMqMf7Cnlj+nvXXh8BiMbLkoxbfkYVK0KSbkyxZeIbS7uvsSK/wBok+WONV3FmPYYr1PT4mg0+3hf70cSqfqBis7wf4Y0nw3YC30+3zIeZbiT5pZT3LN/QcVsN1r9N4fyN5XTlzz5pStfyt0PBxmK9vJWVkgzRmiivojjDNGaKKADNGaKKADNGaKKADNGaKKADNRXdtbXUXlXVvFPH/clQMPyNFFDVwMS48E+FJpDIdEt0Y9TEWj/APQSKaPA3hX+LS9/s9xIw/VqKK5ngsM3zOnG/oi/a1LW5mX9L8P6FpzBrLSLOFx0dYhu/wC+jzWnmiit4xjFWirEtt7hmkPNFFUI/9k=";
+
 
 /* ================================================================
    the courses — swap this for your own catalogue
@@ -193,18 +208,72 @@ const TICK = (
   </svg>
 );
 
-/** The star, at whatever size you ask for. Pixel art, so never smoothed. */
-export function Star({ size = 22 }) {
-  return <img className="star" src={STAR} alt="" style={{ width: size }} />;
+/* One leaf, tip at the origin, body above it — the clover is this shape
+   four times, turned a quarter each time. Traced off the photographed
+   clover: a heart with the notch at the outer edge, wider than it is
+   tall, meeting its neighbours in a tight point at the stem. */
+const LEAF =
+  "M0 0C-1.4-3.2-6.6-3.4-6.6-7.5c0-2.9 2.7-4.3 4.7-2.7 1 .8 1.5 1.8 1.9 2.7.4-.9.9-1.9 1.9-2.7 2-1.6 4.7-.2 4.7 2.7C6.6-3.4 1.4-3.2 0 0Z";
+/* the darker half, split down the midrib the way the leaf shades in the
+   photo — one side catches the light, the other doesn't */
+const LEAF_SHADE =
+  "M0 0C-1.4-3.2-6.6-3.4-6.6-7.5c0-2.9 2.7-4.3 4.7-2.7 1 .8 1.5 1.8 1.9 2.7Z";
+
+function Leaf({ turn, light, dark }) {
+  return (
+    <g transform={`rotate(${turn})`}>
+      <path d={LEAF} fill={light} />
+      <path d={LEAF_SHADE} fill={dark} />
+      {/* the pale midrib running out from the stem */}
+      <path d="M0 -1.2V-9.4" stroke="#D9E9AE" strokeWidth=".9" strokeLinecap="round" opacity=".85" />
+    </g>
+  );
 }
 
-/** The balance pill for the strip: <StarsPill stars={900} /> */
-export function StarsPill({ stars = 0 }) {
+/**
+ * The currency mark — a four-leaf clover, at whatever size you ask for.
+ * Drawn rather than photographed so it stays crisp at 17px in a price
+ * chip and at 34px in the shop's payoff, with no white ground to hide.
+ */
+export function Star({ size = 22 }) {
   return (
-    <span className="pill stars">
+    <svg className="star" width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      {/* the stem, curving away as it does in the photograph */}
+      <path d="M12 13.4c.3 3.3-.2 6.2-1.9 8.4" stroke="#A9C95F" strokeWidth="1.6" strokeLinecap="round" />
+      <g transform="translate(12 12.4)">
+        <Leaf turn={-45} light="#82B75C" dark="#5E9A45" />
+        <Leaf turn={45} light="#76AF52" dark="#54903E" />
+        <Leaf turn={135} light="#6FA84F" dark="#4E8B3F" />
+        <Leaf turn={225} light="#7FB45C" dark="#5A9642" />
+        <circle r="1" fill="#C7DE93" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * The balance pill for the strip: <StarsPill stars={900} />
+ * With onClick it becomes a button (the star shop's entry point) and
+ * grows a "+" corner; without one it stays the plain readout it was.
+ */
+export function StarsPill({ stars = 0, onClick, label = "Top up stars" }) {
+  const inner = (
+    <>
       <Star size={26} />
       <span><b>{stars.toLocaleString()}</b><i>Stars</i></span>
-    </span>
+    </>
+  );
+
+  if (!onClick) return <span className="pill stars">{inner}</span>;
+
+  return (
+    <button type="button" className="pill stars pill-btn" onClick={onClick} title={label} aria-label={label}>
+      {inner}
+      <span className="plus" aria-hidden="true">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             strokeWidth="3.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+      </span>
+    </button>
   );
 }
 

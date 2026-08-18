@@ -178,8 +178,31 @@ export const DECKS = [
     ],
   },
   {
-    id: "custom",
+    id: "biology",
     tag: "06",
+    subject: "biology",
+    name: { en: "Biology", km: "ជីវវិទ្យា" },
+    blurb: {
+      en: "50 cards with a dot grid on the back — room to label a diagram or sketch a cell.",
+      km: "កាត ៥០ សន្លឹក មានក្រឡាចំណុចខាងក្រោយ — មានកន្លែងដាក់ស្លាកលើរូបភាព ឬគូរកោសិកា។",
+    },
+    price: 14,
+    capacity: 50,
+    lessonCount: 8,
+    grade: { en: "Grade 10–12", km: "ថ្នាក់ទី ១០-១២" },
+    // no biology packaging photo yet — the chemistry box art stands in,
+    // same science-set look; swap it when the real photo exists
+    packagingImage: chemistryPackaging,
+    defaults: { size: "a7", backLayout: "dotted", stock: "cardstock" },
+    features: [
+      { en: "8 lessons from the cell to the ecosystem", km: "មេរៀន ៨ ចាប់ពីកោសិកា ដល់ប្រព័ន្ធអេកូឡូស៊ី" },
+      { en: "4 practice modes, unlimited attempts", km: "លំហាត់ ៤ ប្រភេទ ធ្វើបានគ្មានកំណត់" },
+      { en: "Timed exam → printable certificate", km: "ប្រឡងកំណត់ពេល → វិញ្ញាបនបត្រអាចបោះពុម្ព" },
+    ],
+  },
+  {
+    id: "custom",
+    tag: "07",
     subject: "blank",
     customizable: true,
     name: { en: "Customize Set", km: "សំណុំកាតផ្ទាល់ខ្លួន" },

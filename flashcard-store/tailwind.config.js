@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        paper: "#EDF4F2",
+        paper: "#F7FAF8",
         cardstock: "#F1E9D2",
         manila: "#D9C08C",
         chalk: "#2F4538",

@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "../i18n.jsx";
-import { DEMO_CODE_LIST, resolveCode } from "../data/codes.js";
+import { resolveCode } from "../data/codes.js";
 import { DECK_BY_ID, cardHasContent } from "../data/decks.js";
 import { lessonsFor } from "../data/lessons.js";
 import { bankItemIds, hasFixedBank } from "../data/questions.js";
 import {
+  DAILY_STARS,
+  STARS_PER_APPLE,
+  TRIAL_DAYS,
+  addStars,
+  claimDailyStars,
   claimReward,
   clearAllData,
   clearSession,
+  dailyStarsClaimed,
+  exchangeApplesForStars,
   getActivationLock,
   deleteCertificate,
   getBestExamScoreToday,
@@ -20,6 +27,7 @@ import {
   getDeviceId,
   getDueCount,
   getHarvest,
+  getProTrial,
   getSession,
   getStars,
   getStreak,
@@ -44,6 +52,8 @@ import Home from "../account/Home.jsx";
 import LessonPath from "../account/LessonPath.jsx";
 import Profile from "../account/Profile.jsx";
 import Vouchers from "../account/Vouchers.jsx";
+import Shop from "../account/Shop.jsx";
+import StudyPlan from "../account/StudyPlan.jsx";
 import DailyTasks from "../account/DailyTasks.jsx";
 import Plans from "../account/Plans.jsx";
 import MyDecks from "../account/MyDecks.jsx";
@@ -95,15 +105,41 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
   const [pendingLesson, setPendingLesson] = useState(null);
   // Records the node that was just finished so LessonPath can pulse it
   const [justDone, setJustDone] = useState(null);
-  // Bumped after claimReward() so the harvest/claimedRewards props below
-  // (read fresh from storage on every render, same as streak/studyDays)
-  // pick up the change — claimReward itself has no state of its own.
-  const [harvestTick, setHarvestTick] = useState(0);
+  // Bumped after anything that moves a balance — claimReward(), and the
+  // star shop's top-up/claim/trade — so the harvest, claimedRewards and
+  // stars props below (read fresh from storage on every render, same as
+  // streak/studyDays) pick the change up. None of those helpers has any
+  // state of its own.
+  const [walletTick, setWalletTick] = useState(0);
+  const bumpWallet = useCallback(() => setWalletTick((n) => n + 1), []);
 
   function onClaimReward(rewardId, cost) {
     const code = claimReward(rewardId, cost);
-    if (code) setHarvestTick((n) => n + 1);
+    if (code) bumpWallet();
     return code;
+  }
+
+  /* ---------- the star shop (StarShop.jsx, opened from LessonPath) ----------
+  Three ways to add stars. The purchase is a simulation — the shop's pay
+  sheet takes no money, the same demo checkout Plans.jsx runs — so this
+  just credits the balance. Claim and trade return how many stars landed
+  (0 if storage refused), which is what the shop shows in its payoff. */
+  function topUpStars(amount) {
+    if (!addStars(amount)) return 0;
+    bumpWallet();
+    return amount;
+  }
+
+  function onClaimDailyStars() {
+    const n = claimDailyStars();
+    if (n) bumpWallet();
+    return n;
+  }
+
+  function onTradeAppleForStars() {
+    const n = exchangeApplesForStars(1);
+    if (n) bumpWallet();
+    return n;
   }
 
   const refresh = useCallback(() => {
@@ -311,9 +347,6 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
             </Button>
           </form>
 
-          <p className="text-xs text-ink/45 mt-6">
-            {t("account.tryCodes")}: {DEMO_CODE_LIST.map((c) => c.code).join(", ")}
-          </p>
         </div>
       );
     }
@@ -454,8 +487,14 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         currentDeckId={activeDeckEntry.deckId}
         ownedDeckIds={session.decks.map((d) => d.deckId)}
         stars={getStars()}
+        dailyStarsClaimed={dailyStarsClaimed()}
+        dailyStars={DAILY_STARS}
+        starsPerApple={STARS_PER_APPLE}
         onSwitchCourse={switchActiveDeck}
         onBuyCourse={buyCourseWithStars}
+        onTopUpStars={topUpStars}
+        onClaimDailyStars={onClaimDailyStars}
+        onTradeAppleForStars={onTradeAppleForStars}
         onBack={() => {
           setTab("decks");
           setView("dashboard");
@@ -490,8 +529,13 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
           setView("dashboard");
         }}
         onOpenVouchers={() => setView("vouchers")}
+        onOpenShop={() => setView("shop")}
+        onOpenPlans={() => setView("plans")}
+        trial={getProTrial()}
+        trialDays={TRIAL_DAYS}
+        hasPlan={Boolean(session.plan)}
         onOpenProfile={() => { setProfileTab("personal"); setView("profile"); }}
-        onOpenStudyPlan={() => { setProfileTab("study"); setView("profile"); }}
+        onOpenStudyPlan={() => setView("studyPlan")}
         onOpenDailyTasks={() => setView("dailyTasks")}
         onGoToCart={onGoToCart}
       />
@@ -527,7 +571,41 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         onAddDeck={addDeck}
         switchError={switchError}
         onDeleteAccount={deleteAccount}
+        onSignOut={signOut}
         initialTab={profileTab}
+      />
+    );
+  }
+
+  if (view === "studyPlan") {
+    return (
+      <StudyPlan
+        decks={session.decks.map((d) => ({ ...d, catalog: DECK_BY_ID[d.deckId] }))}
+        onBack={() => setView("home")}
+        onOpenPractice={() => { setTab("practice"); setView("dashboard"); }}
+      />
+    );
+  }
+
+  if (view === "shop") {
+    return (
+      <Shop
+        stars={getStars()}
+        apples={getHarvest().available}
+        dailyStarsClaimed={dailyStarsClaimed()}
+        dailyStars={DAILY_STARS}
+        starsPerApple={STARS_PER_APPLE}
+        ownedDeckIds={session.decks.map((d) => d.deckId)}
+        onBack={() => setView("home")}
+        onBuyCourse={buyCourseWithStars}
+        onStudyCourse={(deckId) => {
+          switchActiveDeck(deckId);
+          setView("home");
+        }}
+        onOpenVouchers={() => setView("vouchers")}
+        onTopUpStars={topUpStars}
+        onClaimDailyStars={onClaimDailyStars}
+        onTradeAppleForStars={onTradeAppleForStars}
       />
     );
   }
@@ -538,7 +616,6 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         harvest={getHarvest()}
         claimedRewards={getClaimedRewards()}
         vouchers={getVouchers()}
-        streak={getStreak().current}
         onClaimReward={onClaimReward}
         onBack={() => setView("home")}
         onOpenDailyTasks={() => setView("dailyTasks")}
@@ -558,6 +635,15 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
     const bestExamScoreToday = getBestExamScoreToday();
     const state = syncDailyTasks({ cardsToday, dailyGoal, totalDue, bestScoreToday: bestExamScoreToday });
 
+    // the active course, for the progress card this page shows on phones
+    // (the Learn rail keeps it on wider screens) — same numbers LessonPath
+    // puts in its rail, read the same way
+    const dtLessons = isCustomizable ? [] : lessonsFor(activeDeckEntry.subject);
+    const dtCompleted = progress.lessons ?? {};
+    const dtDone = dtLessons.filter((l) => dtCompleted[l.id]).length;
+    const dtNext = dtLessons.find((l) => !dtCompleted[l.id]);
+    const dtExamReady = dtLessons.length > 0 && !dtNext;
+
     return (
       <DailyTasks
         cardsToday={cardsToday}
@@ -567,6 +653,20 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         state={state}
         harvest={getHarvest()}
         claimedRewards={getClaimedRewards()}
+        streak={getStreak().current}
+        lessonsDone={dtDone}
+        lessonsTotal={dtLessons.length}
+        nextLabel={dtNext ? pick(dtNext.title) : dtExamReady ? t("lp.unitExam") : ""}
+        examReady={dtExamReady}
+        onContinue={
+          dtLessons.length === 0
+            ? undefined
+            : () => {
+                if (dtNext) setPendingLesson(dtNext.id);
+                setTab(dtNext ? "lessons" : "exam");
+                setView("dashboard");
+              }
+        }
         onBack={() => setView("home")}
         onOpenVouchers={() => setView("vouchers")}
       />

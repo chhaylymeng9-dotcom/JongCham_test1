@@ -39,7 +39,12 @@ the profile page can reflect it.
 .jpl-root, .jpl-root *{ box-sizing: border-box; }
 .jpl-root button:focus-visible, .jpl-root a:focus-visible{ outline: 2px solid var(--green); outline-offset: 2px; }
 
+/* fill the viewport: the app's global paper is the store's mint (#EDF4F2),
+   this page's is warm cream — a short page used to show both, split across
+   the fold. The account area hides the site header and footer, so the view
+   is the whole window. */
 .jpl-root{
+  min-height: 100vh;
   background: var(--paper); color: var(--ink);
   font-family: var(--sans); font-size: 15px; line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -173,8 +178,16 @@ the profile page can reflect it.
 .jpl-cta.jpl-current:hover{ background: transparent; border-color: var(--hair-2); }
 .jpl-cta.jpl-solid{ background: var(--green); border-color: var(--green); color: #fff; }
 .jpl-cta.jpl-solid:hover{ background: #1B291F; border-color: #1B291F; }
+/* the free-trial button under the Pro CTA — quieter than the upgrade it
+   sits below, so the paid action stays the loud one */
+.jpl-cta.jpl-ghost{
+  height: 42px; margin-top: 10px; font-size: 13.5px;
+  background: transparent; border-color: rgba(239,237,230,.4); color: #F5F2EB;
+}
+.jpl-cta.jpl-ghost:hover{ background: rgba(239,237,230,.12); border-color: #F5F2EB; }
 .jpl-fine{ text-align: center; font-size: 11.5px; color: var(--faint); margin: 9px 0 0; }
 .jpl-plan.jpl-best .jpl-fine{ color: rgba(239,237,230,.45); }
+.jpl-plan.jpl-best .jpl-fine.jpl-trial-on{ color: #F0C255; font-weight: 600; }
 
 .jpl-feats{ position: relative; z-index: 1; padding: 22px 24px 26px; border-top: 1px solid var(--hair); flex: 1; display: flex; flex-direction: column; }
 .jpl-plan.jpl-best .jpl-feats{ border-color: rgba(239,237,230,.14); }

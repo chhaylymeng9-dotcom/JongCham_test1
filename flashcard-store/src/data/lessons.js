@@ -378,6 +378,692 @@ const MATH = [
       km: "ពេលសំណួរលាយប្រមាណវិធីច្រើន សូមដាក់វង់ក្រចកលើផ្នែកគុណដោយខ្លួនឯងមុននឹងដោះស្រាយ។ វាចំណាយពេលមួយវិនាទី ហើយលុបបំបាត់អន្ទាក់។",
     },
   },
+  {
+    id: "m5",
+    minutes: 6,
+    title: { en: "What each digit is worth", km: "តម្លៃនៃខ្ទង់លេខនីមួយៗ" },
+    objective: {
+      en: "Read any number by its columns, so big numbers stop feeling like a wall of digits.",
+      km: "អានលេខណាមួយតាមជួរឈររបស់វា ដើម្បីកុំឲ្យលេខធំមើលទៅដូចជាជញ្ជាំងខ្ទង់លេខ។",
+    },
+    sections: [
+      {
+        heading: { en: "Every column is ten of the one beside it", km: "ជួរឈរនីមួយៗ ស្មើដប់ដងនៃជួរនៅខាងស្តាំ" },
+        body: [
+          {
+            en: "In 4,206 the 4 is not four — it is four thousands. Step left and each column is worth ten times more; step right and it is worth ten times less. That single rule is the whole of place value.",
+            km: "ក្នុងលេខ ៤,២០៦ លេខ ៤ មិនមែនស្មើបួនទេ — វាគឺបួនពាន់។ ផ្លាស់ទៅឆ្វេង ជួរឈរនីមួយៗមានតម្លៃដប់ដងច្រើនជាង; ផ្លាស់ទៅស្តាំ វាមានតម្លៃដប់ដងតិចជាង។ ក្បួនតែមួយនេះ គឺជាខ្លឹមសារទាំងមូលនៃតម្លៃទីតាំង។",
+          },
+          {
+            en: "The zero is doing real work: it holds a column open. 406 and 46 differ only by a zero, and by 360.",
+            km: "លេខសូន្យមានតួនាទីពិតប្រាកដ៖ វារក្សាជួរឈរឲ្យនៅបើក។ ៤០៦ និង ៤៦ ខុសគ្នាត្រឹមលេខសូន្យមួយ ហើយខុសគ្នា ៣៦០។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Rounding is just choosing a column", km: "ការបង្គត់ គ្រាន់តែជាការជ្រើសជួរឈរ" },
+        body: [
+          {
+            en: "To round 4,206 to the nearest hundred, look at the column to the right of hundreds. It is 0, so the hundreds stay: 4,200. Five or more rounds up, four or less stays.",
+            km: "ដើម្បីបង្គត់ ៤,២០៦ ទៅរយជិតបំផុត សូមមើលជួរឈរនៅខាងស្តាំនៃខ្ទង់រយ។ វាគឺ ០ ដូច្នេះខ្ទង់រយនៅដដែល៖ ៤,២០០។ ប្រាំឡើងទៅបង្គត់ឡើង បួនចុះមកនៅដដែល។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Each column left is ten times the one before it.", km: "ជួរឈរខាងឆ្វេងនីមួយៗ ស្មើដប់ដងនៃជួរមុន។" },
+      { en: "A zero holds a column open — it is not nothing.", km: "លេខសូន្យរក្សាជួរឈរឲ្យនៅបើក — វាមិនមែនគ្មានន័យទេ។" },
+      { en: "To round, look only at the digit one column to the right.", km: "ដើម្បីបង្គត់ សូមមើលតែខ្ទង់លេខមួយជួរនៅខាងស្តាំ។" },
+    ],
+    examples: [
+      { prompt: { en: "What is the 7 worth in 3,714?", km: "តើលេខ ៧ ក្នុង ៣,៧១៤ មានតម្លៃប៉ុន្មាន?" }, solution: { en: "Seven hundreds — 700.", km: "ប្រាំពីររយ — ៧០០។" } },
+      { prompt: { en: "Round 3,714 to the nearest thousand.", km: "បង្គត់ ៣,៧១៤ ទៅពាន់ជិតបំផុត។" }, solution: { en: "The hundreds digit is 7, so round up: 4,000.", km: "ខ្ទង់រយគឺ ៧ ដូច្នេះបង្គត់ឡើង៖ ៤,០០០។" } },
+    ],
+    tip: {
+      en: "Say a long number out loud in columns — \"four thousand, two hundred and six\". Reading it right is half of using it right.",
+      km: "អានលេខវែងឲ្យឮតាមជួរឈរ — «បួនពាន់ ពីររយ ប្រាំមួយ»។ ការអានឲ្យត្រូវ គឺពាក់កណ្តាលនៃការប្រើឲ្យត្រូវ។",
+    },
+  },
+  {
+    id: "m6",
+    minutes: 6,
+    title: { en: "Doubling and halving", km: "ការគុណនឹងពីរ និងការចែកនឹងពីរ" },
+    objective: {
+      en: "Turn hard multiplications into easy ones by moving a factor of two across.",
+      km: "ប្តូរការគុណពិបាកឲ្យទៅជាងាយ ដោយផ្លាស់កត្តាពីរពីម្ខាងទៅម្ខាង។",
+    },
+    sections: [
+      {
+        heading: { en: "Halve one side, double the other", km: "ចែកម្ខាងនឹងពីរ គុណម្ខាងទៀតនឹងពីរ" },
+        body: [
+          {
+            en: "16 × 25 looks unpleasant. Halve the 16 and double the 25: 8 × 50. Do it again: 4 × 100 = 400. The answer never changes, because you took a two out of one factor and put it into the other.",
+            km: "១៦ × ២៥ មើលទៅពិបាក។ ចែក ១៦ នឹងពីរ ហើយគុណ ២៥ នឹងពីរ៖ ៨ × ៥០។ ធ្វើម្តងទៀត៖ ៤ × ១០០ = ៤០០។ ចម្លើយមិនប្តូរទេ ព្រោះអ្នកដកពីរចេញពីកត្តាមួយ រួចដាក់ចូលកត្តាមួយទៀត។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Doubling is the cheapest step you own", km: "ការគុណនឹងពីរ គឺជាជំហានថោកបំផុតដែលអ្នកមាន" },
+        body: [
+          {
+            en: "Most people can double anything under a hundred without thinking. Chain it: to find 8 × 37, double 37 three times — 74, 148, 296. No table needed.",
+            km: "មនុស្សភាគច្រើនអាចគុណលេខក្រោមមួយរយនឹងពីរបានដោយមិនបាច់គិត។ តភ្ជាប់វា៖ ដើម្បីរក ៨ × ៣៧ សូមគុណ ៣៧ នឹងពីរបីដង — ៧៤, ១៤៨, ២៩៦។ មិនបាច់ប្រើតារាងគុណទេ។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Halving one factor and doubling the other keeps the product.", km: "ចែកកត្តាមួយនឹងពីរ ហើយគុណកត្តាមួយទៀតនឹងពីរ ផលគុណនៅដដែល។" },
+      { en: "×4 is double-double; ×8 is double three times.", km: "×៤ គឺគុណពីរដងជាប់គ្នា; ×៨ គឺគុណពីរបីដង។" },
+      { en: "Aim for a round number — 50, 100, 25 — then stop.", km: "តម្រង់ទៅរកលេខមូល — ៥០, ១០០, ២៥ — រួចឈប់។" },
+    ],
+    examples: [
+      { prompt: { en: "14 × 50", km: "១៤ × ៥០" }, solution: { en: "7 × 100 = 700.", km: "៧ × ១០០ = ៧០០។" } },
+      { prompt: { en: "4 × 65", km: "៤ × ៦៥" }, solution: { en: "Double 65 = 130, double again = 260.", km: "៦៥ គុណពីរ = ១៣០ គុណពីរម្តងទៀត = ២៦០។" } },
+    ],
+    tip: {
+      en: "If a factor is even and the other ends in 5, this trick almost always pays.",
+      km: "បើកត្តាមួយជាលេខគូ ហើយកត្តាមួយទៀតបញ្ចប់ដោយ ៥ ល្បិចនេះស្ទើរតែតែងតែមានប្រយោជន៍។",
+    },
+  },
+  {
+    id: "m7",
+    minutes: 5,
+    title: { en: "Multiplying by 10, 100 and 1000", km: "ការគុណនឹង ១០, ១០០ និង ១០០០" },
+    objective: {
+      en: "Move the digits, not the decimal point — and never lose a zero again.",
+      km: "ផ្លាស់ខ្ទង់លេខ មិនមែនផ្លាស់សញ្ញាក្បៀស — ហើយកុំបាត់សូន្យទៀត។",
+    },
+    sections: [
+      {
+        heading: { en: "Why the zeros appear", km: "ហេតុអ្វីបានជាសូន្យលេចឡើង" },
+        body: [
+          {
+            en: "Multiplying by ten pushes every digit one column to the left, because every digit becomes worth ten times more. The zero that shows up is just the empty units column.",
+            km: "ការគុណនឹងដប់ រុញខ្ទង់លេខទាំងអស់ទៅឆ្វេងមួយជួរ ព្រោះខ្ទង់លេខនីមួយៗមានតម្លៃដប់ដងច្រើនជាង។ សូន្យដែលលេចឡើង គ្រាន់តែជាជួរឯកតាទទេប៉ុណ្ណោះ។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Decimals follow the same rule", km: "ទសភាគក៏ធ្វើតាមក្បួនដដែល" },
+        body: [
+          {
+            en: "3.4 × 100 shifts two columns left: 340. Dividing shifts the other way — 3.4 ÷ 100 = 0.034. Count the zeros, count the columns.",
+            km: "៣.៤ × ១០០ រុញទៅឆ្វេងពីរជួរ៖ ៣៤០។ ការចែករុញទៅផ្លូវផ្ទុយ — ៣.៤ ÷ ១០០ = ០.០៣៤។ រាប់សូន្យ រាប់ជួរឈរ។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "One zero, one column; three zeros, three columns.", km: "សូន្យមួយ ជួរមួយ; សូន្យបី ជួរបី។" },
+      { en: "Multiplying moves left, dividing moves right.", km: "ការគុណផ្លាស់ទៅឆ្វេង ការចែកផ្លាស់ទៅស្តាំ។" },
+      { en: "×20 is ×2 then ×10 — split the round part off.", km: "×២០ គឺ ×២ រួច ×១០ — បំបែកផ្នែកមូលចេញ។" },
+    ],
+    examples: [
+      { prompt: { en: "62 × 300", km: "៦២ × ៣០០" }, solution: { en: "62 × 3 = 186, then two columns left: 18,600.", km: "៦២ × ៣ = ១៨៦ រួចផ្លាស់ទៅឆ្វេងពីរជួរ៖ ១៨,៦០០។" } },
+      { prompt: { en: "0.7 × 1000", km: "០.៧ × ១០០០" }, solution: { en: "Three columns left: 700.", km: "ផ្លាស់ទៅឆ្វេងបីជួរ៖ ៧០០។" } },
+    ],
+    tip: {
+      en: "Strip the zeros off first, do the small multiplication, then put them back. Fewer digits, fewer slips.",
+      km: "ដកសូន្យចេញសិន គុណលេខតូច រួចដាក់សូន្យត្រឡប់វិញ។ ខ្ទង់លេខតិច កំហុសតិច។",
+    },
+  },
+  {
+    id: "m8",
+    minutes: 8,
+    title: { en: "Split the number, then multiply", km: "បំបែកលេខ រួចគុណ" },
+    objective: {
+      en: "Multiply any two-digit numbers by breaking them into parts you already know.",
+      km: "គុណលេខពីរខ្ទង់ណាមួយ ដោយបំបែកវាទៅជាផ្នែកដែលអ្នកចេះស្រាប់។",
+    },
+    sections: [
+      {
+        heading: { en: "23 × 7 is 20 × 7 plus 3 × 7", km: "២៣ × ៧ គឺ ២០ × ៧ បូក ៣ × ៧" },
+        body: [
+          {
+            en: "Nothing in multiplication says you must take the number whole. Split 23 into 20 and 3, multiply each by 7, add: 140 + 21 = 161. This is exactly what long multiplication does on paper, only you can see it.",
+            km: "គ្មានអ្វីក្នុងការគុណតម្រូវឲ្យអ្នកយកលេខទាំងមូលទេ។ បំបែក ២៣ ជា ២០ និង ៣ គុណនីមួយៗនឹង ៧ រួចបូក៖ ១៤០ + ២១ = ១៦១។ នេះជាអ្វីដែលការគុណវែងលើក្រដាសធ្វើ តែអ្នកមើលឃើញវា។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Both numbers can split", km: "លេខទាំងពីរអាចបំបែកបាន" },
+        body: [
+          {
+            en: "For 23 × 14, split both: (20 + 3) × (10 + 4) gives 200 + 80 + 30 + 12 = 322. Four small products, no carrying.",
+            km: "សម្រាប់ ២៣ × ១៤ សូមបំបែកទាំងពីរ៖ (២០ + ៣) × (១០ + ៤) បាន ២០០ + ៨០ + ៣០ + ១២ = ៣២២។ ផលគុណតូចបួន គ្មានការត្រៀមទុក។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Split into tens and units, multiply each, add.", km: "បំបែកជាខ្ទង់ដប់ និងឯកតា គុណនីមួយៗ រួចបូក។" },
+      { en: "Subtracting can be easier: 19 × 6 is 20 × 6 − 6.", km: "ការដកអាចងាយជាង៖ ១៩ × ៦ គឺ ២០ × ៦ − ៦។" },
+      { en: "Long multiplication is this method, written down.", km: "ការគុណវែង គឺជាវិធីនេះ ដែលសរសេរចុះ។" },
+    ],
+    examples: [
+      { prompt: { en: "34 × 6", km: "៣៤ × ៦" }, solution: { en: "30 × 6 = 180, 4 × 6 = 24, total 204.", km: "៣០ × ៦ = ១៨០, ៤ × ៦ = ២៤, សរុប ២០៤។" } },
+      { prompt: { en: "29 × 5", km: "២៩ × ៥" }, solution: { en: "30 × 5 = 150, minus one 5 = 145.", km: "៣០ × ៥ = ១៥០ ដក ៥ មួយ = ១៤៥។" } },
+    ],
+    tip: {
+      en: "Round up to the friendly number and subtract the difference — it is usually fewer steps than splitting.",
+      km: "បង្គត់ឡើងទៅលេខងាយ រួចដកផលសល់ — ជាធម្មតាវាមានជំហានតិចជាងការបំបែក។",
+    },
+  },
+  {
+    id: "m9",
+    minutes: 7,
+    title: { en: "Division, and what a remainder means", km: "ការចែក និងអត្ថន័យនៃសំណល់" },
+    objective: {
+      en: "Read a division question correctly and know what to do with what is left over.",
+      km: "អានសំណួរចែកឲ្យត្រូវ ហើយដឹងថាត្រូវធ្វើអ្វីជាមួយចំនួនដែលនៅសល់។",
+    },
+    sections: [
+      {
+        heading: { en: "Two questions wear the same symbol", km: "សំណួរពីរប្រភេទ ប្រើសញ្ញាដដែល" },
+        body: [
+          {
+            en: "20 ÷ 4 can mean \"share 20 between 4\" (each gets 5) or \"how many fours fit in 20?\" (five of them). Same arithmetic, different picture — and word problems use both.",
+            km: "២០ ÷ ៤ អាចមានន័យថា «ចែក ២០ ជូន ៤ នាក់» (ម្នាក់បាន ៥) ឬ «មានប៉ុន្មានក្រុមនៃ ៤ ក្នុង ២០?» (មានប្រាំ)។ គណិតដដែល តែរូបភាពខុសគ្នា — ហើយលំហាត់ជាអត្ថបទប្រើទាំងពីរ។",
+          },
+        ],
+      },
+      {
+        heading: { en: "The remainder is an instruction", km: "សំណល់គឺជាការណែនាំ" },
+        body: [
+          {
+            en: "38 pens into boxes of 5 gives 7 boxes remainder 3. Whether the answer is 7 or 8 depends on the question: seven full boxes, but eight boxes if every pen must be packed.",
+            km: "ប៊ិច ៣៨ ដាក់ក្នុងប្រអប់មួយៗ ៥ បាន ៧ ប្រអប់ សល់ ៣។ ចម្លើយជា ៧ ឬ ៨ គឺអាស្រ័យលើសំណួរ៖ ប្រអប់ពេញ ៧ ប៉ុន្តែ ៨ ប្រអប់ បើត្រូវដាក់ប៊ិចទាំងអស់។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Sharing and grouping are the same sum, different story.", km: "ការចែក និងការដាក់ជាក្រុម គឺជាលំហាត់ដដែល តែរឿងខុសគ្នា។" },
+      { en: "Check a division by multiplying back.", km: "ពិនិត្យការចែក ដោយគុណត្រឡប់វិញ។" },
+      { en: "Decide from the question whether to round the remainder up.", km: "សម្រេចពីសំណួរថា ត្រូវបង្គត់សំណល់ឡើងឬអត់។" },
+    ],
+    examples: [
+      { prompt: { en: "91 ÷ 7", km: "៩១ ÷ ៧" }, solution: { en: "70 is ten sevens, 21 is three more: 13.", km: "៧០ គឺ ៧ ដប់ដង, ២១ គឺបីទៀត៖ ១៣។" } },
+      { prompt: { en: "50 students, buses of 12. How many buses?", km: "សិស្ស ៥០ នាក់ ឡានក្រុងមួយផ្ទុក ១២។ ត្រូវការឡានប៉ុន្មាន?" }, solution: { en: "50 ÷ 12 = 4 remainder 2, so 5 buses.", km: "៥០ ÷ ១២ = ៤ សល់ ២ ដូច្នេះត្រូវការ ៥ ឡាន។" } },
+    ],
+    tip: {
+      en: "Build up in easy chunks — tens of the divisor first — instead of guessing the whole answer at once.",
+      km: "សាងសង់ជាកញ្ចប់ងាយៗ — ដប់ដងនៃតួចែកសិន — ជំនួសការទាយចម្លើយទាំងមូលក្នុងពេលតែមួយ។",
+    },
+  },
+  {
+    id: "m10",
+    minutes: 6,
+    title: { en: "Tests for dividing exactly", km: "ការសាកល្បងចែកដាច់" },
+    objective: {
+      en: "Know in seconds whether a number divides by 2, 3, 4, 5, 6, 9 or 10.",
+      km: "ដឹងក្នុងរយៈពេលប៉ុន្មានវិនាទី ថាតើលេខមួយចែកដាច់នឹង ២, ៣, ៤, ៥, ៦, ៩ ឬ ១០ ឬអត់។",
+    },
+    sections: [
+      {
+        heading: { en: "The tests worth knowing", km: "ការសាកល្បងដែលគួរចេះ" },
+        body: [
+          {
+            en: "By 2: the last digit is even. By 5: it ends in 0 or 5. By 10: it ends in 0. By 4: the last two digits divide by 4. By 3: the digits add to a multiple of 3. By 9: they add to a multiple of 9. By 6: it passes both the 2 and 3 tests.",
+            km: "នឹង ២៖ ខ្ទង់ចុងក្រោយជាលេខគូ។ នឹង ៥៖ បញ្ចប់ដោយ ០ ឬ ៥។ នឹង ១០៖ បញ្ចប់ដោយ ០។ នឹង ៤៖ ខ្ទង់ពីរចុងក្រោយចែកដាច់នឹង ៤។ នឹង ៣៖ ខ្ទង់លេខបូកគ្នាបានពហុគុណនៃ ៣។ នឹង ៩៖ បូកគ្នាបានពហុគុណនៃ ៩។ នឹង ៦៖ ជាប់ទាំងការសាកល្បង ២ និង ៣។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Where you actually use them", km: "កន្លែងដែលអ្នកប្រើវាពិតប្រាកដ" },
+        body: [
+          {
+            en: "Simplifying a fraction is the main one: to cut 138/174 down you need a shared factor, and the digit-sum test finds 3 in both instantly.",
+            km: "ការសម្រួលប្រភាគគឺជាការប្រើសំខាន់៖ ដើម្បីកាត់បន្ថយ ១៣៨/១៧៤ អ្នកត្រូវការកត្តារួម ហើយការសាកល្បងបូកខ្ទង់លេខរក ៣ ឃើញភ្លាមក្នុងលេខទាំងពីរ។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Digit sum divisible by 3 or 9 → so is the number.", km: "ផលបូកខ្ទង់លេខចែកដាច់នឹង ៣ ឬ ៩ → លេខនោះក៏ចែកដាច់ដែរ។" },
+      { en: "For 4, only the last two digits matter.", km: "សម្រាប់ ៤ មានតែខ្ទង់ពីរចុងក្រោយដែលសំខាន់។" },
+      { en: "6 = passes 2 and 3 together.", km: "៦ = ជាប់ទាំង ២ និង ៣ ជាមួយគ្នា។" },
+    ],
+    examples: [
+      { prompt: { en: "Does 3 divide 4,713?", km: "តើ ៣ ចែកដាច់ ៤,៧១៣ ឬទេ?" }, solution: { en: "4+7+1+3 = 15, and 15 divides by 3 — yes.", km: "៤+៧+១+៣ = ១៥ ហើយ ១៥ ចែកដាច់នឹង ៣ — បាទ/ចាស។" } },
+      { prompt: { en: "Simplify 24/36.", km: "សម្រួល ២៤/៣៦។" }, solution: { en: "Both pass the 12 test: 2/3.", km: "ទាំងពីរចែកដាច់នឹង ១២៖ ២/៣។" } },
+    ],
+    tip: {
+      en: "Test 2 and 3 before anything else — between them they clear most fractions you meet.",
+      km: "សាកល្បង ២ និង ៣ មុនគេ — ទាំងពីរនេះដោះស្រាយប្រភាគភាគច្រើនដែលអ្នកជួប។",
+    },
+  },
+  {
+    id: "m11",
+    minutes: 7,
+    title: { en: "Factors, multiples and primes", km: "កត្តា ពហុគុណ និងចំនួនបឋម" },
+    objective: {
+      en: "Tell these three apart and use factor pairs to break any number down.",
+      km: "បែងចែកបីនេះឲ្យដាច់ ហើយប្រើគូកត្តាដើម្បីបំបែកលេខណាមួយ។",
+    },
+    sections: [
+      {
+        heading: { en: "Factors go in, multiples go out", km: "កត្តាចូលក្នុង ពហុគុណចេញក្រៅ" },
+        body: [
+          {
+            en: "Factors of 12 are the numbers that divide it: 1, 2, 3, 4, 6, 12. Multiples of 12 are what you get by multiplying it: 12, 24, 36 and on forever. Factors are a short list; multiples never end.",
+            km: "កត្តានៃ ១២ គឺលេខដែលចែកដាច់វា៖ ១, ២, ៣, ៤, ៦, ១២។ ពហុគុណនៃ ១២ គឺអ្វីដែលអ្នកបានពីការគុណវា៖ ១២, ២៤, ៣៦ និងបន្តទៅមិនចប់។ កត្តាជាបញ្ជីខ្លី; ពហុគុណមិនចេះចប់។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Find factors in pairs", km: "រកកត្តាជាគូ" },
+        body: [
+          {
+            en: "Walk up from 1 and record both partners: 1×24, 2×12, 3×8, 4×6. Stop when the pair meets in the middle — you have them all. A prime has only the boring pair, 1 and itself.",
+            km: "ដើរឡើងពី ១ ហើយកត់ត្រាដៃគូទាំងពីរ៖ ១×២៤, ២×១២, ៣×៨, ៤×៦។ ឈប់ពេលគូជួបគ្នានៅកណ្តាល — អ្នកបានទាំងអស់ហើយ។ ចំនួនបឋមមានតែគូធម្មតា គឺ ១ និងខ្លួនវា។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Factors divide the number; multiples come from it.", km: "កត្តាចែកលេខនោះ; ពហុគុណកើតចេញពីវា។" },
+      { en: "List factors in pairs so you miss none.", km: "រាយកត្តាជាគូ ដើម្បីកុំឲ្យខកខាន។" },
+      { en: "A prime has exactly two factors. 1 is not prime.", km: "ចំនួនបឋមមានកត្តាពិតប្រាកដពីរ។ ១ មិនមែនជាចំនួនបឋមទេ។" },
+    ],
+    examples: [
+      { prompt: { en: "List the factors of 18.", km: "រាយកត្តានៃ ១៨។" }, solution: { en: "1×18, 2×9, 3×6 → 1, 2, 3, 6, 9, 18.", km: "១×១៨, ២×៩, ៣×៦ → ១, ២, ៣, ៦, ៩, ១៨។" } },
+      { prompt: { en: "Is 51 prime?", km: "តើ ៥១ ជាចំនួនបឋមទេ?" }, solution: { en: "No — 5+1 = 6, so 3 divides it: 3 × 17.", km: "ទេ — ៥+១ = ៦ ដូច្នេះ ៣ ចែកដាច់វា៖ ៣ × ១៧។" } },
+    ],
+    tip: {
+      en: "You only have to test up to the square root. For 51, stop at 7.",
+      km: "អ្នកគ្រាន់តែសាកល្បងរហូតដល់ឬសការេប៉ុណ្ណោះ។ សម្រាប់ ៥១ ឈប់ត្រឹម ៧។",
+    },
+  },
+  {
+    id: "m12",
+    minutes: 6,
+    title: { en: "What a fraction actually says", km: "អត្ថន័យពិតនៃប្រភាគ" },
+    objective: {
+      en: "Read the two numbers in a fraction as an instruction rather than a picture to memorise.",
+      km: "អានលេខទាំងពីរក្នុងប្រភាគជាការណែនាំ មិនមែនជារូបភាពត្រូវទន្ទេញ។",
+    },
+    sections: [
+      {
+        heading: { en: "Bottom cuts, top counts", km: "ខាងក្រោមកាត់ ខាងលើរាប់" },
+        body: [
+          {
+            en: "In 3/4 the 4 says cut the whole into four equal parts; the 3 says take three of them. That is the entire definition, and it survives everything you will later do to fractions.",
+            km: "ក្នុង ៣/៤ លេខ ៤ ប្រាប់ឲ្យកាត់ទាំងមូលជាបួនផ្នែកស្មើគ្នា; លេខ ៣ ប្រាប់ឲ្យយកបីក្នុងចំណោមនោះ។ នោះជានិយមន័យទាំងមូល ហើយវានៅតែពិតគ្រប់ពេលក្រោយៗទៀត។",
+          },
+          {
+            en: "It is also a division waiting to happen: 3/4 is 3 ÷ 4 = 0.75. Fraction, division and decimal are three faces of one number.",
+            km: "វាក៏ជាការចែកដែលរង់ចាំកើតឡើងផងដែរ៖ ៣/៤ គឺ ៣ ÷ ៤ = ០.៧៥។ ប្រភាគ ការចែក និងទសភាគ គឺជាបីមុខនៃលេខតែមួយ។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Bigger bottom, smaller piece", km: "ខាងក្រោមធំ ចំណែកតូច" },
+        body: [
+          {
+            en: "1/8 is smaller than 1/3, even though 8 is bigger — more cuts means thinner slices. This is the one place fractions feel backwards, and it catches people for years.",
+            km: "១/៨ តូចជាង ១/៣ ទោះបី ៨ ធំជាងក៏ដោយ — កាត់ច្រើន មានន័យថាចំណែកស្តើងជាង។ នេះជាចំណុចតែមួយដែលប្រភាគមើលទៅផ្ទុយ ហើយវាធ្វើឲ្យមនុស្សច្រឡំអស់ជាច្រើនឆ្នាំ។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Denominator cuts, numerator counts.", km: "ភាគបែងកាត់ ភាគយករាប់។" },
+      { en: "A fraction is also a division.", km: "ប្រភាគក៏ជាការចែកផងដែរ។" },
+      { en: "A bigger denominator makes a smaller piece.", km: "ភាគបែងធំជាង ធ្វើឲ្យចំណែកតូចជាង។" },
+    ],
+    examples: [
+      { prompt: { en: "Which is bigger, 2/5 or 1/2?", km: "តើមួយណាធំជាង ២/៥ ឬ ១/២?" }, solution: { en: "1/2 = 2.5/5, so 1/2 wins.", km: "១/២ = ២.៥/៥ ដូច្នេះ ១/២ ធំជាង។" } },
+      { prompt: { en: "Write 7/10 as a decimal.", km: "សរសេរ ៧/១០ ជាទសភាគ។" }, solution: { en: "7 ÷ 10 = 0.7.", km: "៧ ÷ ១០ = ០.៧។" } },
+    ],
+    tip: {
+      en: "Compare any fraction to 1/2 first. It settles most \"which is bigger\" questions on sight.",
+      km: "ប្រៀបធៀបប្រភាគនីមួយៗនឹង ១/២ សិន។ វាដោះស្រាយសំណួរ «មួយណាធំជាង» ភាគច្រើនភ្លាមៗ។",
+    },
+  },
+  {
+    id: "m13",
+    minutes: 6,
+    title: { en: "Equivalent fractions", km: "ប្រភាគស្មើគ្នា" },
+    objective: {
+      en: "Rewrite a fraction without changing its value, and reduce it to its simplest form.",
+      km: "សរសេរប្រភាគឡើងវិញដោយមិនប្តូរតម្លៃ ហើយសម្រួលវាទៅជាទម្រង់សាមញ្ញបំផុត។",
+    },
+    sections: [
+      {
+        heading: { en: "Multiply top and bottom by the same thing", km: "គុណខាងលើ និងខាងក្រោមនឹងលេខដដែល" },
+        body: [
+          {
+            en: "2/3 = 4/6 = 20/30. Multiplying both parts by the same number is multiplying by 1 in disguise, so the value cannot move. Cutting the cake into more slices does not give you more cake.",
+            km: "២/៣ = ៤/៦ = ២០/៣០។ ការគុណផ្នែកទាំងពីរនឹងលេខដដែល គឺជាការគុណនឹង ១ ក្នុងទម្រង់ក្លែងខ្លួន ដូច្នេះតម្លៃមិនអាចប្តូរបានទេ។ ការកាត់នំជាចំណែកច្រើនជាង មិនធ្វើឲ្យអ្នកបាននំច្រើនជាងទេ។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Simplifying is the same move, backwards", km: "ការសម្រួល គឺជាចលនាដដែល តែថយក្រោយ" },
+        body: [
+          {
+            en: "To simplify, divide both parts by a shared factor until none is left. 18/24: both divide by 6, giving 3/4. Use the divisibility tests from earlier to spot the factor.",
+            km: "ដើម្បីសម្រួល សូមចែកផ្នែកទាំងពីរនឹងកត្តារួម រហូតដល់គ្មានសល់។ ១៨/២៤៖ ទាំងពីរចែកដាច់នឹង ៦ បាន ៣/៤។ ប្រើការសាកល្បងចែកដាច់ខាងលើ ដើម្បីរកកត្តា។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Same number on top and bottom keeps the value.", km: "លេខដដែលនៅខាងលើនិងខាងក្រោម រក្សាតម្លៃដដែល។" },
+      { en: "Simplify by dividing out shared factors.", km: "សម្រួលដោយចែកកត្តារួមចេញ។" },
+      { en: "Simplest form has no factor left in common.", km: "ទម្រង់សាមញ្ញបំផុត គ្មានកត្តារួមនៅសល់ទេ។" },
+    ],
+    examples: [
+      { prompt: { en: "Write 3/5 with a denominator of 20.", km: "សរសេរ ៣/៥ ដោយមានភាគបែង ២០។" }, solution: { en: "×4 on both: 12/20.", km: "គុណ ៤ ទាំងពីរ៖ ១២/២០។" } },
+      { prompt: { en: "Simplify 45/60.", km: "សម្រួល ៤៥/៦០។" }, solution: { en: "Both ÷15 → 3/4.", km: "ទាំងពីរចែក ១៥ → ៣/៤។" } },
+    ],
+    tip: {
+      en: "Simplify before you calculate, not after. Small numbers are easier to be right about.",
+      km: "សម្រួលមុននឹងគណនា មិនមែនក្រោយទេ។ លេខតូចជាង ធ្វើឲ្យត្រឹមត្រូវងាយជាង។",
+    },
+  },
+  {
+    id: "m14",
+    minutes: 8,
+    title: { en: "Adding and subtracting fractions", km: "ការបូក និងដកប្រភាគ" },
+    objective: {
+      en: "Add fractions safely by making the pieces the same size first.",
+      km: "បូកប្រភាគឲ្យត្រឹមត្រូវ ដោយធ្វើឲ្យចំណែកមានទំហំដូចគ្នាជាមុនសិន។",
+    },
+    sections: [
+      {
+        heading: { en: "You can only add same-sized pieces", km: "អ្នកអាចបូកបានតែចំណែកទំហំដូចគ្នា" },
+        body: [
+          {
+            en: "1/2 + 1/3 is not 2/5. Halves and thirds are different pieces, so first rewrite both over 6: 3/6 + 2/6 = 5/6. Now the tops can be counted.",
+            km: "១/២ + ១/៣ មិនស្មើ ២/៥ ទេ។ ពាក់កណ្តាល និងមួយភាគបី ជាចំណែកខុសគ្នា ដូច្នេះត្រូវសរសេរទាំងពីរលើ ៦ សិន៖ ៣/៦ + ២/៦ = ៥/៦។ ឥឡូវអាចរាប់ភាគយកបាន។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Choosing the common bottom", km: "ការជ្រើសភាគបែងរួម" },
+        body: [
+          {
+            en: "Multiplying the two denominators always works. The smallest common multiple keeps the numbers tidier: for 1/4 + 1/6, use 12 rather than 24.",
+            km: "ការគុណភាគបែងទាំងពីរ តែងតែដំណើរការ។ ពហុគុណរួមតូចបំផុត ធ្វើឲ្យលេខស្អាតជាង៖ សម្រាប់ ១/៤ + ១/៦ សូមប្រើ ១២ ជាជាង ២៤។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Same denominator first, then add the tops only.", km: "ភាគបែងដូចគ្នាសិន រួចបូកតែភាគយក។" },
+      { en: "Never add the denominators.", km: "កុំបូកភាគបែងជាដាច់ខាត។" },
+      { en: "Simplify the answer at the end.", km: "សម្រួលចម្លើយនៅចុងបញ្ចប់។" },
+    ],
+    examples: [
+      { prompt: { en: "2/5 + 1/3", km: "២/៥ + ១/៣" }, solution: { en: "6/15 + 5/15 = 11/15.", km: "៦/១៥ + ៥/១៥ = ១១/១៥។" } },
+      { prompt: { en: "3/4 − 1/6", km: "៣/៤ − ១/៦" }, solution: { en: "9/12 − 2/12 = 7/12.", km: "៩/១២ − ២/១២ = ៧/១២។" } },
+    ],
+    tip: {
+      en: "Estimate first: 2/5 + 1/3 is a bit under 1. If your answer says 3, you slipped.",
+      km: "ប៉ាន់ស្មានសិន៖ ២/៥ + ១/៣ តិចជាង ១ បន្តិច។ បើចម្លើយអ្នកបាន ៣ នោះអ្នកខុសហើយ។",
+    },
+  },
+  {
+    id: "m15",
+    minutes: 7,
+    title: { en: "Multiplying and dividing fractions", km: "ការគុណ និងចែកប្រភាគ" },
+    objective: {
+      en: "Use the two rules that are easier than adding — and understand why dividing flips.",
+      km: "ប្រើក្បួនពីរដែលងាយជាងការបូក — ហើយយល់ថាហេតុអ្វីការចែកត្រូវត្រឡប់។",
+    },
+    sections: [
+      {
+        heading: { en: "Multiplying: straight across", km: "ការគុណ៖ គុណទល់មុខគ្នា" },
+        body: [
+          {
+            en: "2/3 × 4/5 = 8/15. Tops times tops, bottoms times bottoms — no common denominator needed. \"Of\" means multiply: half of 2/3 is 1/2 × 2/3 = 1/3.",
+            km: "២/៣ × ៤/៥ = ៨/១៥។ ភាគយកគុណភាគយក ភាគបែងគុណភាគបែង — មិនត្រូវការភាគបែងរួមទេ។ ពាក្យ «នៃ» មានន័យថាគុណ៖ ពាក់កណ្តាលនៃ ២/៣ គឺ ១/២ × ២/៣ = ១/៣។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Dividing: multiply by the flip", km: "ការចែក៖ គុណនឹងប្រភាគត្រឡប់" },
+        body: [
+          {
+            en: "3 ÷ 1/4 asks how many quarters fit in 3 — twelve. Flipping and multiplying gives 3 × 4/1 = 12. The flip is not a trick; it is the grouping question written down.",
+            km: "៣ ÷ ១/៤ សួរថាមានប៉ុន្មានភាគបួនក្នុង ៣ — ដប់ពីរ។ ការត្រឡប់រួចគុណ បាន ៣ × ៤/១ = ១២។ ការត្រឡប់មិនមែនជាល្បិចទេ; វាជាសំណួរដាក់ជាក្រុមដែលសរសេរចុះ។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Multiply straight across, no common denominator.", km: "គុណទល់មុខគ្នា ដោយមិនចាំបាច់ភាគបែងរួម។" },
+      { en: "\"Of\" means ×.", km: "ពាក្យ «នៃ» មានន័យថា ×។" },
+      { en: "Dividing by a fraction = multiplying by its flip.", km: "ការចែកនឹងប្រភាគ = ការគុណនឹងប្រភាគត្រឡប់។" },
+    ],
+    examples: [
+      { prompt: { en: "3/4 of 20", km: "៣/៤ នៃ ២០" }, solution: { en: "20 ÷ 4 = 5, then × 3 = 15.", km: "២០ ÷ ៤ = ៥ រួច × ៣ = ១៥។" } },
+      { prompt: { en: "2/3 ÷ 4/9", km: "២/៣ ÷ ៤/៩" }, solution: { en: "2/3 × 9/4 = 18/12 = 3/2.", km: "២/៣ × ៩/៤ = ១៨/១២ = ៣/២។" } },
+    ],
+    tip: {
+      en: "Cancel before multiplying — crossing out shared factors early keeps the numbers small.",
+      km: "សម្រួលមុននឹងគុណ — ការកាត់កត្តារួមតាំងពីដំបូង រក្សាលេខឲ្យតូច។",
+    },
+  },
+  {
+    id: "m16",
+    minutes: 6,
+    title: { en: "Decimals in disguise", km: "ទសភាគក្នុងទម្រង់ក្លែងខ្លួន" },
+    objective: {
+      en: "Move between fractions and decimals, and add decimals without misplacing a column.",
+      km: "ប្តូររវាងប្រភាគនិងទសភាគ ហើយបូកទសភាគដោយមិនដាក់ខុសជួរឈរ។",
+    },
+    sections: [
+      {
+        heading: { en: "A decimal is a fraction over ten", km: "ទសភាគ គឺជាប្រភាគលើគោលដប់" },
+        body: [
+          {
+            en: "0.7 is 7/10 and 0.25 is 25/100. Place value simply keeps going to the right of the point: tenths, hundredths, thousandths.",
+            km: "០.៧ គឺ ៧/១០ ហើយ ០.២៥ គឺ ២៥/១០០។ តម្លៃទីតាំងគ្រាន់តែបន្តទៅខាងស្តាំនៃសញ្ញាក្បៀស៖ ភាគដប់ ភាគរយ ភាគពាន់។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Line up the point, not the digits", km: "តម្រឹមសញ្ញាក្បៀស មិនមែនខ្ទង់លេខ" },
+        body: [
+          {
+            en: "Adding 12.4 and 3.75 goes wrong when the digits are lined up right-to-left. Line up the decimal points, pad with a zero — 12.40 + 3.75 = 16.15 — and the columns take care of themselves.",
+            km: "ការបូក ១២.៤ និង ៣.៧៥ នឹងខុស ពេលតម្រឹមខ្ទង់លេខពីស្តាំទៅឆ្វេង។ តម្រឹមសញ្ញាក្បៀស បំពេញដោយសូន្យ — ១២.៤០ + ៣.៧៥ = ១៦.១៥ — រួចជួរឈរនឹងត្រូវដោយខ្លួនឯង។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "0.1 = 1/10, 0.01 = 1/100.", km: "០.១ = ១/១០, ០.០១ = ១/១០០។" },
+      { en: "Pad with zeros so both numbers have the same length.", km: "បំពេញសូន្យ ដើម្បីឲ្យលេខទាំងពីរមានប្រវែងដូចគ្នា។" },
+      { en: "Know 1/2, 1/4, 1/5 and 3/4 as decimals by heart.", km: "ចាំ ១/២, ១/៤, ១/៥ និង ៣/៤ ជាទសភាគដោយចិត្ត។" },
+    ],
+    examples: [
+      { prompt: { en: "Write 3/8 as a decimal.", km: "សរសេរ ៣/៨ ជាទសភាគ។" }, solution: { en: "3 ÷ 8 = 0.375.", km: "៣ ÷ ៨ = ០.៣៧៥។" } },
+      { prompt: { en: "0.6 + 0.45", km: "០.៦ + ០.៤៥" }, solution: { en: "0.60 + 0.45 = 1.05.", km: "០.៦០ + ០.៤៥ = ១.០៥។" } },
+    ],
+    tip: {
+      en: "Trailing zeros after the point change nothing: 0.6 and 0.60 are the same number.",
+      km: "សូន្យនៅខាងចុងក្រោយសញ្ញាក្បៀស មិនប្តូរអ្វីទេ៖ ០.៦ និង ០.៦០ ជាលេខតែមួយ។",
+    },
+  },
+  {
+    id: "m17",
+    minutes: 7,
+    title: { en: "Percentages in your head", km: "ភាគរយក្នុងចិត្ត" },
+    objective: {
+      en: "Build any percentage from 10%, 5% and 1% instead of reaching for a calculator.",
+      km: "សាងសង់ភាគរយណាមួយពី ១០%, ៥% និង ១% ជំនួសការប្រើម៉ាស៊ីនគិតលេខ។",
+    },
+    sections: [
+      {
+        heading: { en: "Percent means per hundred", km: "ភាគរយ មានន័យថាក្នុងមួយរយ" },
+        body: [
+          {
+            en: "25% is 25/100 = 1/4. Once a percentage is a fraction you already know, the work disappears: 25% of 60 is a quarter of 60 = 15.",
+            km: "២៥% គឺ ២៥/១០០ = ១/៤។ ពេលភាគរយក្លាយជាប្រភាគដែលអ្នកចេះស្រាប់ ការងារបាត់ទៅ៖ ២៥% នៃ ៦០ គឺមួយភាគបួននៃ ៦០ = ១៥។",
+          },
+        ],
+      },
+      {
+        heading: { en: "The 10% ladder", km: "ជណ្តើរ ១០%" },
+        body: [
+          {
+            en: "10% is one column shift: 10% of 240 is 24. Half of that is 5% (12), a tenth of it is 1% (2.4). Stack them: 17% = 24 + 12 + 4.8 = 40.8.",
+            km: "១០% គឺការផ្លាស់មួយជួរឈរ៖ ១០% នៃ ២៤០ គឺ ២៤។ ពាក់កណ្តាលនៃនោះគឺ ៥% (១២) មួយភាគដប់នៃនោះគឺ ១% (២.៤)។ ដាក់បញ្ចូលគ្នា៖ ១៧% = ២៤ + ១២ + ៤.៨ = ៤០.៨។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "10% = shift one column right.", km: "១០% = ផ្លាស់ទៅស្តាំមួយជួរឈរ។" },
+      { en: "5% is half of 10%; 1% is a tenth of it.", km: "៥% គឺពាក់កណ្តាលនៃ ១០%; ១% គឺមួយភាគដប់នៃវា។" },
+      { en: "x% of y = y% of x — swap if it is easier.", km: "x% នៃ y = y% នៃ x — ប្តូរបើវាងាយជាង។" },
+    ],
+    examples: [
+      { prompt: { en: "15% of 80", km: "១៥% នៃ ៨០" }, solution: { en: "10% = 8, 5% = 4, total 12.", km: "១០% = ៨, ៥% = ៤, សរុប ១២។" } },
+      { prompt: { en: "A $40 shirt, 30% off. Pay what?", km: "អាវ ៤០ ដុល្លារ បញ្ចុះ ៣០%។ ត្រូវបង់ប៉ុន្មាន?" }, solution: { en: "Pay 70%: 10% = 4, so 7 × 4 = $28.", km: "បង់ ៧០%៖ ១០% = ៤ ដូច្នេះ ៧ × ៤ = ២៨ ដុល្លារ។" } },
+    ],
+    tip: {
+      en: "For a discount, work out what you pay, not what you save. One step instead of two.",
+      km: "សម្រាប់ការបញ្ចុះតម្លៃ សូមគណនាអ្វីដែលអ្នកត្រូវបង់ មិនមែនអ្វីដែលអ្នកសន្សំបានទេ។ ជំហានមួយ ជំនួសពីរ។",
+    },
+  },
+  {
+    id: "m18",
+    minutes: 7,
+    title: { en: "Ratio and proportion", km: "សមាមាត្រ និងធៀប" },
+    objective: {
+      en: "Share an amount in a given ratio and scale a recipe up or down without guessing.",
+      km: "ចែកចំនួនតាមសមាមាត្រដែលបានកំណត់ ហើយពង្រីក ឬបង្រួមរូបមន្តដោយមិនបាច់ទាយ។",
+    },
+    sections: [
+      {
+        heading: { en: "Count the shares first", km: "រាប់ចំណែកសិន" },
+        body: [
+          {
+            en: "Split $60 in the ratio 2:3. That is 5 shares in total, so one share is $12. The two parts are $24 and $36 — and they add back to $60, which is your check.",
+            km: "ចែក ៦០ ដុល្លារ តាមសមាមាត្រ ២:៣។ សរុបមាន ៥ ចំណែក ដូច្នេះមួយចំណែកគឺ ១២ ដុល្លារ។ ផ្នែកទាំងពីរគឺ ២៤ ដុល្លារ និង ៣៦ ដុល្លារ — ហើយបូកគ្នាវិញបាន ៦០ ដុល្លារ ដែលជាការត្រួតពិនិត្យរបស់អ្នក។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Scale by finding one unit", km: "ពង្រីកដោយរកឯកតាមួយ" },
+        body: [
+          {
+            en: "If 4 notebooks cost $6, one costs $1.50, so 10 cost $15. Going through the single unit turns every proportion question into two easy steps.",
+            km: "បើសៀវភៅ ៤ ក្បាល ថ្លៃ ៦ ដុល្លារ នោះមួយក្បាលថ្លៃ ១.៥០ ដុល្លារ ដូច្នេះ ១០ ក្បាល ថ្លៃ ១៥ ដុល្លារ។ ការឆ្លងកាត់ឯកតាមួយ ប្តូរសំណួរធៀបទាំងអស់ទៅជាជំហានងាយពីរ។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Total shares = the ratio numbers added.", km: "ចំណែកសរុប = ផលបូកនៃលេខសមាមាត្រ។" },
+      { en: "Find one share, then multiply out.", km: "រកមួយចំណែក រួចគុណចេញ។" },
+      { en: "Check by adding the parts back to the whole.", km: "ពិនិត្យដោយបូកផ្នែកទាំងអស់ត្រឡប់ទៅជាទាំងមូល។" },
+    ],
+    examples: [
+      { prompt: { en: "Share 45 sweets between 4:5.", km: "ចែកស្ករគ្រាប់ ៤៥ តាម ៤:៥។" }, solution: { en: "9 shares → 5 each. 20 and 25.", km: "៩ ចំណែក → មួយចំណែក ៥។ បាន ២០ និង ២៥។" } },
+      { prompt: { en: "3 kg of rice costs $4.50. What do 7 kg cost?", km: "អង្ករ ៣ គីឡូ ថ្លៃ ៤.៥០ ដុល្លារ។ ៧ គីឡូថ្លៃប៉ុន្មាន?" }, solution: { en: "1 kg = $1.50, so 7 kg = $10.50.", km: "១ គីឡូ = ១.៥០ ដុល្លារ ដូច្នេះ ៧ គីឡូ = ១០.៥០ ដុល្លារ។" } },
+    ],
+    tip: {
+      en: "Write the units beside the numbers. Half of all ratio mistakes are lining up the wrong pair.",
+      km: "សរសេរឯកតានៅក្បែរលេខ។ ពាក់កណ្តាលនៃកំហុសសមាមាត្រ គឺការតម្រឹមគូខុស។",
+    },
+  },
+  {
+    id: "m19",
+    minutes: 6,
+    title: { en: "Negative numbers on the line", km: "ចំនួនអវិជ្ជមានលើបន្ទាត់លេខ" },
+    objective: {
+      en: "Add and subtract below zero by moving along a line instead of memorising sign rules.",
+      km: "បូកនិងដកក្រោមសូន្យ ដោយផ្លាស់ទីតាមបន្ទាត់ ជំនួសការទន្ទេញក្បួនសញ្ញា។",
+    },
+    sections: [
+      {
+        heading: { en: "Left is minus, right is plus", km: "ឆ្វេងគឺដក ស្តាំគឺបូក" },
+        body: [
+          {
+            en: "Draw the line once in your head: … −3, −2, −1, 0, 1, 2, 3 … Adding walks right, subtracting walks left. −2 + 5 walks five steps right and lands on 3.",
+            km: "គូរបន្ទាត់នេះម្តងក្នុងចិត្ត៖ … −៣, −២, −១, ០, ១, ២, ៣ … ការបូកដើរទៅស្តាំ ការដកដើរទៅឆ្វេង។ −២ + ៥ ដើរប្រាំជំហានទៅស្តាំ ហើយឈប់នៅ ៣។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Two minuses turn around", km: "ដកពីរ បង្វែរទិស" },
+        body: [
+          {
+            en: "5 − (−3) is 8: taking away a debt leaves you better off, so the second minus turns the walk around. For multiplying, the same idea gives negative × negative = positive.",
+            km: "៥ − (−៣) ស្មើ ៨៖ ការដកបំណុលចេញ ធ្វើឲ្យអ្នកមានស្ថានភាពប្រសើរជាង ដូច្នេះសញ្ញាដកទីពីរបង្វែរទិសដើរ។ សម្រាប់ការគុណ គំនិតដដែលផ្តល់ថា អវិជ្ជមាន × អវិជ្ជមាន = វិជ្ជមាន។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Adding moves right, subtracting moves left.", km: "ការបូកផ្លាស់ទៅស្តាំ ការដកផ្លាស់ទៅឆ្វេង។" },
+      { en: "Subtracting a negative adds.", km: "ការដកចំនួនអវិជ្ជមាន គឺជាការបូក។" },
+      { en: "Same signs multiply to positive, mixed to negative.", km: "សញ្ញាដូចគ្នាគុណបានវិជ្ជមាន សញ្ញាខុសគ្នាបានអវិជ្ជមាន។" },
+    ],
+    examples: [
+      { prompt: { en: "−7 + 4", km: "−៧ + ៤" }, solution: { en: "Four steps right from −7: −3.", km: "ដើរបួនជំហានទៅស្តាំពី −៧៖ −៣។" } },
+      { prompt: { en: "−6 × −5", km: "−៦ × −៥" }, solution: { en: "Same signs → positive 30.", km: "សញ្ញាដូចគ្នា → វិជ្ជមាន ៣០។" } },
+    ],
+    tip: {
+      en: "Read the sign as owing money. −7 + 4 is a debt of seven, paying back four.",
+      km: "អានសញ្ញាដកជាបំណុល។ −៧ + ៤ គឺបំណុល ៧ ហើយសង ៤។",
+    },
+  },
+  {
+    id: "m20",
+    minutes: 8,
+    title: { en: "Turning words into arithmetic", km: "ការប្តូរពាក្យទៅជាគណិត" },
+    objective: {
+      en: "Work through a word problem in a fixed order, so the hard part stops being the reading.",
+      km: "ដោះស្រាយលំហាត់ជាអត្ថបទតាមលំដាប់ជាក់លាក់ ដើម្បីកុំឲ្យផ្នែកពិបាកជាការអានទៀត។",
+    },
+    sections: [
+      {
+        heading: { en: "Four steps, every time", km: "បួនជំហាន គ្រប់ពេល" },
+        body: [
+          {
+            en: "One: what is the question actually asking for? Two: what numbers matter, and in what units? Three: what operation matches the story? Four: estimate, calculate, then check the answer against the estimate.",
+            km: "មួយ៖ តើសំណួរសួររកអ្វីពិតប្រាកដ? ពីរ៖ លេខណាខ្លះសំខាន់ ហើយក្នុងឯកតាណា? បី៖ ប្រមាណវិធីណាដែលត្រូវនឹងរឿង? បួន៖ ប៉ាន់ស្មាន គណនា រួចផ្ទៀងចម្លើយនឹងការប៉ាន់ស្មាន។",
+          },
+        ],
+      },
+      {
+        heading: { en: "Words that name the operation", km: "ពាក្យដែលប្រាប់ប្រមាណវិធី" },
+        body: [
+          {
+            en: "\"Altogether\" and \"total\" add. \"How many more\" and \"left\" subtract. \"Each\" and \"per\" usually multiply or divide. They are hints, not rules — the story decides.",
+            km: "ពាក្យ «សរុប» និង «ទាំងអស់» គឺបូក។ «ច្រើនជាងប៉ុន្មាន» និង «នៅសល់» គឺដក។ «ម្នាក់ៗ» និង «ក្នុងមួយ» ជាធម្មតាគុណ ឬចែក។ ទាំងនេះជាតម្រុយ មិនមែនក្បួនទេ — រឿងជាអ្នកសម្រេច។",
+          },
+        ],
+      },
+    ],
+    keyPoints: [
+      { en: "Name the question before touching the numbers.", km: "កំណត់សំណួរ មុននឹងប៉ះលេខ។" },
+      { en: "Keep the units with the numbers all the way through.", km: "រក្សាឯកតាជាមួយលេខពីដើមដល់ចប់។" },
+      { en: "Estimate first — it catches a wrong operation instantly.", km: "ប៉ាន់ស្មានសិន — វាចាប់បានប្រមាណវិធីខុសភ្លាមៗ។" },
+    ],
+    examples: [
+      {
+        prompt: { en: "A box holds 24 pencils. A school buys 15 boxes and hands out 280. How many are left?", km: "ប្រអប់មួយផ្ទុកខ្មៅដៃ ២៤។ សាលាទិញ ១៥ ប្រអប់ ហើយចែក ២៨០។ នៅសល់ប៉ុន្មាន?" },
+        solution: { en: "15 × 24 = 360; 360 − 280 = 80 pencils.", km: "១៥ × ២៤ = ៣៦០; ៣៦០ − ២៨០ = ៨០ ខ្មៅដៃ។" },
+      },
+      {
+        prompt: { en: "Three friends split a $54 bill evenly. One pays with a $20 note. What is the change?", km: "មិត្តបីនាក់ចែកវិក្កយបត្រ ៥៤ ដុល្លារ ស្មើគ្នា។ ម្នាក់បង់ដោយក្រដាស ២០ ដុល្លារ។ ប្រាក់អាប់ប៉ុន្មាន?" },
+        solution: { en: "54 ÷ 3 = 18; 20 − 18 = $2.", km: "៥៤ ÷ ៣ = ១៨; ២០ − ១៨ = ២ ដុល្លារ។" },
+      },
+    ],
+    tip: {
+      en: "Write the answer as a sentence with its unit. \"80\" is not an answer; \"80 pencils left\" is.",
+      km: "សរសេរចម្លើយជាប្រយោគ ជាមួយឯកតារបស់វា។ «៨០» មិនមែនជាចម្លើយទេ; «នៅសល់ខ្មៅដៃ ៨០» ទើបជាចម្លើយ។",
+    },
+  },
 ];
 
 const HISTORY = [
@@ -765,6 +1451,11 @@ export const COURSES = {
   math: MATH,
   history: HISTORY,
   physics: PHYSICS,
+  // DEMO SCAFFOLD: the Biology deck (code MING-1187) has no course of its
+  // own yet, so it borrows the maths path — twenty lessons, chests and an
+  // exam — to demo the Learn view end to end. The lesson text is maths.
+  // Replace this with a real BIOLOGY array when the course is written.
+  biology: MATH,
 };
 
 export function lessonsFor(subject) {

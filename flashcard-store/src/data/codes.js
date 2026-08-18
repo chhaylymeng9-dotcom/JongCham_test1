@@ -17,6 +17,7 @@ import { DECK_BY_ID } from "./decks.js";
 const DEMO_CODES = {
   "GRAM-2201": "grammar",
   "NUM-1187": "math",
+  "MING-1187": "biology",
   "HIST-5521": "history",
   "CUST-9001": "custom",
   "PHYS-3312": "physics",
@@ -28,6 +29,7 @@ const PREFIX_BY_DECK = {
   history: "HIST",
   custom: "CUST",
   physics: "PHYS",
+  biology: "MING",
 };
 
 export const DEMO_CODE_LIST = Object.entries(DEMO_CODES).map(([code, deckId]) => ({

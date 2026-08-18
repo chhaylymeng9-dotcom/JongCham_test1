@@ -125,6 +125,11 @@ export default function Dashboard({
   }, [menuOpen]);
 
   const firstName = (session.name || "").trim().split(/\s+/)[0] || "Learner";
+  /* the deck's own name in both languages when it has both, e.g.
+     "គណិតវិទ្យាមូលដ្ឋាន - MATH FUNDAMENTALS" */
+  const deckTitle = deck?.name
+    ? [deck.name.km, (deck.name.en || "").toUpperCase()].filter(Boolean).join(" - ")
+    : "";
 
   return (
     <div className="jd-root" ref={rootRef}>
@@ -197,9 +202,13 @@ export default function Dashboard({
           </div>
         </div>
 
+        {/* the course you are actually in. This was hardcoded to
+            "ជីវវិទ្យា - BIOLOGY" from the mockup it was ported from, so
+            every deck — maths, history, physics — announced itself as
+            biology while the Learn map's header named it correctly. */}
         <div className="jd-head">
           <h1 className="jd-title" style={{ fontFamily: '"Khmer OS Siemreap","Siemreap","Noto Sans Khmer",sans-serif' }}>
-            ជីវវិទ្យា - BIOLOGY
+            {deckTitle}
           </h1>
         </div>
 

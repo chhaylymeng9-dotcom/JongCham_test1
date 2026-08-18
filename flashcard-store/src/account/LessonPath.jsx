@@ -4,6 +4,7 @@ import { useI18n } from "../i18n.jsx";
 import FocusJourney from "../components/FocusJourney";
 import PomoStatusBox from "../components/PomoStatusBox";
 import CoursePicker, { StarsPill } from "../components/CoursePicker";
+import StarShop from "../components/StarShop.jsx";
 import LessonChat from "./LessonChat.jsx";
 import Leaderboard from "../components/Leaderboard.jsx";
 import { friendStandings, lastWeekStandings, leagueIndexFor, weekStandings } from "../data/leaderboardDemo.js";
@@ -75,12 +76,19 @@ const ICONS = {
 
 /* the right rail's own small icons — a flame, an apple and a tick */
 const RAIL_ICONS = {
+  /* the streak tree. It used to be a 20px sketch stacked above the number,
+     where the canopy read as a green speck — it is now the pill's icon,
+     drawn at 30px beside the count like the stars pill's flower. */
   streak: (
-    <svg width="20" height="21" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M11 13h2v9h-2z" fill="#8C5A46" />
-      <circle cx="12" cy="9" r="7.5" fill="#5FA96D" />
-      <circle cx="8.5" cy="8" r="1.3" fill="#B8433F" />
-      <circle cx="15" cy="10.5" r="1.3" fill="#B8433F" />
+    <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M14.7 18.5h2.6v9h-2.6z" fill="#8C5A46" />
+      <path d="M15 22.4 11.6 19l-1.5 1.5 4.9 4.6zM17 23.4l3.2-3.2 1.5 1.5-4.7 4.4z" fill="#8C5A46" />
+      <circle cx="16" cy="12" r="9" fill="#5FA96D" />
+      <path d="M16 3a9 9 0 0 1 0 18 9 9 0 0 0 0-18Z" fill="#4A8C57" />
+      <circle cx="11.4" cy="9.6" r="1.9" fill="#B8433F" />
+      <circle cx="19.8" cy="13.2" r="1.9" fill="#B8433F" />
+      <circle cx="14.6" cy="15.6" r="1.6" fill="#C6553F" />
+      <path d="M9 28h14" stroke="#CFC8B6" strokeWidth="2" strokeLinecap="round" />
     </svg>
   ),
   done: (
@@ -96,92 +104,105 @@ const RAIL_ICONS = {
   )
 };
 
-/* small stroke icons for the left rail — one per sidebar destination */
+/* the left rail's icons — one colour per destination rather than eight
+   green outlines, so a glance at the rail tells you where you are going.
+   Each is a soft fill under a stronger stroke of the same hue. */
 const SIDE_ICONS = {
   learn: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3 11 12 3l9 8" />
-      <path d="M5.5 9.5V21h13V9.5" />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5.5 10.5 12 5l6.5 5.5V20h-13Z" fill="#D7EBDA" />
+      <path d="M3 11 12 3l9 8" stroke="#3E8F52" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5.5 9.5V21h13V9.5" stroke="#3E8F52" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10.2 21v-5h3.6v5" stroke="#3E8F52" strokeWidth="1.8" strokeLinejoin="round" />
     </svg>
   ),
   lessons: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 6.5C10 4.8 7.3 4.2 4 4.5V19c3.3-.3 6 .3 8 2 2-1.7 4.7-2.3 8-2V4.5c-3.3-.3-6 .3-8 2Z" />
-      <path d="M12 6.5V21" />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 6.5C10 4.8 7.3 4.2 4 4.5V19c3.3-.3 6 .3 8 2 2-1.7 4.7-2.3 8-2V4.5c-3.3-.3-6 .3-8 2Z" fill="#DCE7FA" />
+      <path d="M12 6.5C10 4.8 7.3 4.2 4 4.5V19c3.3-.3 6 .3 8 2 2-1.7 4.7-2.3 8-2V4.5c-3.3-.3-6 .3-8 2Z" stroke="#4A7FD6" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M12 6.5V21" stroke="#4A7FD6" strokeWidth="2" strokeLinecap="round" />
     </svg>
   ),
   practice: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="8.5" />
-      <circle cx="12" cy="12" r="4.5" />
-      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" fill="#FBE3D9" />
+      <circle cx="12" cy="12" r="8.5" stroke="#E2724A" strokeWidth="2" />
+      <circle cx="12" cy="12" r="4.5" stroke="#E2724A" strokeWidth="2" />
+      <circle cx="12" cy="12" r="1.8" fill="#C6553F" />
     </svg>
   ),
   exam: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="9" r="5.5" />
-      <path d="M8.5 13.5 7 22l5-2.5L17 22l-1.5-8.5" />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="9" r="5.5" fill="#FBEFCC" stroke="#D9A22F" strokeWidth="2" />
+      <path d="M8.5 13.5 7 22l5-2.5L17 22l-1.5-8.5" stroke="#D9A22F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
   cert: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="4" width="18" height="13" rx="2" />
-      <circle cx="12" cy="10" r="2.6" />
-      <path d="M10.8 12.2 10 17l2-1.2L14 17l-.8-4.8" />
-    </svg>
-  ),
-  quests: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 21V4" />
-      <path d="M5 5c3.2-1.6 5.8 1.6 9.3 0l.7 8c-3.5 1.6-6.1-1.6-9.3 0" />
-    </svg>
-  ),
-  shop: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5.5 8h13l-1 12.5h-11L5.5 8Z" />
-      <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
-    </svg>
-  ),
-  cart: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3.5 5H6l2.2 11h9.9L20.5 8H7" />
-      <circle cx="9.7" cy="20" r="1.6" />
-      <circle cx="16.7" cy="20" r="1.6" />
-    </svg>
-  ),
-  profile: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4.5 20.5c1.4-3.2 4.2-4.8 7.5-4.8s6.1 1.6 7.5 4.8" />
-    </svg>
-  ),
-  pomo: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 6v6l4 2" />
-    </svg>
-  ),
-  more: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <circle cx="5" cy="12" r="2.1" />
-      <circle cx="12" cy="12" r="2.1" />
-      <circle cx="19" cy="12" r="2.1" />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="13" rx="2" fill="#EDE3FA" stroke="#8A5AC2" strokeWidth="2" />
+      <circle cx="12" cy="10" r="2.6" stroke="#8A5AC2" strokeWidth="1.8" />
+      <path d="M10.8 12.2 10 17l2-1.2L14 17l-.8-4.8" stroke="#8A5AC2" strokeWidth="1.8" strokeLinejoin="round" />
     </svg>
   ),
   leaderboard: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 21v-7M12 21V9M19 21v-4" />
-      <path d="M9 6.5 12 3l3 3.5" />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="12" width="4.4" height="9" rx="1.4" fill="#FBEFCC" stroke="#D9A22F" strokeWidth="1.9" />
+      <rect x="9.8" y="7" width="4.4" height="14" rx="1.4" fill="#F7D98A" stroke="#D9A22F" strokeWidth="1.9" />
+      <rect x="15.6" y="14" width="4.4" height="7" rx="1.4" fill="#FBEFCC" stroke="#D9A22F" strokeWidth="1.9" />
+      <path d="m12 2 1 2.2 2.4.3-1.8 1.7.5 2.4L12 7.4 9.9 8.6l.5-2.4-1.8-1.7 2.4-.3Z" fill="#E0A81E" />
+    </svg>
+  ),
+  quests: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 5c3.2-1.6 5.8 1.6 9.3 0l.7 8c-3.5 1.6-6.1-1.6-9.3 0Z" fill="#F7DAD2" />
+      <path d="M5 21V4" stroke="#C6553F" strokeWidth="2" strokeLinecap="round" />
+      <path d="M5 5c3.2-1.6 5.8 1.6 9.3 0l.7 8c-3.5 1.6-6.1-1.6-9.3 0" stroke="#C6553F" strokeWidth="2" strokeLinejoin="round" />
+    </svg>
+  ),
+  shop: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5.5 8h13l-1 12.5h-11L5.5 8Z" fill="#DAEFEC" stroke="#2E8079" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke="#2E8079" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="9.4" cy="12" r="1.1" fill="#2E8079" />
+      <circle cx="14.6" cy="12" r="1.1" fill="#2E8079" />
+    </svg>
+  ),
+  cart: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 8h13.5L18.1 16H8.2Z" fill="#DAEFEC" />
+      <path d="M3.5 5H6l2.2 11h9.9L20.5 8H7" stroke="#2E8079" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="9.7" cy="20" r="1.7" fill="#2E8079" />
+      <circle cx="16.7" cy="20" r="1.7" fill="#2E8079" />
+    </svg>
+  ),
+  profile: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" fill="#F6E0EC" stroke="#B4557F" strokeWidth="2" />
+      <path d="M4.5 20.5c1.4-3.2 4.2-4.8 7.5-4.8s6.1 1.6 7.5 4.8" fill="#F6E0EC" stroke="#B4557F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  pomo: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="#FBE3D9" stroke="#E2724A" strokeWidth="2" />
+      <path d="M12 7v5.4l3.4 2" stroke="#C6553F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
   study: (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3 20h18" />
-      <path d="M6 20v-6M12 20V8M18 20v-9" />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3.5" y="5" width="17" height="15" rx="3" fill="#DCE7FA" stroke="#4A7FD6" strokeWidth="2" />
+      <path d="M8 3v4M16 3v4M3.5 10h17" stroke="#4A7FD6" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="9" cy="14.5" r="1.4" fill="#4A7FD6" />
+      <circle cx="14" cy="14.5" r="1.4" fill="#9BB9E8" />
+    </svg>
+  ),
+  more: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="5" cy="12" r="2.2" fill="#E2724A" />
+      <circle cx="12" cy="12" r="2.2" fill="#D9A22F" />
+      <circle cx="19" cy="12" r="2.2" fill="#4A7FD6" />
     </svg>
   ),
 };
-
 /* the course picker's catalogue — one entry per deck this store actually
    sells (see DECK_BY_ID in data/decks.js). `k` is the real deckId, so
    CoursePicker's onSelect/onBuy keys straight into session.decks with no
@@ -300,14 +321,26 @@ export default function LessonPath({
   onOpenLessons,
   onOpenPractice,
   onOpenVouchers,
+  onOpenShop,
+  onOpenPlans,
+  trial = { started: false, active: false, daysLeft: 0 },
+  trialDays = 7,
+  hasPlan = false,
   onOpenProfile,
   onOpenDailyTasks,
   onOpenStudyPlan,
   currentDeckId,
   ownedDeckIds = [],
   stars = 0,
+  apples = 0,
+  dailyStarsClaimed = false,
+  dailyStars = 50,
+  starsPerApple = 200,
   onSwitchCourse,
   onBuyCourse,
+  onTopUpStars,
+  onClaimDailyStars,
+  onTradeAppleForStars,
 }) {
   const { t, pick } = useI18n();
   const deckName = pick(deck.name);
@@ -383,14 +416,26 @@ export default function LessonPath({
   const goalPct = dailyGoal > 0 ? Math.min(1, cardsToday / dailyGoal) : 0;
 
   const [pomoOpen, setPomoOpen] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [morePos, setMorePos] = useState(null);
   const moreBtnRef = useRef(null);
   const moreTimer = useRef(null);
+  /* the flyout sits beside the button on desktop; once the rail is the
+     bottom tab bar (<=960px) "beside" would be off the bottom-right
+     corner, so it opens above the button and stays inside the viewport */
   const openMore = () => {
     clearTimeout(moreTimer.current);
     const r = moreBtnRef.current?.getBoundingClientRect();
-    if (r) setMorePos({ top: r.top, left: r.right + 10 });
+    if (r) {
+      const W = 210, H = 168, pad = 10;
+      const bar = window.innerWidth <= 960;
+      const left = bar
+        ? Math.min(window.innerWidth - W - pad, Math.max(pad, r.left + r.width / 2 - W / 2))
+        : Math.min(window.innerWidth - W - pad, r.right + pad);
+      const top = bar ? r.top - H - 8 : Math.min(r.top, window.innerHeight - H - pad);
+      setMorePos({ top: Math.max(pad, top), left: Math.max(pad, left) });
+    }
     setMoreOpen(true);
   };
   const closeMoreSoon = () => {
@@ -435,12 +480,12 @@ export default function LessonPath({
   }
   const sideItems = [
     { id: "learn", label: t("lp.learn"), onClick: () => { setShowLeaderboard(false); window.scrollTo({ top: 0, behavior: "smooth" }); } },
-    { id: "lessons", label: t("account.tab.lessons"), onClick: onOpenLessons },
-    { id: "practice", label: t("account.tab.practice"), onClick: onOpenPractice },
+    { id: "lessons", label: t("account.tab.lessons"), onClick: () => { if (!showLeaderboard) onOpenLessons(); } },
+    { id: "practice", label: t("account.tab.practice"), onClick: () => { if (!showLeaderboard) onOpenPractice(); } },
     { id: "leaderboard", label: t("lp.leaderboard"), onClick: () => setShowLeaderboard(true) },
-    { id: "quests", label: t("lp.dailyTasks"), onClick: onOpenDailyTasks },
-    { id: "shop", label: t("lp.shop"), onClick: onOpenVouchers },
-    { id: "profile", label: t("lp.myProfile"), onClick: onOpenProfile },
+    { id: "quests", label: t("lp.dailyTasks"), onClick: () => { if (!showLeaderboard) onOpenDailyTasks(); } },
+    { id: "shop", label: t("lp.shop"), onClick: () => { if (!showLeaderboard) onOpenShop(); } },
+    { id: "profile", label: t("lp.myProfile"), onClick: () => { if (!showLeaderboard) onOpenProfile(); } },
   ];
   const moreItems = [
     { id: "pomo", label: t("lp.pomoMode"), onClick: () => setPomoOpen(true) },
@@ -451,6 +496,21 @@ export default function LessonPath({
   return (
     <div className="lp-root">
       <PomoModal open={pomoOpen} onClose={() => setPomoOpen(false)} onStart={setSession} />
+
+      {/* the star shop, opened by the stars pill in the right rail */}
+      <StarShop
+        open={shopOpen}
+        stars={stars}
+        apples={apples}
+        dailyClaimed={dailyStarsClaimed}
+        dailyStars={dailyStars}
+        starsPerApple={starsPerApple}
+        onClose={() => setShopOpen(false)}
+        onBuyPack={(pack) => onTopUpStars && onTopUpStars(pack.stars + pack.bonus, pack.k)}
+        onClaimDaily={() => (onClaimDailyStars ? onClaimDailyStars() : 0)}
+        onTradeApple={() => (onTradeAppleForStars ? onTradeAppleForStars() : 0)}
+        onOpenDailyTasks={onOpenDailyTasks}
+      />
       <div className="lp-shell">
         {/* ============ left rail ============ */}
         <aside className="lp-side">
@@ -507,56 +567,75 @@ export default function LessonPath({
           document.body
         )}
 
-        <div className={`lp-main${showLeaderboard ? " lp-main--board" : ""}`}>
-      {!showLeaderboard && <Scene />}
-
-      {/* ============ header ============ */}
-      {!showLeaderboard && (
-        <header className="top">
-          <div className="col">
-            <div className="bar">
-              <button className="back" aria-label={t("common.back")} onClick={(e) => { e.stopPropagation(); onBack(); }}>
+        {showLeaderboard ? (
+          <div className="lp-main lp-main--board">
+            <div className="col">
+              <button
+                type="button"
+                className="lb-back"
+                aria-label={t("common.back")}
+                onClick={(e) => { e.stopPropagation(); setShowLeaderboard(false); }}
+              >
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 12H5M11 5l-6 7 6 7" />
                 </svg>
+                {t("lp.learn")}
               </button>
-              <span className="t">
-                <span className="lab">{t("lp.unitLesson", { u: 1, n: currentLesson })}</span>
-                <h1>{deckName}</h1>
-              </span>
+              <Leaderboard
+                people={lbStandings}
+                leagueIndex={lbMe ? leagueIndexFor(lbMe.xp) : 0}
+                week={23}
+                promote={3}
+                relegate={2}
+                limit={7}
+                view={lbView}
+                onViewChange={setLbView}
+                numerals="km"
+              />
             </div>
           </div>
-        </header>
-      )}
+        ) : (
+          <div className="lp-main">
+            <Scene />
 
-      {showLeaderboard ? (
-        <div className="col">
-          <button
-            type="button"
-            className="lb-back"
-            aria-label={t("common.back")}
-            onClick={(e) => { e.stopPropagation(); setShowLeaderboard(false); }}
-          >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M11 5l-6 7 6 7" />
-            </svg>
-            {t("lp.learn")}
-          </button>
-          <Leaderboard
-            people={lbStandings}
-            leagueIndex={lbMe ? leagueIndexFor(lbMe.xp) : 0}
-            week={23}
-            promote={5}
-            relegate={5}
-            view={lbView}
-            onViewChange={setLbView}
-            numerals="km"
-          />
-        </div>
-      ) : (
-      <div className="col">
+            {/* ============ header ============ */}
+            <header className="top">
+              <div className="col">
+                {/* no back control: the rail is the way out of the map, and
+                    an arrow here pointed at the dashboard nobody wanted */}
+                <div className="bar">
+                  <span className="t">
+                    <span className="lab">{t("lp.unitLesson", { u: 1, n: currentLesson })}</span>
+                    <h1>{deckName}</h1>
+                  </span>
+                </div>
+              </div>
+            </header>
+
+            <div className="col">
         <>
-        {/* ============ the path ============ */}
+        {/* A deck whose course hasn't been written yet (see COURSES in
+            data/lessons.js) has nothing to walk. Rather than a lone locked
+            exam floating on the hillside, say so and offer the way out. */}
+        {lessons.length === 0 ? (
+          <div className="lp-empty">
+            <span className="lp-empty-mark">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3.5" y="4" width="17" height="16" rx="3" fill="#EFEADD" stroke="#8A8474" strokeWidth="2" />
+                <path d="M7.5 9h9M7.5 13h9M7.5 17h5" stroke="#8A8474" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </span>
+            <h2>{deckName} is on its way</h2>
+            <p>
+              The deck is yours — the lessons for this course are still being written. Everything else works:
+              practise the cards, and the path fills in as soon as the course lands.
+            </p>
+            <div className="lp-empty-acts">
+              <button type="button" className="lp-go" onClick={onOpenPractice}>Practise the cards</button>
+              <button type="button" className="lp-go ghost" onClick={onOpenShop}>Browse other courses</button>
+            </div>
+          </div>
+        ) : (
         <div className="path" ref={pathRef}>
           <svg className="trail" width={geom?.w ?? 0} height={geom?.h ?? 0} viewBox={geom ? `0 0 ${geom.w} ${geom.h}` : undefined} aria-hidden="true">
             {trailD && <path d={trailD} />}
@@ -649,12 +728,13 @@ export default function LessonPath({
             </div>
           )}
         </div>
+        )}
 
-        <p className="finish">{t("lp.finish")}</p>
+        {lessons.length > 0 && <p className="finish">{t("lp.finish")}</p>}
         </>
       </div>
+          </div>
         )}
-        </div>
 
         {/* ============ right rail ============
             .lp-stats sits outside the scrolling inner wrapper: the rail
@@ -674,13 +754,37 @@ export default function LessonPath({
             />
             <span className="lp-stat">
               {RAIL_ICONS.streak}
-              <b>{streak}</b>
-              <i>{t("lp.rail.streak")}</i>
+              <span className="lp-stat-t">
+                <b>{streak}</b>
+                <i>{t("lp.rail.streak")}</i>
+              </span>
             </span>
-            <StarsPill stars={stars} />
+            <StarsPill stars={stars} onClick={() => setShopOpen(true)} />
           </div>
 
           <div className="lp-rail-scroll">
+            {/* the free week of Pro, offered where people actually are.
+                Hidden once they're on a paid plan or the trial is spent —
+                a dead offer in the rail is just clutter. */}
+            {!hasPlan && (!trial.started || trial.active) && (
+              <button type="button" className={"lp-trial" + (trial.active ? " on" : "")} onClick={onOpenPlans}>
+                <span className="lp-trial-mark">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 3.2 14.4 9l6.3.5-4.8 4.1 1.5 6.2L12 16.5 6.6 19.8l1.5-6.2L3.3 9.5 9.6 9Z"
+                          fill="#F0C255" stroke="#A8791F" strokeWidth="1.6" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className="lp-trial-t">
+                  <b>{trial.active ? `Pro trial · ${trial.daysLeft} day${trial.daysLeft === 1 ? "" : "s"} left` : "Try Pro free"}</b>
+                  <span>{trial.active ? "See what's in your plan" : `${trialDays} days, no card needed`}</span>
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+
             <section className="lp-block">
               <h2>{t("lp.rail.progress")}</h2>
               <div className="lp-bar"><span style={{ width: `${Math.round(pct * 100)}%` }} /></div>
@@ -722,6 +826,70 @@ export default function LessonPath({
   );
 }
 
+/* ---------- the meadow that carries on below the mountains ----------
+   The scenery used to be one 400x900 drawing stretched (preserveAspectRatio
+   "none") over the full height of the path. At four lessons that was barely
+   noticeable; at twenty the path is thousands of pixels tall and the sun
+   stretched into a giant oval, the clouds into smears. So the drawing now
+   keeps its own proportions and this tile repeats underneath it — the same
+   meadow, continuing, at its natural size however long the course gets.
+
+   Seamless by construction: the base green runs edge to edge and every
+   piece of scenery is kept clear of the top and bottom edges, so a cut at
+   any height still reads as more grass. */
+const MEADOW_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 600'>
+  <rect width='400' height='600' fill='#A3CFA2'/>
+  <ellipse cx='120' cy='140' rx='210' ry='70' fill='#B4DAB2' opacity='.55'/>
+  <ellipse cx='330' cy='330' rx='190' ry='64' fill='#9BCB9E' opacity='.5'/>
+  <ellipse cx='150' cy='470' rx='230' ry='74' fill='#B4DAB2' opacity='.45'/>
+  <ellipse cx='300' cy='215' rx='52' ry='16' fill='#8FC195' opacity='.45'/>
+  <ellipse cx='96' cy='388' rx='44' ry='14' fill='#8FC195' opacity='.4'/>
+  <ellipse cx='214' cy='545' rx='38' ry='12' fill='#8FC195' opacity='.35'/>
+  <g transform='translate(48 250)'>
+    <ellipse cx='0' cy='24' rx='20' ry='7' fill='#7FB489' opacity='.45'/>
+    <rect x='-4' y='-6' width='8' height='30' rx='3' fill='#8A6A46'/>
+    <circle cx='0' cy='-22' r='23' fill='#5C9E67'/>
+    <circle cx='-16' cy='-8' r='16' fill='#4C8C58'/>
+    <circle cx='16' cy='-9' r='15' fill='#6EB177'/>
+    <circle cx='-7' cy='-28' r='5' fill='#E2574F'/>
+    <circle cx='10' cy='-18' r='4.5' fill='#E2574F'/>
+  </g>
+  <g transform='translate(356 430) scale(.92)'>
+    <ellipse cx='0' cy='24' rx='18' ry='6' fill='#7FB489' opacity='.45'/>
+    <rect x='-4' y='0' width='8' height='24' rx='3' fill='#8A6A46'/>
+    <path d='M0 -50 L19 -16 H-19Z' fill='#3F7A4C'/>
+    <path d='M0 -34 L23 4 H-23Z' fill='#4C8C58'/>
+    <path d='M0 -18 L26 22 H-26Z' fill='#5C9E67'/>
+  </g>
+  <g transform='translate(272 118) scale(.8)'>
+    <ellipse cx='0' cy='24' rx='18' ry='6' fill='#7FB489' opacity='.4'/>
+    <rect x='-4' y='-4' width='8' height='28' rx='3' fill='#8A6A46'/>
+    <circle cx='0' cy='-20' r='21' fill='#6EB177'/>
+    <circle cx='-14' cy='-7' r='14' fill='#5C9E67'/>
+  </g>
+  <g transform='translate(150 320)'>
+    <ellipse cx='0' cy='0' rx='16' ry='10' fill='#5C9E67'/>
+    <ellipse cx='-8' cy='-5' rx='10' ry='7' fill='#6EB177'/>
+  </g>
+  <g transform='translate(330 545)'>
+    <ellipse cx='0' cy='0' rx='15' ry='9' fill='#4C8C58'/>
+    <ellipse cx='-7' cy='-4' rx='9' ry='6' fill='#5C9E67'/>
+  </g>
+  <g transform='translate(92 505)'>
+    <ellipse cx='0' cy='2' rx='13' ry='6' fill='#9AA79B' opacity='.5'/>
+    <path d='M-11 2 Q-9 -9 0 -10 Q10 -9 11 2Z' fill='#B7BFB2'/>
+    <path d='M0 -10 Q10 -9 11 2 H2Z' fill='#9AA79B'/>
+  </g>
+  <g fill='none'>
+    <g transform='translate(196 196)'><circle r='3.6' fill='#E5738C'/><circle r='1.4' fill='#FFF6D8'/><path d='M0 3v7' stroke='#4E8A56' stroke-width='1.5' stroke-linecap='round'/></g>
+    <g transform='translate(64 430)'><circle r='3.6' fill='#F2C14E'/><circle r='1.4' fill='#FFF6D8'/><path d='M0 3v7' stroke='#4E8A56' stroke-width='1.5' stroke-linecap='round'/></g>
+    <g transform='translate(248 480)'><circle r='3.4' fill='#C583D6'/><circle r='1.3' fill='#FFF6D8'/><path d='M0 3v7' stroke='#4E8A56' stroke-width='1.5' stroke-linecap='round'/></g>
+    <g transform='translate(300 262)'><circle r='3.4' fill='#F2C14E'/><circle r='1.3' fill='#FFF6D8'/><path d='M0 3v7' stroke='#4E8A56' stroke-width='1.5' stroke-linecap='round'/></g>
+    <g transform='translate(128 90)'><circle r='3.4' fill='#E5738C'/><circle r='1.3' fill='#FFF6D8'/><path d='M0 3v7' stroke='#4E8A56' stroke-width='1.5' stroke-linecap='round'/></g>
+  </g>
+</svg>`;
+const MEADOW_TILE = `url("data:image/svg+xml,${encodeURIComponent(MEADOW_SVG)}")`;
+
 /* ---------- the landscape behind the path ----------
    Straight from the prototype: sky, sun, clouds, mountains, three grass
    bands, a river and flowers in the back layer; trees, bushes and rocks
@@ -742,8 +910,8 @@ function Scene() {
   const rocks = [[64, 600], [336, 470], [176, 832]];
 
   return (
-    <div className="scene">
-      <svg viewBox="0 0 400 900" preserveAspectRatio="none" style={{ height: "100%" }} aria-hidden="true">
+    <div className="scene" style={{ backgroundImage: MEADOW_TILE }}>
+      <svg viewBox="0 0 400 900" preserveAspectRatio="xMidYMin meet" aria-hidden="true">
         <defs>
           <linearGradient id="lp-sky" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#CFE3EF" /><stop offset="1" stopColor="#EAF1E6" />
@@ -794,7 +962,7 @@ function Scene() {
         ))}
       </svg>
 
-      <svg viewBox="0 0 400 900" preserveAspectRatio="none" style={{ height: "100%" }} aria-hidden="true">
+      <svg viewBox="0 0 400 900" preserveAspectRatio="xMidYMin meet" aria-hidden="true">
         {trees.map(([x, y, k, kind], i) =>
           kind === "pine" ? (
             <g key={i} transform={`translate(${x} ${y}) scale(${k})`}>

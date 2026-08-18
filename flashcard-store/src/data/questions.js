@@ -417,7 +417,10 @@ const FLAT_BANKS = { grammar: GRAMMAR_BANK, history: HISTORY_BANK, physics: PHYS
 // with whatever else is left, so "due today" actually shapes what a
 // practice/exam session serves rather than just being a counter on Home.
 export function bankFor(subject, count = 12, difficulty = 1, deckId = null) {
-  if (subject === "math") return makeMathItems(count, difficulty);
+  // "biology" borrows the maths generator for now — same demo scaffold as
+  // COURSES.biology in lessons.js, so Practice and Exam have something to
+  // serve until a biology bank exists.
+  if (subject === "math" || subject === "biology") return makeMathItems(count, difficulty);
   const pool = FLAT_BANKS[subject] ?? [];
   if (!deckId) return shuffle(pool).slice(0, count);
 

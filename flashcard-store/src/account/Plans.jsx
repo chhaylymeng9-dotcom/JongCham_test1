@@ -1,6 +1,7 @@
 import { useState } from "react";
 import paymentQR from "../assets/payment-qr.png";
 import { detectBrand, expiryValid, formatCardNumber, luhnValid } from "../data/cardValidation.js";
+import { TRIAL_DAYS, getProTrial, startProTrial } from "../storage.js";
 import "./plans.css";
 
 /* ---------- Plans ----------
@@ -202,6 +203,14 @@ export default function Plans({ decksOwned, currentPlan, onBack, onUpgrade }) {
   const [cardErrors, setCardErrors] = useState({});
   const [processing, setProcessing] = useState(false);
   const [tip, setTip] = useState(null); // { title, body, x, y } — the feature-row hover tooltip
+
+  /* the one free week of Pro — one per browser, see storage.js. Unlike the
+     upgrade below it takes no payment at all, simulated or otherwise. */
+  const [trial, setTrial] = useState(getProTrial);
+  function beginTrial() {
+    const started = startProTrial();
+    if (started) setTrial(started);
+  }
 
   function showTip(e, title, body) {
     const r = e.currentTarget.getBoundingClientRect();
@@ -538,7 +547,22 @@ export default function Plans({ decksOwned, currentPlan, onBack, onUpgrade }) {
                   Upgrade to Pro
                 </button>
               )}
-              <p className="jpl-fine">7 days free · cancel anytime</p>
+
+              {/* the free week is real (storage.js's Pro trial), so this
+                  line does what it says instead of just promising it */}
+              {currentPlan ? (
+                <p className="jpl-fine">Cancel anytime</p>
+              ) : trial.active ? (
+                <p className="jpl-fine jpl-trial-on">
+                  Trial running · {trial.daysLeft} day{trial.daysLeft === 1 ? "" : "s"} left
+                </p>
+              ) : trial.expired ? (
+                <p className="jpl-fine">Your free trial has ended</p>
+              ) : (
+                <button type="button" className="jpl-cta jpl-ghost" onClick={beginTrial}>
+                  Start {TRIAL_DAYS} days free
+                </button>
+              )}
             </div>
             <Feats title="Everything in Free, plus:" items={PRO_FEATS} onShowTip={showTip} onHideTip={hideTip} />
           </section>
@@ -575,7 +599,9 @@ export default function Plans({ decksOwned, currentPlan, onBack, onUpgrade }) {
                   Upgrade to Max
                 </button>
               )}
-              <p className="jpl-fine">7 days free · cancel anytime</p>
+              {/* the free week is a Pro offer only — Max promising one too
+                  would be a promise nothing in the app keeps */}
+              <p className="jpl-fine">Cancel anytime</p>
             </div>
             <Feats title="Everything in Pro, plus:" items={MAX_FEATS} onShowTip={showTip} onHideTip={hideTip} />
           </section>

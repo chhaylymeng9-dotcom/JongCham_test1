@@ -1,0 +1,238 @@
+/* ---------- Course shop ----------
+Same design system as dashboard.css / profile.css / dailyTasks.css (same
+variable names, same scoped-root convention), with the brass accents the
+star economy uses elsewhere (CoursePicker, StarShop).
+--------------------------------- */
+
+.sh-root {
+  --paper: #FAF8F3;
+  --sheet: #FFFFFF;
+  --ink: #221F1A;
+  --muted: #8A857A;
+  --faint: #AFAA9E;
+  --hair: #E5E0D5;
+  --hair-2: #D5CFC1;
+  --track: #EFEBE1;
+
+  --green: #2C4032;
+  --green-btn: #4E9B60;
+  --green-dark: #3B8A4B;
+  --green-soft: #E7EEE7;
+  --green-line: #B5CCBA;
+
+  --brass: #8E6F2A;
+  --brass-lit: #F0C255;
+  --brass-mid: #C9922A;
+  --brass-soft: #F5EEDD;
+  --brass-line: #E4D5AE;
+
+  --type: "Courier Prime", "American Typewriter", "Courier New", monospace;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --khmer: "Khmer OS Siemreap", "Siemreap", "Noto Sans Khmer", var(--sans);
+  --e: cubic-bezier(.2, .7, .2, 1);
+  --pop: cubic-bezier(.34, 1.45, .4, 1);
+}
+
+.sh-root, .sh-root *{ box-sizing: border-box; }
+.sh-root button:focus-visible{ outline: 2px solid var(--green); outline-offset: 2px; }
+.sh-root{
+  min-height: 100vh;
+  background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased; padding: 26px 0 60px;
+}
+.sh-wrap{ max-width: 1020px; margin: 0 auto; padding: 0 24px; }
+
+.sh-back{
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px;
+  padding: 0; border: 0; background: none; cursor: pointer; font: inherit;
+  font-size: 13.5px; color: var(--muted); transition: color .16s var(--e);
+}
+.sh-back:hover{ color: var(--ink); }
+.sh-back svg{ transition: transform .16s var(--e); }
+.sh-back:hover svg{ transform: translateX(-3px); }
+
+/* ---------------- header + balance ---------------- */
+.sh-head{ display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.sh-eyebrow{
+  font-family: var(--type); font-size: 10.5px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--faint); display: block; margin-bottom: 8px;
+}
+.sh-head h1{ font-family: var(--type); font-size: 30px; font-weight: 700; letter-spacing: -.03em; margin: 0; }
+.sh-head p{ margin: 6px 0 0; font-size: 13.5px; color: var(--muted); }
+
+.sh-balance{
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px 12px 16px;
+  background: var(--sheet); border: 1px solid var(--hair); border-radius: 18px;
+  box-shadow: 0 3px 0 var(--hair);
+}
+.sh-balance b{ display: block; font-family: var(--type); font-size: 21px; font-weight: 700; line-height: 1; color: var(--brass); }
+.sh-balance i{
+  display: block; margin-top: 3px; font-style: normal; font-size: 9.5px; font-weight: 800;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+.sh-topup{
+  border: 0; border-radius: 12px; cursor: pointer; padding: 9px 15px;
+  font: inherit; font-size: 13px; font-weight: 800; letter-spacing: .04em; color: #3B2C08;
+  background: linear-gradient(180deg, var(--brass-lit), var(--brass-mid));
+  box-shadow: 0 3px 0 #A8791F; transition: transform .12s var(--e), box-shadow .12s var(--e);
+}
+.sh-topup:hover{ transform: translateY(-1px); box-shadow: 0 4px 0 #A8791F; }
+.sh-topup:active{ transform: translateY(3px); box-shadow: 0 0 0 #A8791F; }
+
+/* ---------------- group chips ---------------- */
+.sh-chips{ display: flex; gap: 8px; flex-wrap: wrap; margin: 24px 0 16px; }
+.sh-chip{
+  border: 1px solid var(--hair); background: var(--sheet); border-radius: 999px;
+  padding: 8px 16px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 600;
+  color: var(--muted); transition: all .16s var(--e);
+}
+.sh-chip:hover{ color: var(--ink); border-color: var(--hair-2); }
+.sh-chip.sh-on{ background: var(--green); border-color: var(--green); color: #fff; }
+
+/* ---------------- the course cards ---------------- */
+.sh-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 860px){ .sh-grid{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px){ .sh-grid{ grid-template-columns: 1fr; } }
+
+.sh-card{
+  display: flex; flex-direction: column; background: var(--sheet);
+  border: 1px solid var(--hair); border-radius: 20px; overflow: hidden;
+  box-shadow: 0 4px 0 var(--hair); transition: transform .18s var(--e), box-shadow .18s var(--e), border-color .18s var(--e);
+  animation: sh-up .38s var(--e) both;
+}
+@keyframes sh-up{ from{ opacity: 0; transform: translateY(12px); } to{ opacity: 1; transform: none; } }
+.sh-card:hover{ transform: translateY(-3px); box-shadow: 0 7px 0 var(--hair); border-color: var(--hair-2); }
+.sh-card.sh-owned{ border-color: var(--green-line); }
+.sh-card.sh-soon{ opacity: .78; }
+.sh-card.sh-soon:hover{ transform: none; box-shadow: 0 4px 0 var(--hair); }
+
+.sh-face{
+  display: grid; justify-items: center; gap: 3px; padding: 22px 16px 16px;
+  border: 0; background: none; cursor: pointer; font: inherit; text-align: center; width: 100%;
+}
+.sh-tile{
+  width: 62px; height: 62px; border-radius: 20px; display: grid; place-items: center;
+  color: #fff; margin-bottom: 10px; box-shadow: 0 3px 8px rgba(28,26,21,.16);
+  transition: transform .22s var(--pop);
+}
+.sh-card:hover .sh-tile{ transform: translateY(-2px) scale(1.05) rotate(-3deg); }
+.sh-name{ font-size: 16px; font-weight: 700; color: var(--ink); }
+.sh-meta{ font-size: 12px; color: var(--muted); }
+
+.sh-glyph{ font-family: var(--sans); font-size: 25px; font-weight: 800; letter-spacing: -.02em; }
+.sh-glyph.sh-km{ font-family: var(--khmer); font-size: 28px; font-weight: 400; }
+.sh-glyph.sh-word{ font-size: 15px; letter-spacing: .01em; }
+
+.sh-foot{
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 14px; border-top: 1px solid var(--hair); background: #FCFBF7;
+}
+.sh-price{
+  display: inline-flex; align-items: center; gap: 6px; font-family: var(--type);
+  font-size: 14px; font-weight: 700; color: var(--brass);
+  background: var(--brass-soft); border: 1px solid var(--brass-line);
+  border-radius: 999px; padding: 5px 12px 5px 8px;
+}
+.sh-card.sh-poor .sh-price{ background: #FBE9E8; border-color: #E8C9C6; color: #B5403B; animation: sh-nope .42s var(--e); }
+@keyframes sh-nope{
+  0%, 100%{ transform: translateX(0); }
+  20%{ transform: translateX(-6px); } 45%{ transform: translateX(5px); } 70%{ transform: translateX(-3px); }
+}
+.sh-have{
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600;
+  color: var(--green); }
+.sh-later{ font-size: 12.5px; color: var(--faint); font-weight: 600; }
+
+.sh-btn{
+  border: 0; border-radius: 11px; cursor: pointer; padding: 9px 16px;
+  font: inherit; font-size: 13px; font-weight: 800; letter-spacing: .04em; color: #fff;
+  background: var(--green-btn); box-shadow: 0 3px 0 var(--green-dark);
+  transition: transform .12s var(--e), box-shadow .12s var(--e), background .14s var(--e);
+}
+.sh-btn:hover{ background: #55B069; transform: translateY(-1px); box-shadow: 0 4px 0 var(--green-dark); }
+.sh-btn:active{ transform: translateY(3px); box-shadow: 0 0 0 var(--green-dark); }
+.sh-btn.sh-ghost{
+  background: none; color: var(--green); border: 1.5px solid var(--green-line); box-shadow: none;
+  padding: 8px 15px;
+}
+.sh-btn.sh-ghost:hover{ background: var(--green-soft); transform: none; }
+
+/* the card that was just added does a short victory flash */
+.sh-card.sh-justbought{ animation: sh-pop .6s var(--pop); }
+@keyframes sh-pop{ 0%{ transform: scale(1); } 40%{ transform: scale(1.04); } 100%{ transform: scale(1); } }
+
+/* ---------------- vouchers pointer ---------------- */
+.sh-vouchers{
+  display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 20px;
+  padding: 16px 18px; border: 1px dashed var(--hair-2); border-radius: 18px;
+  background: var(--sheet); cursor: pointer; font: inherit; text-align: left;
+  color: var(--muted); transition: all .16s var(--e);
+}
+.sh-vouchers:hover{ border-color: var(--green-line); color: var(--ink); }
+.sh-vart{ width: 46px; height: 46px; flex: none; display: grid; place-items: center;
+  border-radius: 14px; background: #F7E9E7; }
+.sh-vtext{ flex: 1; min-width: 0; }
+.sh-vtext b{ display: block; font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.sh-vtext span{ font-size: 12.5px; }
+.sh-vouchers svg{ flex: none; transition: transform .16s var(--e); }
+.sh-vouchers:hover svg{ transform: translateX(3px); }
+
+/* ---------------- the detail sheet ---------------- */
+.sh-veil{
+  position: fixed; inset: 0; z-index: 90; background: rgba(31,29,24,.5);
+  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  animation: sh-fade .22s var(--e) both;
+}
+@keyframes sh-fade{ from{ opacity: 0; } to{ opacity: 1; } }
+.sh-sheetwrap{ position: fixed; inset: 0; z-index: 91; display: grid; place-items: center; padding: 18px; }
+.sh-sheet{
+  position: relative; width: min(440px, 100%); max-height: 92vh; overflow-y: auto;
+  background: #FAF8F3; border-radius: 24px; padding: 26px 24px 24px; text-align: center;
+  box-shadow: 0 24px 56px rgba(31,29,24,.3);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: #221F1A; animation: sh-in .32s cubic-bezier(.34,1.45,.4,1) both;
+}
+@keyframes sh-in{ from{ opacity: 0; transform: translateY(20px) scale(.96); } to{ opacity: 1; transform: none; } }
+.sh-x{
+  position: absolute; top: 16px; right: 16px; width: 34px; height: 34px; border: 0; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer; background: #EFEBE1; color: #4A473F;
+  transition: all .14s cubic-bezier(.2,.7,.2,1);
+}
+.sh-x:hover{ background: #D5CFC1; color: #221F1A; transform: rotate(90deg); }
+.sh-sheet .sh-tile.sh-big{ width: 78px; height: 78px; border-radius: 24px; margin: 0 auto 14px; }
+.sh-sheet h2{ font-family: "Courier Prime", "Courier New", monospace; font-size: 24px; font-weight: 700; margin: 0 0 8px; }
+.sh-blurb{ margin: 0 auto 18px; font-size: 13.5px; line-height: 1.6; color: #8A857A; max-width: 34ch; }
+.sh-what{
+  list-style: none; margin: 0 0 20px; padding: 16px 18px; text-align: left;
+  background: #fff; border: 1px solid #E5E0D5; border-radius: 16px;
+}
+.sh-what li{ position: relative; padding-left: 22px; font-size: 13px; color: #4A473F; margin-bottom: 8px; }
+.sh-what li:last-child{ margin-bottom: 0; }
+.sh-what li::before{
+  content: ""; position: absolute; left: 4px; top: 7px; width: 7px; height: 7px;
+  border-radius: 50%; background: #B5CCBA;
+}
+.sh-cta{
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px; width: 100%;
+  border: 0; border-radius: 14px; cursor: pointer; padding: 13px 0;
+  font: inherit; font-size: 14.5px; font-weight: 800; letter-spacing: .03em; color: #fff;
+  background: #4E9B60; box-shadow: 0 4px 0 #3B8A4B;
+  transition: transform .12s cubic-bezier(.2,.7,.2,1), box-shadow .12s cubic-bezier(.2,.7,.2,1);
+}
+.sh-cta:hover{ transform: translateY(-1px); box-shadow: 0 5px 0 #3B8A4B; }
+.sh-cta:active{ transform: translateY(3px); box-shadow: 0 0 0 #3B8A4B; }
+.sh-cta.sh-dim{
+  background: linear-gradient(180deg, #F0C255, #C9922A); box-shadow: 0 4px 0 #A8791F; color: #3B2C08;
+}
+.sh-note{ margin: 12px 0 0; font-size: 12.5px; color: #8A857A; line-height: 1.5; }
+
+@media (max-width: 640px){
+  .sh-wrap{ padding: 0 16px; }
+  .sh-head h1{ font-size: 25px; }
+  .sh-balance{ width: 100%; }
+  .sh-balance span{ flex: 1; }
+}
+@media (prefers-reduced-motion: reduce){
+  .sh-root *{ animation: none !important; transition: none !important; }
+}

@@ -43,7 +43,12 @@ doesn't reach into them.
 .jd-root, .jd-root *{ box-sizing: border-box; }
 .jd-root button:focus-visible, .jd-root a:focus-visible{ outline: 2px solid var(--green); outline-offset: 2px; }
 
+/* fill the viewport: the app's global paper is the store's mint (#EDF4F2),
+   this page's is warm cream — a short page used to show both, split across
+   the fold. The account area hides the site header and footer, so the view
+   is the whole window. */
 .jd-root{
+  min-height: 100vh;
   background: var(--paper); color: var(--ink);
   font-family: var(--sans); font-size: 15px; line-height: 1.55;
   -webkit-font-smoothing: antialiased;

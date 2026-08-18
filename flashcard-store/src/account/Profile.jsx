@@ -2,7 +2,16 @@ import { useRef, useState } from "react";
 import { LANGUAGES, useI18n } from "../i18n.jsx";
 import { formatStudyTime } from "./studyTime.js";
 import { lessonsFor } from "../data/lessons.js";
-import { addStudyPlan, getDailyGoal, getStudyPlans, removeStudyPlan, setDailyGoal } from "../storage.js";
+import {
+  TRIAL_DAYS,
+  addStudyPlan,
+  getDailyGoal,
+  getProTrial,
+  getStudyPlans,
+  removeStudyPlan,
+  setDailyGoal,
+  startProTrial,
+} from "../storage.js";
 import defaultAvatar from "../assets/default-avatar.jpg";
 import "./profile.css";
 
@@ -131,6 +140,7 @@ export default function Profile({
   onAddDeck,
   switchError,
   onDeleteAccount,
+  onSignOut,
   initialTab = "personal",
 }) {
   const { lang, setLang, pick } = useI18n();
@@ -149,6 +159,22 @@ export default function Profile({
   const plan = session.plan ?? null;
   const planLabel = plan === "pro" ? "Pro" : plan === "max" ? "Max" : "Free";
   const planPrice = plan === "pro" ? "$4.99" : plan === "max" ? "$12" : null;
+
+  /* the one-week Pro trial. Held in storage, not in session.plan, so a
+     paid (simulated) upgrade and a running trial can't fight over the
+     same field — a real plan simply outranks the trial everywhere. */
+  const [trial, setTrial] = useState(() => getProTrial());
+  const onTrial = !plan && trial.active;
+  const canStartTrial = !plan && !trial.started;
+  const badgeLabel = onTrial ? `Pro trial · ${trial.daysLeft} day${trial.daysLeft === 1 ? "" : "s"} left` : `${planLabel} plan`;
+  const trialEnds = trial.endsAt
+    ? new Date(trial.endsAt).toLocaleDateString(undefined, { day: "numeric", month: "long" })
+    : "";
+
+  function beginTrial() {
+    const started = startProTrial();
+    if (started) setTrial(started);
+  }
 
   const [avatar, setAvatar] = useState(null);
   const fileInput = useRef(null);
@@ -329,58 +355,80 @@ export default function Profile({
             camera badge below works no matter which tab is active. */}
         <input ref={fileInput} type="file" accept="image/*" hidden onChange={pickAvatar} />
 
+        {/* One identity card: photo, who you are, what you've done. The
+            page used to print the avatar and name twice — here and again
+            at the top of Personal info — and hang the four numbers off it
+            as four more bordered tiles. Photo controls live on the photo
+            now, and the stats are a strip inside the same card. */}
         <section className="jp-summary">
-          <div className="jp-summary-avatar" style={{ backgroundImage: `url(${avatar || defaultAvatar})` }}>
-            <span className="jp-cam" role="button" aria-label="Change photo" onClick={() => fileInput.current?.click()}>
-              <CamIcon />
-            </span>
-          </div>
+          <div className="jp-summary-id">
+            <div className="jp-summary-avatar" style={{ backgroundImage: `url(${avatar || defaultAvatar})` }}>
+              <span className="jp-cam" role="button" aria-label="Change photo" onClick={() => fileInput.current?.click()}>
+                <CamIcon />
+              </span>
+            </div>
 
-          <div className="jp-summary-who">
-            <b>{session.name}</b>
-            <span>{session.email}</span>
-            <div className="jp-summary-badges">
-              <span className="jp-badge jp-badge-plan">{planLabel} plan</span>
-              {memberSince && <span className="jp-badge">Member since {memberSince}</span>}
+            <div className="jp-summary-who">
+              <b>{session.name}</b>
+              <span>{session.email}</span>
+              <div className="jp-summary-badges">
+                <span className={"jp-badge jp-badge-plan" + (onTrial ? " jp-badge-trial" : "")}>{badgeLabel}</span>
+                {memberSince && <span className="jp-badge">Member since {memberSince}</span>}
+              </div>
+              <div className="jp-photo-acts">
+                <button type="button" className="jp-linkbtn" onClick={() => fileInput.current?.click()}>
+                  Upload photo
+                </button>
+                {avatar && (
+                  <button type="button" className="jp-linkbtn" onClick={() => setAvatar(null)}>
+                    Remove
+                  </button>
+                )}
+                <span className="jp-photo-note">
+                  {decks.length} deck{decks.length === 1 ? "" : "s"} · currently on {deckName}
+                </span>
+              </div>
+            </div>
+
+            <div className="jp-summary-acts">
+              <button type="button" className="jp-btn" onClick={focusPersonalInfo}>
+                Edit profile
+              </button>
+              <button type="button" className="jp-btn jp-solid" onClick={onOpenPlans}>
+                {plan ? "Manage plan" : "Upgrade"}
+              </button>
             </div>
           </div>
 
-          <div className="jp-summary-acts">
-            <button type="button" className="jp-btn" onClick={focusPersonalInfo}>
-              Edit profile
-            </button>
-            <button type="button" className="jp-btn jp-solid" onClick={onOpenPlans}>
-              {plan ? "Manage plan" : "Upgrade"}
-            </button>
-          </div>
+          {stats && (
+            <div className="jp-summary-stats">
+              <div className="jp-stat-tile">
+                <span className="jp-label">Decks</span>
+                <b>{stats.decksOwned}</b>
+                <span>in your library</span>
+              </div>
+              <div className="jp-stat-tile">
+                <span className="jp-label">Lessons completed</span>
+                <b>{stats.lessonsDone}</b>
+                <span>{stats.lessonsTotal ? `of ${stats.lessonsTotal}` : "no course decks yet"}</span>
+              </div>
+              <div className="jp-stat-tile">
+                <span className="jp-label">Study time</span>
+                <b>{studyTime}</b>
+                <span>{memberSince ? `since ${memberSince}` : "on Lessons, Practice and Exam"}</span>
+              </div>
+              <div className="jp-stat-tile">
+                <span className="jp-label">Certificates</span>
+                <b>{stats.certificatesEarned}</b>
+                <span>{stats.courseDecks ? `of ${stats.courseDecks} eligible` : "none eligible yet"}</span>
+              </div>
+            </div>
+          )}
         </section>
 
-        {stats && (
-          <div className="jp-summary-stats">
-            <div className="jp-stat-tile">
-              <span className="jp-label">Decks</span>
-              <b>{stats.decksOwned}</b>
-              <span>in your library</span>
-            </div>
-            <div className="jp-stat-tile">
-              <span className="jp-label">Lessons completed</span>
-              <b>{stats.lessonsDone}</b>
-              <span>{stats.lessonsTotal ? `of ${stats.lessonsTotal}` : "no course decks yet"}</span>
-            </div>
-            <div className="jp-stat-tile">
-              <span className="jp-label">Study time</span>
-              <b>{studyTime}</b>
-              <span>{memberSince ? `since ${memberSince}` : "on Lessons, Practice and Exam"}</span>
-            </div>
-            <div className="jp-stat-tile">
-              <span className="jp-label">Certificates</span>
-              <b>{stats.certificatesEarned}</b>
-              <span>{stats.courseDecks ? `of ${stats.courseDecks} eligible` : "none eligible yet"}</span>
-            </div>
-          </div>
-        )}
-
         <div className="jp-shell">
+          {/* two tabs don't earn a sidebar column — a segmented switch
+              over the content reads faster and leaves the page full width */}
           <nav className="jp-nav">
             <button type="button" className={tab === "personal" ? "jp-on" : ""} onClick={() => setTab("personal")}>
               <PersonIcon /> Personal info
@@ -394,32 +442,6 @@ export default function Profile({
             {/* ============ PERSONAL INFO ============ */}
             {tab === "personal" && (
               <div>
-                <section className="jp-panel">
-                  <div className="jp-panel-body">
-                    <div className="jp-idrow">
-                      <div className="jp-big-avatar" style={{ backgroundImage: `url(${avatar || defaultAvatar})` }}>
-                        <span className="jp-cam">
-                          <CamIcon />
-                        </span>
-                      </div>
-                      <div className="jp-who">
-                        <b>{session.name}</b>
-                        <span>
-                          {decks.length} deck{decks.length === 1 ? "" : "s"} · currently on {deckName}
-                        </span>
-                      </div>
-                      <div className="jp-acts">
-                        <button type="button" className="jp-btn" onClick={() => fileInput.current?.click()}>
-                          Upload photo
-                        </button>
-                        <button type="button" className="jp-btn" onClick={() => setAvatar(null)} disabled={!avatar}>
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
                 {/* Decorative — this store sells one-time decks, not a
                     subscription, so there's no real plan/usage-cap system
                     behind this. "See plans" opens the Plans page, where
@@ -437,13 +459,54 @@ export default function Profile({
                         <CardIcon />
                       </span>
                       <div className="jp-txt">
-                        <b>{planLabel} plan</b>
-                        <span>{plan ? `${planPrice} / month` : "$0 / month · free forever"}</span>
+                        <b>{onTrial ? "Pro trial" : `${planLabel} plan`}</b>
+                        <span>
+                          {onTrial
+                            ? `Free until ${trialEnds} · ${trial.daysLeft} day${trial.daysLeft === 1 ? "" : "s"} left`
+                            : plan
+                              ? `${planPrice} / month`
+                              : "$0 / month · free forever"}
+                        </span>
                       </div>
                       <button type="button" className="jp-btn jp-solid" onClick={onOpenPlans}>
-                        {plan ? "Manage plan" : "See plans"}
+                        {plan ? "Manage plan" : onTrial ? "Keep Pro" : "See plans"}
                       </button>
                     </div>
+
+                    {/* the free week: offered once, then it either runs or
+                        it's spent — the button never comes back */}
+                    {canStartTrial && (
+                      <div className="jp-trial">
+                        <div className="jp-t">
+                          <b>Try Pro free for {TRIAL_DAYS} days.</b>
+                          No card, no charge — it simply ends after a week.
+                        </div>
+                        <button type="button" className="jp-btn jp-solid" onClick={beginTrial}>
+                          Start free trial
+                        </button>
+                      </div>
+                    )}
+
+                    {onTrial && (
+                      <div className="jp-trial jp-trial-on">
+                        <div className="jp-t">
+                          <b>{trial.daysLeft} day{trial.daysLeft === 1 ? "" : "s"} of Pro left.</b>
+                          Your trial ends on {trialEnds}, and the account drops back to Free on its own.
+                        </div>
+                      </div>
+                    )}
+
+                    {!plan && trial.expired && (
+                      <div className="jp-trial jp-trial-off">
+                        <div className="jp-t">
+                          <b>Your Pro trial has ended.</b>
+                          You're back on Free — everything you made during the trial is still here.
+                        </div>
+                        <button type="button" className="jp-btn jp-solid" onClick={onOpenPlans}>
+                          See plans
+                        </button>
+                      </div>
+                    )}
 
                     {plan ? (
                       <div className="jp-upsell" style={{ background: "var(--green-soft)", borderColor: "var(--green-line)" }}>
@@ -640,6 +703,18 @@ export default function Profile({
                         );
                       })}
                     </div>
+                  </div>
+                </section>
+
+                <section className="jp-panel">
+                  <div className="jp-panel-head">
+                    <h2>Sign out</h2>
+                    <p>Ends the session on this device. Your decks, progress and certificates stay put — sign back in with your code.</p>
+                  </div>
+                  <div className="jp-panel-body">
+                    <button type="button" className="jp-btn" onClick={onSignOut}>
+                      Sign out
+                    </button>
                   </div>
                 </section>
 
