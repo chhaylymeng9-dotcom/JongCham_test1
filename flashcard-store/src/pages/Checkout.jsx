@@ -229,6 +229,7 @@ export default function Checkout({ items, onBack, onPaid, onComplete, onGoToAcco
         const deck = DECK_BY_ID[customCode.deckId];
         setActivationLock(customCode.code, getDeviceId());
         setSession({
+          auth: "code",
           code: customCode.code,
           deckId: customCode.deckId,
           subject: deck.subject,

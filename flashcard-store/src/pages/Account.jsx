@@ -29,6 +29,9 @@ import {
   getHarvest,
   getProTrial,
   getSession,
+  createUser,
+  verifyUser,
+  updateUser,
   getStars,
   getStreak,
   getStudyDays,
@@ -169,6 +172,7 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
     setActivationLock(resolved.code, deviceId);
 
     const next = {
+      auth: "code",
       name: form.name.trim(),
       email: form.email.trim(),
       decks: [
@@ -187,10 +191,61 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
     setTab(resolved.deck.customizable ? "design" : "lessons");
   }
 
+  /* ---------- password sign-in (AuthPanel) ----------
+  Checked against the local user records in storage.js. Both handlers are
+  async because hashing is, and both return an error string (or null on
+  success) so AuthPanel can show it inline next to the fields.
+
+  A password account owns no deck until a box code is added, so it lands on
+  the "no decks yet" screen below rather than the lesson path. Decks are
+  parked on the user record at sign-out and restored here, since the
+  session is discarded. */
+  async function signInWithPassword({ email, password }) {
+    const user = await verifyUser(email, password);
+    if (!user) return "Email or password is incorrect.";
+    const decks = Array.isArray(user.decks) ? user.decks : [];
+    const next = {
+      auth: "password",
+      name: user.name,
+      email: user.email,
+      plan: user.plan ?? null,
+      decks,
+      activeDeckId: decks[0]?.deckId ?? null,
+    };
+    setSession(next);
+    setSessionState(next);
+    setView("home");
+    return null;
+  }
+
+  async function registerWithPassword({ name, email, password }) {
+    const user = await createUser({ name, email, password });
+    if (!user) return "That email already has an account. Sign in instead.";
+    const next = {
+      auth: "password",
+      name: user.name,
+      email: user.email,
+      plan: null,
+      decks: [],
+      activeDeckId: null,
+    };
+    setSession(next);
+    setSessionState(next);
+    setView("home");
+    return null;
+  }
+
   function signOut() {
+    // Keep the account's decks and plan on the user record — the session is
+    // about to go, and signing back in should not lose owned decks.
+    if (session?.auth === "password" && session.email) {
+      updateUser(session.email, { decks: session.decks ?? [], plan: session.plan ?? null });
+    }
     clearSession();
     setSessionState(null);
     setForm({ name: "", code: "", email: "" });
+    setShowCodeForm(false);
+    setView("home");
   }
 
   function saveProfile(patch) {

@@ -588,19 +588,119 @@ export function setCart(items) {
   writeStore("cart", items);
 }
 
+/* ---------- local accounts ----------
+Email/password records behind the sign-in panel. There is no server, so
+they live in localStorage with everything else: the salted digest below
+keeps passwords from sitting in plain sight, but anyone who can read this
+browser's storage can read or replace a record, and there is no rate limit
+or reset flow. This is a demo credential store, not authentication — real
+auth has to move server-side, and this file is the only place that changes
+when it does. --------------------------------- */
+const normalizeEmail = (email) => String(email ?? "").trim().toLowerCase();
+
+export function getUsers() {
+  const list = readStore("users", []);
+  return Array.isArray(list) ? list : [];
+}
+
+export function findUser(email) {
+  const key = normalizeEmail(email);
+  return key ? getUsers().find((u) => u.email === key) ?? null : null;
+}
+
+function toHex(buffer) {
+  return Array.from(new Uint8Array(buffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+// Fallback for when SubtleCrypto is missing: it needs a secure context, so
+// it is absent if the dev server is opened over plain http on a LAN
+// address. Weaker again — the algorithm is recorded in the stored string so
+// verification hashes the same way it was written.
+function weakHash(input) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(16);
+}
+
+async function hashPassword(password, salt, algo = "sha256") {
+  const input = `${salt}:${password}`;
+  if (algo === "sha256") {
+    try {
+      return `sha256:${toHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input)))}`;
+    } catch {
+      /* no SubtleCrypto in this context — fall through to weakHash */
+    }
+  }
+  return `weak:${weakHash(input)}`;
+}
+
+export async function createUser({ name, email, password }) {
+  const key = normalizeEmail(email);
+  if (!key || findUser(key)) return null; // caller reports "already registered"
+  const salt = crypto.randomUUID();
+  const user = {
+    name: String(name ?? "").trim(),
+    email: key,
+    salt,
+    hash: await hashPassword(password, salt),
+    createdAt: new Date().toISOString(),
+    decks: [],
+  };
+  writeStore("users", [...getUsers(), user]);
+  return user;
+}
+
+export async function verifyUser(email, password) {
+  const user = findUser(email);
+  if (!user) return null;
+  const algo = String(user.hash ?? "").startsWith("weak:") ? "weak" : "sha256";
+  const hash = await hashPassword(password, user.salt, algo);
+  return hash === user.hash ? user : null;
+}
+
+// Called at sign-out to park the session's decks on the account, since the
+// session itself is thrown away. No-ops for box-code sign-ins, which have
+// no user record.
+export function updateUser(email, patch) {
+  const key = normalizeEmail(email);
+  const users = getUsers();
+  const i = users.findIndex((u) => u.email === key);
+  if (i === -1) return null;
+  users[i] = { ...users[i], ...patch };
+  writeStore("users", users);
+  return users[i];
+}
+
 /* ---------- account session ----------
-Shape: { name, email, ..., decks: [{ code, deckId, subject, capacity,
+Shape: { name, email, auth, decks: [{ code, deckId, subject, capacity,
 addedAt }], activeDeckId }. One account can own several decks — `decks`
 is the list, `activeDeckId` is whichever one's dashboard is showing.
 
-Older sessions were written flat (code/deckId/subject/capacity directly
-on the session, one deck only) before multi-deck support existed —
-normalized to the current shape on read so nothing downstream has to
+`auth` records how the session was established ("password" or "code") and
+is what makes it a session at all: getSession() ignores any stored record
+without it, so the account area can never be entered without a sign-in
+actually having happened. Sessions written by older builds carry no `auth`
+field, so they are dropped and the visitor signs in again — deliberate,
+since those were being honoured indefinitely.
+
+Older sessions were also written flat (code/deckId/subject/capacity
+directly on the session, one deck only) before multi-deck support existed
+— normalized to the current shape on read so nothing downstream has to
 know about the old format. --------------------------------------- */
+const AUTH_KINDS = ["password", "code"];
+
 function normalizeSession(s) {
-  if (!s) return s;
+  if (!s) return null;
+  // Not signed in by any route this build recognises — treat as no session.
+  if (!AUTH_KINDS.includes(s.auth)) return null;
   if (Array.isArray(s.decks)) return s;
-  if (!s.deckId) return s;
+  // A password sign-in owns no deck until a code is added.
+  if (!s.deckId) return { ...s, decks: [], activeDeckId: null };
   const { code, deckId, subject, capacity, ...rest } = s;
   return {
     ...rest,
