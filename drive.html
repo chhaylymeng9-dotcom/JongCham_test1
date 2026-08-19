@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bus drive — JongCham</title>
+<style>
+  :root{ --paper:#F7F4ED; --green:#243529; --hair:#E1DBCC; }
+  body{margin:0;background:var(--paper);font-family:sans-serif;display:grid;place-items:center;height:100vh}
+  .wrap{text-align:center;width:100%;max-width:400px}
+  .drive{position:relative;width:100%;border-radius:20px;overflow:hidden;
+         border:1px solid var(--hair);box-shadow:0 4px 0 var(--hair);background:#CFE3EA;margin-bottom:20px}
+  .drive svg{display:block;width:100%;height:auto}
+  .btn{padding:16px 40px;border:0;border-radius:999px;font-weight:700;
+       background:var(--green);color:#fff;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="drive">
+    <svg viewBox="0 35 400 175">
+      <rect width="400" height="210" fill="#CFE3EA"/>
+      <circle cx="330" cy="36" r="18" fill="#F7D96B"/>
+      <!-- Simplified bus graphic for the drive scene -->
+      <g transform="translate(112 108)">
+        <path d="M4 13 h116 q9 0 10 9 l6 44 q1 9 -9 9 H6 q-5 0 -5 -5 V19 q0 -6 3 -6Z" fill="#4E8AD8"/>
+        <rect x="10" y="21" width="76" height="26" rx="4" fill="#79D7F0"/>
+      </g>
+    </svg>
+  </div>
+  <button class="btn" onclick="window.location.href='/pomo.html'">Next: Select Destination</button>
+</div>
+</body>
+</html>
