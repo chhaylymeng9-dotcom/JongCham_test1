@@ -1,0 +1,189 @@
+/* ---------- Cham, the JongCham mascot ----------
+Every selector is scoped under .mc-root, and the parts move with
+transforms only, so the idle loops stay on the compositor and can't touch
+layout. The `mc-` prefix was checked against every sheet in src before
+use — `.sp-` is already taken by studyPlan.css, which silently restyles
+anything that borrows it.
+--------------------------------- */
+
+.mc-root {
+  --mc-step: 0.9s; /* one full stride: left step + right step */
+  display: block;
+  width: 100%;
+}
+
+/* ---------- the walk ----------
+Limbs pivot at the shoulder/hip, which is the top edge of each part.
+Opposition comes from a half-stride negative delay, not from `reverse` —
+these keyframes are symmetric, so playing them backwards would land on
+exactly the same values and the limbs would move as one. */
+.mc-root .mc-leg,
+.mc-root .mc-arm {
+  transform-box: fill-box;
+  transform-origin: 50% 8%;
+}
+.mc-root .mc-leg-f { animation: mc-stride var(--mc-step) ease-in-out infinite; }
+.mc-root .mc-leg-b { animation: mc-stride var(--mc-step) ease-in-out infinite; animation-delay: calc(var(--mc-step) / -2); }
+/* each arm counter-swings against the leg on its own side */
+.mc-root .mc-arm-f { animation: mc-swing var(--mc-step) ease-in-out infinite; animation-delay: calc(var(--mc-step) / -2); }
+.mc-root .mc-arm-b { animation: mc-swing var(--mc-step) ease-in-out infinite; }
+
+/* the body rises on each step, so it bobs at twice the stride rate */
+.mc-root .mc-walk-body {
+  transform-box: fill-box;
+  animation: mc-bob calc(var(--mc-step) / 2) ease-in-out infinite;
+}
+
+/* ground moving under the feet — the offset travels one dash + one gap */
+.mc-root .mc-ground { animation: mc-scroll var(--mc-step) linear infinite; }
+
+/* Scenery drifts the same way the ground does, at speeds that fall off
+   with distance: bamboo close behind, clouds far away. */
+.mc-root .mc-tree { animation: mc-drift calc(var(--mc-step) * 7) linear infinite; }
+.mc-root .mc-tree-2 { animation-delay: calc(var(--mc-step) * -4.67); }
+.mc-root .mc-tree-3 { animation-delay: calc(var(--mc-step) * -2.33); }
+
+.mc-root .mc-cloud { animation: mc-drift calc(var(--mc-step) * 20) linear infinite; }
+.mc-root .mc-cloud-2 { animation-delay: calc(var(--mc-step) * -13.3); }
+.mc-root .mc-cloud-3 { animation-delay: calc(var(--mc-step) * -6.6); }
+
+.mc-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Blinking is the one tic every pose shares — it is what keeps the
+   character alive when nothing else is moving. Both eyes squash
+   together, since the group's centre line is the eye line. */
+.mc-root .mc-eyes {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: mc-blink 5.4s ease-in-out infinite;
+}
+
+/* One ear flicks now and then; on every breath it would read as nervous. */
+.mc-root .mc-ear {
+  transform-box: fill-box;
+  transform-origin: 50% 90%;
+  animation: mc-twitch 8s ease-in-out infinite;
+}
+
+.mc-root .mc-arm-wave {
+  transform-box: fill-box;
+  transform-origin: 50% 90%;
+  animation: mc-wave 1.6s ease-in-out infinite;
+}
+
+.mc-root .mc-bounce {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: mc-bounce 1.1s ease-in-out infinite;
+}
+
+.mc-root .mc-sparkle {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: mc-sparkle 1.1s ease-in-out infinite;
+}
+
+.mc-root .mc-breathe {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: mc-breathe 3.6s ease-in-out infinite;
+}
+
+.mc-root .mc-card-read {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: mc-read 4s ease-in-out infinite;
+}
+
+/* The peeking head rises into view, as if it just noticed you. */
+.mc-root .mc-peek-head {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: mc-peek 6s ease-in-out infinite;
+}
+
+.mc-root .mc-shadow {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: mc-shadow 1.1s ease-in-out infinite;
+}
+/* only the bouncing poses need the shadow to answer the motion */
+.mc-root:not(.mc-cheer) .mc-shadow { animation: none; }
+
+.mc-root .mc-z {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  opacity: 0;
+  animation: mc-float 3.6s ease-out infinite;
+}
+.mc-root .mc-z-2 { animation-delay: -1.2s; }
+.mc-root .mc-z-3 { animation-delay: -2.4s; }
+
+/* A shorter stride than a side-on walk would take: the feet are wide
+   because they point forward, and a bigger swing crosses them into one
+   dark lump under the belly. */
+@keyframes mc-stride { 0%, 100% { transform: rotate(13deg); } 50% { transform: rotate(-13deg); } }
+@keyframes mc-swing { 0%, 100% { transform: rotate(14deg); } 50% { transform: rotate(-14deg); } }
+@keyframes mc-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+/* The mascot walks left, so every background layer travels right at its
+   own speed. A negative offset walks the dash pattern forward along the
+   path — rightwards — matching the grove. Get these two out of step and
+   they cancel into looking like it is walking backwards. */
+@keyframes mc-scroll { to { stroke-dashoffset: -32; } }
+/* far enough to clear the right edge, so nothing pops in or out in frame */
+@keyframes mc-drift { to { transform: translateX(262px); } }
+@keyframes mc-blink {
+  0%, 93%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(.08); }
+  98.5% { transform: scaleY(1); }
+}
+@keyframes mc-twitch {
+  0%, 88%, 100% { transform: rotate(0deg); }
+  91% { transform: rotate(-12deg); }
+  94% { transform: rotate(5deg); }
+  97% { transform: rotate(0deg); }
+}
+@keyframes mc-wave {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(16deg); }
+}
+@keyframes mc-bounce {
+  0%, 100% { transform: translateY(0) scale(1.015, .985); }
+  45% { transform: translateY(-10px) scale(.99, 1.01); }
+}
+@keyframes mc-sparkle {
+  0%, 100% { transform: scale(.85); opacity: .55; }
+  45% { transform: scale(1.15); opacity: 1; }
+}
+@keyframes mc-breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.01, 1.03); }
+}
+@keyframes mc-read {
+  0%, 100% { transform: rotate(-1.6deg); }
+  50% { transform: rotate(1.6deg); }
+}
+@keyframes mc-peek {
+  0%, 12%, 100% { transform: translateY(6px); }
+  22%, 88% { transform: translateY(0); }
+}
+@keyframes mc-shadow {
+  0%, 100% { transform: scale(1); opacity: .16; }
+  45% { transform: scale(.86); opacity: .1; }
+}
+@keyframes mc-float {
+  0% { opacity: 0; transform: translate(0, 0) scale(.6); }
+  18% { opacity: .85; }
+  70% { opacity: .5; }
+  100% { opacity: 0; transform: translate(12px, -26px) scale(1.15); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-root * { animation: none !important; }
+  .mc-root .mc-z { opacity: .6; }
+}

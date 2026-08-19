@@ -1,0 +1,49 @@
+/* ---------- shared back control ----------
+Written with literal colours rather than custom properties: this button is
+used from Profile, My decks, the dashboard and the leaderboard, and each of
+those sheets defines its own token set. `jc-` was checked against every
+sheet in src before use.
+--------------------------------- */
+
+.jc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  /* the disc sits flush in the pill's left end, so the padding is only
+     what the word needs on the right */
+  padding: 5px 20px 5px 5px;
+  border: 0;
+  border-radius: 999px;
+  background: #EDE8DA;
+  color: #23201B;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  line-height: 1;
+  transition: background .15s ease, transform .15s ease;
+}
+.jc-back:hover { background: #E4DECB; }
+.jc-back:active { transform: translateY(1px); }
+.jc-back:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(47, 69, 56, .35);
+}
+
+.jc-back-disc {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #2F4538;
+  color: #FFFFFF;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jc-back { transition: none; }
+  .jc-back:active { transform: none; }
+}

@@ -28,6 +28,9 @@ const STRINGS = {
   "nav.orders": { en: "My orders", km: "ការបញ្ជាទិញ" },
   "nav.cart": { en: "Cart", km: "កន្ត្រក" },
   "nav.account": { en: "Account", km: "គណនី" },
+  // shown on the phone bar, where the account link is otherwise only
+  // reachable by opening the menu
+  "nav.signIn": { en: "Sign in", km: "ចូលគណនី" },
   "nav.backToStore": { en: "Back to store", km: "ត្រឡប់ទៅហាង" },
   "nav.menu": { en: "Menu", km: "ម៉ឺនុយ" },
   "nav.language": { en: "Language", km: "ភាសា" },
@@ -81,6 +84,12 @@ const STRINGS = {
   "hero.badge2": { en: "100lb uncoated stock", km: "ក្រដាសក្រាស ១០០lb" },
   "hero.badge3": { en: "ABA KHQR & cards", km: "ABA KHQR និងកាតធនាគារ" },
   "hero.flipHint": { en: "Tap the card to flip", km: "ចុចលើកាតដើម្បីត្រឡប់" },
+  // what the hero mascot says in its speech bubble
+  "hero.pandaSays": { en: "Study with us!", km: "រៀនជាមួយយើង!" },
+  "hero.mascotAlt": {
+    en: "Cham, the JongCham panda, waving as it walks through a bamboo grove",
+    km: "ចាំ ខ្លាឃ្មុំផេនដារបស់ចង់ចាំ គ្រវីដៃពេលដើរកាត់ព្រៃឫស្សី",
+  },
 
   // ---------- value props ----------
   "value.eyebrow": { en: "What you get", km: "អ្វីដែលអ្នកទទួលបាន" },
@@ -1017,9 +1026,11 @@ const STRINGS = {
 const LangContext = createContext(null);
 
 export function LanguageProvider({ children }) {
+  /* English is what a first-time visitor gets; a choice they have actually
+     made is remembered and wins over it. */
   const [lang, setLang] = useState(() => {
     const saved = readStore("lang", null);
-    return saved === "km" || saved === "en" ? saved : "km";
+    return saved === "km" || saved === "en" ? saved : "en";
   });
 
   useEffect(() => {

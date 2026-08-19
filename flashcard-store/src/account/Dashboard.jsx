@@ -138,7 +138,7 @@ export default function Dashboard({
           {onGoHome && (
             <button type="button" className="jd-back" onClick={onGoHome}>
               <ArrowLeftIcon />
-              Back to dashboard
+              Back
             </button>
           )}
           <button

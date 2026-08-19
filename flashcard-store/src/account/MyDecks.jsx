@@ -74,7 +74,7 @@ export default function MyDecks({ decks, onBack, onOpenDeck, onAddDeck, embedded
       <div className={embedded ? "" : "jmd-wrap"}>
         {!embedded && (
           <button type="button" className="jmd-back" onClick={onBack}>
-            <BackIcon /> Back to dashboard
+            <BackIcon /> Back
           </button>
         )}
 

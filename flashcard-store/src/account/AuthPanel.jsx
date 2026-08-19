@@ -67,15 +67,106 @@ function GoogleIcon() {
   );
 }
 
+/* The barricade the deck is hiding behind — same paper/typewriter palette
+   as the rest of the panel, so it reads as our page and not a stock 404. */
+function ConstructionArt() {
+  return (
+    <svg className="ja-soon-art" viewBox="0 0 300 190" fill="none" aria-hidden="true">
+      <defs>
+        <pattern id="ja-stripe" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="16" height="16" fill="#FFFFFF" />
+          <rect width="8" height="16" fill="var(--green)" />
+        </pattern>
+      </defs>
+
+      {/* ground */}
+      <path d="M24 158H276" stroke="var(--hair)" strokeWidth="2" strokeLinecap="round" strokeDasharray="1 9" />
+
+      {/* a deck knocked over while the works are on */}
+      <g transform="rotate(-19 46 141)">
+        <rect x="20" y="122" width="52" height="38" rx="7" fill="#EFEBE0" stroke="var(--hair)" strokeWidth="1.5" />
+      </g>
+      <g transform="rotate(-9 48 137)">
+        <rect x="22" y="118" width="52" height="38" rx="7" fill="#FFFFFF" stroke="var(--hair)" strokeWidth="1.5" />
+        <text x="48" y="144" textAnchor="middle" fill="var(--ink)" fontFamily="var(--type)" fontSize="19" fontWeight="700">
+          学
+        </text>
+      </g>
+
+      {/* barricade */}
+      <g stroke="#5B7360" strokeWidth="5" strokeLinecap="round">
+        <path d="M84 158 98 84M110 158 96 84M190 158 204 84M216 158 202 84" />
+      </g>
+      <rect x="64" y="86" width="172" height="20" rx="5" fill="url(#ja-stripe)" stroke="var(--green)" strokeWidth="1.5" />
+      <rect x="64" y="114" width="172" height="20" rx="5" fill="url(#ja-stripe)" stroke="var(--green)" strokeWidth="1.5" />
+
+      {/* warning lamps */}
+      <g className="ja-lamp">
+        <circle cx="64" cy="80" r="8.5" fill="#C08A3E" />
+        <circle cx="64" cy="80" r="3" fill="#F6F3EC" />
+      </g>
+      <g className="ja-lamp ja-lamp-2">
+        <circle cx="236" cy="80" r="8.5" fill="#C08A3E" />
+        <circle cx="236" cy="80" r="3" fill="#F6F3EC" />
+      </g>
+
+      {/* cone */}
+      <path d="M264 108 280 152H248Z" fill="#C08A3E" />
+      <path d="M257 127h14l2.5 9h-19Z" fill="#F6F3EC" />
+      <rect x="242" y="150" width="44" height="8" rx="4" fill="#A87A34" />
+
+      {/* dust */}
+      <g fill="var(--green-line)">
+        <circle cx="40" cy="64" r="2.5" />
+        <circle cx="150" cy="52" r="3" />
+        <circle cx="262" cy="60" r="2.5" />
+        <circle cx="112" cy="66" r="1.8" />
+      </g>
+    </svg>
+  );
+}
+
+/* Shown when a sign-in route that isn't built yet gets clicked, so the
+   button leads somewhere instead of quietly doing nothing. */
+function ComingSoon({ kind, onHaveCode, onBack }) {
+  const body =
+    kind === "google"
+      ? "Continue with Google isn’t wired up yet — we’re still running the cable to it."
+      : kind === "register"
+        ? "New accounts aren’t open yet — the front desk is still going up."
+        : "Email and password sign-in isn’t live yet — we’re still building that half of the door.";
+
+  return (
+    <div className="ja-pane ja-on ja-soon" role="status">
+      <ConstructionArt />
+      <span className="ja-label">Coming soon</span>
+      <h2>Oops — under construction</h2>
+      <p>{body}</p>
+
+      {onHaveCode && (
+        <button type="button" className="ja-submit" onClick={onHaveCode}>
+          Sign in with your box code
+        </button>
+      )}
+
+      <button type="button" className={onHaveCode ? "ja-soon-back" : "ja-submit"} onClick={onBack}>
+        {onHaveCode ? "← Back to sign in" : "← Back"}
+      </button>
+    </div>
+  );
+}
+
 export default function AuthPanel({ onHaveCode }) {
   const [pane, setPane] = useState("login");
+  /* { kind, from } — `from` is the tab to return to when they back out. */
+  const [soon, setSoon] = useState(null);
 
   const [lemail, setLemail] = useState("");
   const [lpass, setLpass] = useState("");
   const [loginShowPass, setLoginShowPass] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(true);
   const [loginErrors, setLoginErrors] = useState({ lemail: false, lpass: false });
-  const [loginBtn, setLoginBtn] = useState("idle"); // idle | loading | done
+  const [loginBtn, setLoginBtn] = useState("idle"); // idle | loading
 
   const [name, setName] = useState("");
   const [remail, setRemail] = useState("");
@@ -88,14 +179,29 @@ export default function AuthPanel({ onHaveCode }) {
 
   const strength = passwordStrength(rpass);
 
+  function showSoon(kind) {
+    setSoon({ kind, from: pane });
+    setPane("soon");
+  }
+
+  function closeSoon() {
+    setPane(soon?.from ?? "login");
+    setSoon(null);
+  }
+
   function submitLogin(e) {
     e.preventDefault();
     const okEmail = emailOk(lemail);
     const okPass = lpass.length >= 8;
     setLoginErrors({ lemail: !okEmail, lpass: !okPass });
     if (okEmail && okPass) {
+      /* The credentials go nowhere yet, so the spinner is only long enough
+         to acknowledge the click before the coming-soon screen. */
       setLoginBtn("loading");
-      setTimeout(() => setLoginBtn("done"), 1400);
+      setTimeout(() => {
+        setLoginBtn("idle");
+        showSoon("password");
+      }, 700);
     }
   }
 
@@ -108,12 +214,15 @@ export default function AuthPanel({ onHaveCode }) {
     setTermsBad(!terms);
     if (okName && okEmail && okPass && terms) {
       setRegBtn("loading");
-      setTimeout(() => setRegBtn("done"), 1400);
+      setTimeout(() => {
+        setRegBtn("idle");
+        showSoon("register");
+      }, 700);
     }
   }
 
-  const loginLabel = loginBtn === "loading" ? "Signing in…" : loginBtn === "done" ? "Done ✓" : "Sign in";
-  const regLabel = regBtn === "loading" ? "Creating…" : regBtn === "done" ? "Done ✓" : "Create account";
+  const loginLabel = loginBtn === "loading" ? "Signing in…" : "Sign in";
+  const regLabel = regBtn === "loading" ? "Creating…" : "Create account";
 
   return (
     /* The green brand panel stays on the left and the form on the right
@@ -198,19 +307,21 @@ export default function AuthPanel({ onHaveCode }) {
       {/* ---------------- right ---------------- */}
       <main className="ja-main">
         <div className="ja-form">
-          <div className="ja-tabs">
-            <button type="button" className={pane === "login" ? "ja-on" : ""} onClick={() => setPane("login")}>
-              Sign in
-            </button>
-            <button type="button" className={pane === "register" ? "ja-on" : ""} onClick={() => setPane("register")}>
-              Create account
-            </button>
-          </div>
+          {pane !== "soon" && (
+            <div className="ja-tabs">
+              <button type="button" className={pane === "login" ? "ja-on" : ""} onClick={() => setPane("login")}>
+                Sign in
+              </button>
+              <button type="button" className={pane === "register" ? "ja-on" : ""} onClick={() => setPane("register")}>
+                Create account
+              </button>
+            </div>
+          )}
 
           {/* This screen is a demo-only visual port with no code field, so
               it can't unlock a deck on its own — this is the way back to
               the real code/name/email sign-in. */}
-          {onHaveCode && (
+          {onHaveCode && pane !== "soon" && (
             <p className="ja-swap" style={{ marginTop: 0, marginBottom: 24 }}>
               Bought a deck?{" "}
               <button type="button" onClick={onHaveCode}>
@@ -296,7 +407,7 @@ export default function AuthPanel({ onHaveCode }) {
             </form>
 
             <div className="ja-or">or</div>
-            <button type="button" className="ja-alt">
+            <button type="button" className="ja-alt" onClick={() => showSoon("google")}>
               <GoogleIcon />
               Continue with Google
             </button>
@@ -434,7 +545,7 @@ export default function AuthPanel({ onHaveCode }) {
             </form>
 
             <div className="ja-or">or</div>
-            <button type="button" className="ja-alt">
+            <button type="button" className="ja-alt" onClick={() => showSoon("google")}>
               <GoogleIcon />
               Continue with Google
             </button>
@@ -446,6 +557,9 @@ export default function AuthPanel({ onHaveCode }) {
               </button>
             </p>
           </div>
+
+          {/* ============ COMING SOON ============ */}
+          {pane === "soon" && <ComingSoon kind={soon?.kind} onHaveCode={onHaveCode} onBack={closeSoon} />}
         </div>
       </main>
     </div>

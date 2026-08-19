@@ -14,6 +14,7 @@ import About from "./pages/About.jsx";
 import Contact from "./pages/Contact.jsx";
 import { Badge, cx } from "./ui.jsx";
 import Reveal from "./components/Reveal.jsx";
+import Mascot from "./components/Mascot.jsx";
 
 /* ---------- App shell ----------
 Single-page navigation over six views, plus the header, footer and the
@@ -129,7 +130,7 @@ function Shell() {
   return (
     <div className="min-h-screen flex flex-col">
       {!hideAppNav && (
-        <Header page={activePage} onNavigate={go} cartCount={cartCount} menuOpen={menuOpen} onToggleMenu={() => setMenuOpen((m) => !m)} />
+        <Header page={activePage} onNavigate={go} cartCount={cartCount} menuOpen={menuOpen} onToggleMenu={() => setMenuOpen((m) => !m)} signedIn={accountSignedIn} />
       )}
 
       <main className="flex-1">
@@ -141,6 +142,7 @@ function Shell() {
             onBuyNow={buyNow}
             onGoToCart={() => go("cart")}
             onGoToCustomize={() => go("customize")}
+            onGoToAccount={() => go("account")}
           />
         )}
 
@@ -203,7 +205,7 @@ function Shell() {
 
 /* ---------- header ---------- */
 
-function Header({ page, onNavigate, cartCount, menuOpen, onToggleMenu }) {
+function Header({ page, onNavigate, cartCount, menuOpen, onToggleMenu, signedIn }) {
   const { t } = useI18n();
 
   // Header animation — the bar starts parked above the viewport and drops
@@ -246,7 +248,11 @@ function Header({ page, onNavigate, cartCount, menuOpen, onToggleMenu }) {
        The drop-in and scroll shadow live on the pill, not the wrapper. */
     <header className="sticky top-0 z-30 print:hidden px-4 sm:px-6 pt-3 sm:pt-4">
       <div
-        className="max-w-6xl mx-auto rounded-full border border-ink/10 bg-paper/90 backdrop-blur-sm"
+        /* No outer pill: the bar's own contents — the wordmark, the tinted
+           link group, the language switch — carry it. It keeps a background
+           because it is sticky, and without one the page scrolls up through
+           the links and neither is readable. */
+        className="max-w-6xl mx-auto bg-paper/90 backdrop-blur-sm"
         style={
           reduceMotion
             ? undefined
@@ -267,7 +273,13 @@ function Header({ page, onNavigate, cartCount, menuOpen, onToggleMenu }) {
         >
           <Logo />
           <span>
-            <span className="block font-display text-lg leading-none">{t("brand.name")}</span>
+            {/* The wordmark is the sans, not the typewriter `font-display`
+                the rest of the display type uses — `font-sans` carries the
+                Khmer sans with it, so ចង់ចាំ matches rather than dropping
+                into the serif Khmer the display stack falls back to. */}
+            <span className="block font-sans font-bold tracking-tight text-lg leading-none">
+              {t("brand.name")}
+            </span>
             <span className="hidden sm:block label text-ink/45 text-[9px] mt-1">
               {t("brand.tagline")}
             </span>
@@ -278,9 +290,16 @@ function Header({ page, onNavigate, cartCount, menuOpen, onToggleMenu }) {
           {/* tinted pill group — the active page gets the solid pill */}
           <nav className="flex items-center gap-1 rounded-full border border-ink/10 bg-ink/[0.04] p-1">
             {links.map((l) => (
-              <NavLink key={l.id} active={page === l.id} onClick={() => onNavigate(l.id)} count={l.count}>
-                {l.label}
-              </NavLink>
+              /* the wrapper is only here to anchor the panda peeking over
+                 the Account item — the links themselves are unchanged */
+              <div key={l.id} className="relative">
+                {l.id === "account" && (
+                  <Mascot pose="peek" className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 w-12" />
+                )}
+                <NavLink active={page === l.id} onClick={() => onNavigate(l.id)} count={l.count}>
+                  {l.label}
+                </NavLink>
+              </div>
             ))}
           </nav>
           <span className="w-px h-5 bg-ink/15" />
@@ -289,6 +308,16 @@ function Header({ page, onNavigate, cartCount, menuOpen, onToggleMenu }) {
 
         <div className="flex md:hidden items-center gap-2">
           <LanguageSwitch />
+          {/* Signing in is the one thing people go looking for, and on a
+              phone the only route to it is behind the menu button — which
+              reads as "more pages", not "your account". So it gets its own
+              control in the bar. */}
+          <button
+            onClick={() => onNavigate("account")}
+            className="h-9 px-3.5 rounded-full bg-ink text-paper text-[13px] font-medium whitespace-nowrap"
+          >
+            {signedIn ? t("nav.account") : t("nav.signIn")}
+          </button>
           <button
             onClick={onToggleMenu}
             aria-expanded={menuOpen}
@@ -440,7 +469,9 @@ function Footer({ onNavigate }) {
           {/* Each footer column eases in on scroll, staggered left→right. */}
           <Reveal className="sm:col-span-3 lg:col-span-1">
             <div className="flex items-baseline gap-2.5 mb-4">
-              <span className="font-display text-lg text-cardstock leading-none">{t("brand.name")}</span>
+              <span className="font-sans font-bold tracking-tight text-lg text-cardstock leading-none">
+                {t("brand.name")}
+              </span>
               <span className="label text-cardstock/35 text-[8px]">{t("footer.tagline")}</span>
             </div>
             <p className="text-sm leading-relaxed text-cardstock/60 max-w-[30ch] mb-6">{t("footer.blurb")}</p>

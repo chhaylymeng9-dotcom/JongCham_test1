@@ -56,6 +56,7 @@ import LessonPath from "../account/LessonPath.jsx";
 import Profile from "../account/Profile.jsx";
 import Vouchers from "../account/Vouchers.jsx";
 import Shop from "../account/Shop.jsx";
+import LeaderboardPage from "../account/LeaderboardPage.jsx";
 import StudyPlan from "../account/StudyPlan.jsx";
 import DailyTasks from "../account/DailyTasks.jsx";
 import Plans from "../account/Plans.jsx";
@@ -593,6 +594,7 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         onOpenProfile={() => { setProfileTab("personal"); setView("profile"); }}
         onOpenStudyPlan={() => setView("studyPlan")}
         onOpenDailyTasks={() => setView("dailyTasks")}
+        onOpenLeaderboard={() => setView("leaderboard")}
         onGoToCart={onGoToCart}
       />
     );
@@ -621,7 +623,7 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         activeDeckId={activeDeckEntry.deckId}
         stats={stats}
         onSetActiveDeck={setActiveDeck}
-        onBack={() => setView("dashboard")}
+        onBack={() => setView("home")}
         onOpenPlans={() => setView("plans")}
         onSave={saveProfile}
         onAddDeck={addDeck}
@@ -629,6 +631,16 @@ export default function Account({ onGoToOrders, onBuildDeck, onGoToCart, onSessi
         onDeleteAccount={deleteAccount}
         onSignOut={signOut}
         initialTab={profileTab}
+      />
+    );
+  }
+
+  if (view === "leaderboard") {
+    return (
+      <LeaderboardPage
+        name={session.name || ""}
+        streak={getStreak().current}
+        onBack={() => setView("home")}
       />
     );
   }

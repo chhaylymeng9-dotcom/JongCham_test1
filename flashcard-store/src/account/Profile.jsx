@@ -343,7 +343,7 @@ export default function Profile({
     <div className="jp-root">
       <div className="jp-wrap">
         <button type="button" className="jp-back" onClick={onBack}>
-          <BackIcon /> Back to dashboard
+          <BackIcon /> Back
         </button>
 
         <div className="jp-head">

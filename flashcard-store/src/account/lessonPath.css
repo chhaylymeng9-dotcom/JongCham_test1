@@ -32,7 +32,13 @@
    becomes a bottom tab bar rather than disappearing — App.jsx hides its
    own nav for the whole signed-in account page, so hiding this one too
    left phones with no way out of the Learn view. */
-.lp-root .lp-shell{display:flex;align-items:flex-start;min-height:100vh}
+/* `dvh` with a `vh` fallback throughout the sticky columns below. On a
+   tablet in an in-app browser — Telegram's, say — the toolbars are part of
+   the chrome, so `100vh` is taller than what you can actually see and the
+   foot of a viewport-tall column sits under them: the last nav items go
+   missing, and rotating swaps which ones. `dvh` measures what is on screen
+   now and re-measures when the chrome or the orientation changes. */
+.lp-root .lp-shell{display:flex;align-items:flex-start;min-height:100vh;min-height:100dvh}
 /* clip keeps the scenery from spilling over the rail; `clip` (not
    `hidden`) leaves the sticky header working against the viewport.
    `relative` anchors the scenery, which now lives here as a backdrop. */
@@ -48,7 +54,9 @@
        text-transform:uppercase;color:var(--body);cursor:pointer}
 .lp-root .lb-back:hover{border-color:var(--hair-2);color:var(--ink)}
 .lp-root .lb-back svg{flex:none}
-.lp-root .lp-side{position:sticky;top:0;flex:none;width:220px;height:100vh;overflow-y:auto;
+/* a column, so the Pomo box at its foot can be pushed down to the bottom */
+.lp-root .lp-side{position:sticky;top:0;flex:none;width:220px;height:100vh;height:100dvh;overflow-y:auto;
+       display:flex;flex-direction:column;
        padding:28px 12px 24px;border-right:2px solid var(--hair);background:var(--paper)}
 .lp-root .lp-logo{display:block;padding:0 12px;font-family:var(--type);font-size:23px;
        font-weight:700;letter-spacing:-.04em;color:#4CA45F}
@@ -311,7 +319,7 @@
    The counterpart to the left nav: a pinned column of paper cards on the
    space the path used to sprawl into. Every number in here is real —
    lesson counts come from storage. */
-.lp-root .lp-rail{position:sticky;top:0;flex:none;width:320px;height:100vh;
+.lp-root .lp-rail{position:sticky;top:0;flex:none;width:320px;height:100vh;height:100dvh;
        padding:28px 24px 24px;display:flex;flex-direction:column;gap:16px;background:var(--paper);
        border-left:2px solid var(--hair)}
 
@@ -411,6 +419,10 @@
    The offer where people actually are. Gold like the rest of the
    plan/star furniture, quieter than the Continue button so it never
    competes with the thing they came here to do. */
+/* Lives in .lp-stats now, which is a wrapping flex row, so it claims a row
+   of its own here the way it did when it sat at the top of the rail. The
+   pinned-bar breakpoints below put it back on one line with the others. */
+.lp-root .lp-stats .lp-trial{flex:1 1 100%}
 .lp-root .lp-trial{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;
        border:2px solid var(--brass-line);border-radius:16px;background:var(--brass-soft);
        cursor:pointer;text-align:left;font:inherit;color:var(--brass);
@@ -437,9 +449,24 @@
    100vh has to go once it is static, or it leaves a viewport-tall gap. */
 @media (max-width:1180px){
   .lp-root .lp-shell{flex-wrap:wrap}
-  .lp-root .lp-main{flex:1 1 100%;margin:0 auto}
-  .lp-root .lp-main.lp-main--board{max-width:none}
-  .lp-root .lp-rail{position:static;flex:1 1 100%;width:100%;height:auto;max-height:none;
+  /* A flex line breaks on an item's base size before that item is allowed
+     to shrink, so what keeps .lp-main on the nav's line is its max-width,
+     not its ability to squeeze. Cap it at whatever is left once the nav has
+     taken its 220px. The leaderboard sets `max-width:none` at full size and
+     so had no cap at all: its base size was the shell's whole width, it
+     could not share a line with the nav, and it wrapped to the next one —
+     which starts below a nav that is a full viewport tall, leaving the page
+     looking empty until you scrolled past it. */
+  .lp-root .lp-main{flex:1 1 100%;margin:0 auto;max-width:min(760px, calc(100% - 220px))}
+  .lp-root .lp-main.lp-main--board{max-width:calc(100% - 220px)}
+  /* The rail wraps onto a flex line of its own, and a new flex line starts
+     at the shell's left edge — which is behind .lp-side. The nav is sticky
+     and a full viewport tall, so it is still sitting there however far down
+     the page the rail ends up, and it covers the rail's first 220px: the
+     trial card loses its left half and the stars pill starts underneath the
+     menu. Hold the line clear of the nav's own width. */
+  .lp-root .lp-rail{position:static;flex:1 1 calc(100% - 220px);width:calc(100% - 220px);
+         margin-left:220px;height:auto;max-height:none;
          overflow:visible;border-left:0;
          padding:0 24px 32px;flex-direction:row;flex-wrap:wrap;align-items:flex-start}
   .lp-root .lp-stats{flex:1 1 100%}
@@ -447,9 +474,75 @@
   .lp-root .lp-rail-scroll{flex:1 1 100%;overflow:visible;flex-direction:row;flex-wrap:wrap;
          align-items:flex-start}
   .lp-root .lp-block{flex:1 1 260px}
-  /* the trial card joins the row of rail cards rather than stretching
-     the full width of the page on its own */
-  .lp-root .lp-trial{flex:1 1 260px}
+}
+
+/* ---------- the stat strip pinned across the top ----------
+   From 961px up to the wrap point the nav is still a left column, so the
+   strip pins beside it rather than across the whole screen. The course,
+   the streak, the stars and the Pro offer go up there together instead of
+   sitting under the map, where on a landscape tablet they fall below the
+   fold and read as a second page. */
+/* pushed to the foot of the nav column, clear of the items above it */
+.lp-root .lp-side .pomo-box{margin-top:auto;flex:none}
+
+@media (min-width:961px) and (max-width:1180px){
+  /* The row under the map goes: with the stats and the offer pinned to the
+     top and the Pomo session moved into the nav, what was left was two
+     cards of detail that the map itself already tells you, sitting below
+     the fold on a landscape tablet. */
+  .lp-root .lp-rail-scroll .lp-block{display:none}
+  /* ...which leaves the rail an empty box whose padding still pushes the
+     map down the page. Collapse it rather than leave a band under the bar. */
+  .lp-root .lp-rail-scroll{display:none}
+  .lp-root .lp-rail{padding:0}
+
+  /* The bar's height is fixed rather than left to its contents, because two
+     other things have to agree with it: the shell reserves exactly this
+     much so nothing starts underneath, and the chapter header — which is
+     sticky in its own right — parks below it instead of behind it. Let the
+     contents set the height and all three drift apart. */
+  .lp-root .lp-shell{padding-top:92px}
+  .lp-root .top{top:92px}
+  .lp-root .lp-stats{position:fixed;top:0;left:220px;right:0;z-index:55;
+         height:92px;box-sizing:border-box;
+         flex-wrap:nowrap;gap:10px;align-items:center;padding:10px 16px;
+         background:var(--paper);border-bottom:2px solid var(--hair)}
+  .lp-root .lp-stats > *{flex:0 0 auto;width:auto}
+  .lp-root .lp-stats .course-btn,.lp-root .lp-stats .pill{width:auto}
+  /* ---------- flat, not carded ----------
+     In the pinned bar the four controls read as one strip of figures, the
+     way Duolingo's does: the icon and the number, and nothing drawn around
+     them. Each carries its own card at full size, where it sits in a
+     column with room to be an object; in a row that close together the
+     borders and drop shadows just fence the numbers off from each other. */
+  .lp-root .lp-stats .course-btn,
+  .lp-root .lp-stats .pill,
+  .lp-root .lp-stats .lp-stat,
+  .lp-root .lp-stats .lp-trial{
+         background:none!important;border:0!important;box-shadow:none!important;
+         outline:0!important;border-radius:10px}
+  .lp-root .lp-stats .course-btn:hover,
+  .lp-root .lp-stats .pill:hover,
+  .lp-root .lp-stats .lp-stat:hover,
+  .lp-root .lp-stats .lp-trial:hover{
+         background:rgba(35,32,27,.05);border:0;box-shadow:none;transform:none}
+  .lp-root .lp-stats .course-btn:focus-visible,
+  .lp-root .lp-stats .pill:focus-visible,
+  .lp-root .lp-stats .lp-stat:focus-visible,
+  .lp-root .lp-stats .lp-trial:focus-visible{
+         outline:3px solid rgba(62,143,82,.5);outline-offset:2px}
+  /* the offer takes whatever is left of the row and clips rather than
+     wrapping the bar onto a second line */
+  .lp-root .lp-stats .lp-trial{flex:1 1 auto;min-width:0;width:auto;height:48px;
+         padding:0 12px;border-radius:12px;gap:9px}
+  .lp-root .lp-stats .lp-trial .lp-trial-mark{width:30px;height:30px;border-radius:9px}
+  .lp-root .lp-stats .lp-trial .lp-trial-mark svg{width:18px;height:18px}
+  .lp-root .lp-stats .lp-trial .lp-trial-t{min-width:0}
+  .lp-root .lp-stats .lp-trial .lp-trial-t b{display:block;overflow:hidden;
+         text-overflow:ellipsis;white-space:nowrap}
+  .lp-root .lp-stats .lp-trial .lp-trial-t span{display:none}
+  .lp-root .lp-stats .lp-trial > svg:last-child{flex:none}
+  .lp-root .lp-stats .lp-trial:hover{transform:none;box-shadow:none}
 }
 
 /* ---------- the rail as a bottom tab bar ----------
@@ -458,9 +551,12 @@
    it with bottom padding, and the leaderboard's own sticky bar rides
    above it rather than underneath. */
 @media (max-width:960px){
-  /* the fixed stat bar is 88px tall with its padding — the shell has to
-     clear that, or the first thing under it slides beneath the bar */
-  .lp-root .lp-shell{padding-bottom:78px;padding-top:74px}
+  /* The fixed stat bar is 88px tall with its padding, so the shell reserves
+     exactly that and the chapter header — sticky in its own right — parks
+     below it rather than behind it. The bar's height is pinned rather than
+     left to its contents so all three figures cannot drift apart. */
+  .lp-root .lp-shell{padding-bottom:78px;padding-top:88px}
+  .lp-root .top{top:88px}
 
   /* ---------- the stat strip as a phone header ----------
      Duolingo puts the course, the streak and the currency in one compact
@@ -468,11 +564,34 @@
      sits under the map on small screens), so they are lifted out of flow
      and pinned up there instead — labels off, icon + number only. */
   .lp-root .lp-stats{position:fixed;top:0;left:0;right:0;z-index:55;
+         height:88px;box-sizing:border-box;
          flex-wrap:nowrap;gap:8px;align-items:center;padding:8px 12px;
          background:var(--paper);border-bottom:2px solid var(--hair)}
   /* undo the rail layout's stretch: in one row they size to their content */
   .lp-root .lp-stats > *{flex:0 0 auto;width:auto}
   .lp-root .lp-stats .course-btn,.lp-root .lp-stats .pill{width:auto}
+  /* ---------- flat, not carded ----------
+     In the pinned bar the four controls read as one strip of figures, the
+     way Duolingo's does: the icon and the number, and nothing drawn around
+     them. Each carries its own card at full size, where it sits in a
+     column with room to be an object; in a row that close together the
+     borders and drop shadows just fence the numbers off from each other. */
+  .lp-root .lp-stats .course-btn,
+  .lp-root .lp-stats .pill,
+  .lp-root .lp-stats .lp-stat,
+  .lp-root .lp-stats .lp-trial{
+         background:none!important;border:0!important;box-shadow:none!important;
+         outline:0!important;border-radius:10px}
+  .lp-root .lp-stats .course-btn:hover,
+  .lp-root .lp-stats .pill:hover,
+  .lp-root .lp-stats .lp-stat:hover,
+  .lp-root .lp-stats .lp-trial:hover{
+         background:rgba(35,32,27,.05);border:0;box-shadow:none;transform:none}
+  .lp-root .lp-stats .course-btn:focus-visible,
+  .lp-root .lp-stats .pill:focus-visible,
+  .lp-root .lp-stats .lp-stat:focus-visible,
+  .lp-root .lp-stats .lp-trial:focus-visible{
+         outline:3px solid rgba(62,143,82,.5);outline-offset:2px}
   .lp-root .lp-stats .course-btn{height:44px;min-width:0;padding:0 10px;gap:7px;
          border-radius:12px;box-shadow:0 2px 0 var(--hair)}
   .lp-root .lp-stats .course-btn .tile{width:28px;height:28px;border-radius:9px}
@@ -485,6 +604,26 @@
   .lp-root .lp-stats .pill b,.lp-root .lp-stat b{font-size:15.5px}
   .lp-root .lp-stats .pill .star{width:21px}
   .lp-root .lp-stats .pill-btn .plus{width:20px;height:20px;top:-6px;right:-6px}
+  /* The offer takes whatever is left of the row. Without min-width:0 a flex
+     item will not shrink below the widest word it contains, so the card
+     stands its ground and breaks its text one word per line, which turns a
+     44px bar into a 300px one. Clipping the headline and dropping the
+     second line keeps it to the same height as the pills beside it.
+
+     The course name goes with it: four controls do not fit across a phone,
+     and the picker still reads from its subject tile and caret alone,
+     which is the one of the four that can afford to lose its label. */
+  .lp-root .lp-stats .course-btn .nm{display:none}
+  .lp-root .lp-stats .lp-trial{flex:1 1 auto;min-width:0;width:auto;height:44px;
+         padding:0 10px;border-radius:12px;gap:8px}
+  .lp-root .lp-stats .lp-trial .lp-trial-mark{width:28px;height:28px;border-radius:9px}
+  .lp-root .lp-stats .lp-trial .lp-trial-mark svg{width:17px;height:17px}
+  .lp-root .lp-stats .lp-trial .lp-trial-t{min-width:0}
+  .lp-root .lp-stats .lp-trial .lp-trial-t b{display:block;font-size:12.5px;
+         overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lp-root .lp-stats .lp-trial .lp-trial-t span{display:none}
+  .lp-root .lp-stats .lp-trial > svg:last-child{flex:none}
+  .lp-root .lp-stats .lp-trial:hover{transform:none;box-shadow:none}
   .lp-root .lp-stats .lp-stat > svg{width:24px;height:24px}
   /* chapter progress + today's goal move to the Daily tasks page at this
      width (see dailyTasks.css .dt-relay) — under the map they were never
@@ -492,7 +631,13 @@
   .lp-root .lp-rail-scroll .lp-block{display:none}
   /* with the two blocks gone the rail is just the trial card and the Pomo
      status — both belong above the map, not after twenty lesson nodes */
-  .lp-root .lp-rail{order:-1;padding:0 16px 14px}
+  /* The nav is a bottom bar down here, not a left column, so everything the
+     wider breakpoint indents or caps to clear it takes its full width back. */
+  .lp-root .lp-rail-scroll{display:none}
+  .lp-root .lp-rail{order:-1;padding:0;
+         flex-basis:100%;width:100%;margin-left:0}
+  .lp-root .lp-main,
+  .lp-root .lp-main.lp-main--board{max-width:none}
   .lp-root .lp-rail-scroll{gap:10px}
   .lp-root .lp-trial{flex:1 1 100%;padding:11px 13px}
   .lp-root .lp-trial-t b{font-size:12.5px}
@@ -502,15 +647,25 @@
      hangs from the left edge instead of running off it */
   .lp-root .lp-stats .drop{right:auto;left:0;width:min(270px,calc(100vw - 24px))}
   .lp-root .lp-stats .drop .tip{right:auto;left:26px}
-  /* the map's green header sticks below the new bar, not under it */
-  .lp-root .top{top:82px}
+  /* the map's green header sticks below the new bar, not under it — 88px
+     of bar plus the 12px gap it keeps at full size */
+  .lp-root .top{top:88px}
   .lp-root .lb-back{margin-top:12px}
   .lp-root .lp-side{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:60;
          width:100%;height:auto;overflow:visible;padding:6px 6px max(6px,env(safe-area-inset-bottom));
          border-right:0;border-top:2px solid var(--hair);
          box-shadow:0 -6px 20px rgba(28,26,21,.07)}
   .lp-root .lp-logo{display:none}
+  /* The nav is a horizontal bar down here, so the Pomo box cannot sit
+     inside it. It lifts out and rides just above the bar instead, still
+     only there while a session is running. */
+  .lp-root .lp-side .pomo-box{position:fixed;left:8px;right:8px;
+         bottom:calc(70px + env(safe-area-inset-bottom));margin:0;z-index:59}
   .lp-root .lp-nav{flex-direction:row;justify-content:space-between;gap:2px;margin-top:0}
+  /* the bar is icons first — they carry the whole control at this size, so
+     they are drawn larger here than in the nav column */
+  .lp-root .lp-side .lp-ic{width:30px;height:30px}
+  .lp-root .lp-side .lp-ic svg{width:28px;height:28px}
   .lp-root .lp-item{flex:1 1 0;min-width:0;flex-direction:column;gap:3px;
          padding:6px 2px;border-radius:12px;font-size:8.5px;letter-spacing:.02em;
          text-align:center;line-height:1.2;overflow:hidden;text-overflow:ellipsis}
@@ -539,7 +694,9 @@
   .lp-root .card{width:240px}
   .lp-root .top .bar{gap:10px;padding:12px 14px}
   .lp-root .top h1{font-size:16px}
-  .lp-root .lp-rail{padding:0 16px 28px}
+  /* nothing left in it at this size — the stats are pinned to the top and
+     the blocks are hidden — so it keeps no padding of its own */
+  .lp-root .lp-rail{padding:0}
 }
 @media (prefers-reduced-motion:reduce){.lp-root *{animation:none!important;transition:none!important}}
 

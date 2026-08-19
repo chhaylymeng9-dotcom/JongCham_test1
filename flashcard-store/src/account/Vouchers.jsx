@@ -125,7 +125,7 @@ export default function Vouchers({ harvest, claimedRewards, vouchers, onClaimRew
     <div className="jv-root">
       <div className="jv-wrap">
         <div className="jv-bar">
-          <button type="button" className="jv-close" aria-label="Back to dashboard" onClick={onBack}>
+          <button type="button" className="jv-close" aria-label="Back" onClick={onBack}>
             <CloseIcon />
           </button>
           <h1>Vouchers &amp; offers</h1>

@@ -6,8 +6,6 @@ import PomoStatusBox from "../components/PomoStatusBox";
 import CoursePicker, { StarsPill } from "../components/CoursePicker";
 import StarShop from "../components/StarShop.jsx";
 import LessonChat from "./LessonChat.jsx";
-import Leaderboard from "../components/Leaderboard.jsx";
-import { friendStandings, lastWeekStandings, leagueIndexFor, weekStandings } from "../data/leaderboardDemo.js";
 import { PANDA } from "./panda.js";
 import "./lessonPath.css";
 
@@ -329,6 +327,7 @@ export default function LessonPath({
   hasPlan = false,
   onOpenProfile,
   onOpenDailyTasks,
+  onOpenLeaderboard,
   onOpenStudyPlan,
   currentDeckId,
   ownedDeckIds = [],
@@ -356,14 +355,7 @@ export default function LessonPath({
   const [openIdx, setOpenIdx] = useState(null);
   const [openNode, setOpenNode] = useState(null);
   const [geom, setGeom] = useState(null);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [lbView, setLbView] = useState("week");
 
-  const lbStandings =
-    lbView === "last" ? lastWeekStandings(name)
-    : lbView === "friends" ? friendStandings(name, streak)
-    : weekStandings(name, streak);
-  const lbMe = lbStandings.find((p) => p.me);
   const pathRef = useRef(null);
   const nodeRefs = useRef([]);
 
@@ -480,14 +472,20 @@ export default function LessonPath({
     return <LessonChat onClose={closeLesson} onDone={saveResult} />;
   }
   const sideItems = [
-    { id: "learn", label: t("lp.learn"), onClick: () => { setShowLeaderboard(false); window.scrollTo({ top: 0, behavior: "smooth" }); } },
-    { id: "lessons", label: t("account.tab.lessons"), onClick: () => { if (!showLeaderboard) onOpenLessons(); } },
-    { id: "practice", label: t("account.tab.practice"), onClick: () => { if (!showLeaderboard) onOpenPractice(); } },
-    { id: "leaderboard", label: t("lp.leaderboard"), onClick: () => setShowLeaderboard(true) },
-    { id: "quests", label: t("lp.dailyTasks"), onClick: () => { if (!showLeaderboard) onOpenDailyTasks(); } },
-    { id: "shop", label: t("lp.shop"), onClick: () => { if (!showLeaderboard) onOpenShop(); } },
-    { id: "profile", label: t("lp.myProfile"), onClick: () => { if (!showLeaderboard) onOpenProfile(); } },
+    { id: "learn", label: t("lp.learn"), onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
+    { id: "lessons", label: t("account.tab.lessons"), onClick: onOpenLessons },
+    { id: "practice", label: t("account.tab.practice"), onClick: onOpenPractice },
+    { id: "leaderboard", label: t("lp.leaderboard"), onClick: onOpenLeaderboard },
+    { id: "quests", label: t("lp.dailyTasks"), onClick: onOpenDailyTasks },
+    { id: "shop", label: t("lp.shop"), onClick: onOpenShop },
   ];
+  /* Sits on its own below "More" rather than in the list above it: the
+     account is the last thing in the rail, the way it is in most apps. */
+  const profileItem = {
+    id: "profile",
+    label: t("lp.myProfile"),
+    onClick: onOpenProfile,
+  };
   const moreItems = [
     { id: "pomo", label: t("lp.pomoMode"), onClick: () => setPomoOpen(true) },
     { id: "exam", label: t("account.tab.exam"), onClick: onOpenExam },
@@ -522,9 +520,7 @@ export default function LessonPath({
                 key={it.id}
                 type="button"
                 className={`lp-item${
-                  (it.id === "learn" && !showLeaderboard) || (it.id === "leaderboard" && showLeaderboard)
-                    ? " active"
-                    : ""
+                  it.id === "learn" ? " active" : ""
                 }`}
                 onClick={it.onClick}
               >
@@ -543,7 +539,17 @@ export default function LessonPath({
               <span className="lp-ic">{SIDE_ICONS.more}</span>
               {t("lp.more")}
             </button>
+            <button type="button" className="lp-item" onClick={profileItem.onClick}>
+              <span className="lp-ic">{SIDE_ICONS[profileItem.id]}</span>
+              {profileItem.label}
+            </button>
           </nav>
+
+          {/* The running Pomo session, parked at the foot of the rail — it
+              renders nothing at all while nothing is running, so the empty
+              space below the nav is only ever used when there is something
+              to say. */}
+          <PomoStatusBox session={session} onFinish={finish} />
         </aside>
 
         {moreOpen && morePos && createPortal(
@@ -568,34 +574,6 @@ export default function LessonPath({
           document.body
         )}
 
-        {showLeaderboard ? (
-          <div className="lp-main lp-main--board">
-            <div className="col">
-              <button
-                type="button"
-                className="lb-back"
-                aria-label={t("common.back")}
-                onClick={(e) => { e.stopPropagation(); setShowLeaderboard(false); }}
-              >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 12H5M11 5l-6 7 6 7" />
-                </svg>
-                {t("lp.learn")}
-              </button>
-              <Leaderboard
-                people={lbStandings}
-                leagueIndex={lbMe ? leagueIndexFor(lbMe.xp) : 0}
-                week={23}
-                promote={3}
-                relegate={2}
-                limit={7}
-                view={lbView}
-                onViewChange={setLbView}
-                numerals="km"
-              />
-            </div>
-          </div>
-        ) : (
           <div className="lp-main">
             <Scene />
 
@@ -735,7 +713,6 @@ export default function LessonPath({
         </>
       </div>
           </div>
-        )}
 
         {/* ============ right rail ============
             .lp-stats sits outside the scrolling inner wrapper: the rail
@@ -762,12 +739,15 @@ export default function LessonPath({
               </span>
             </span>
             <StarsPill stars={stars} onClick={() => setShopOpen(true)} />
-          </div>
 
-          <div className="lp-rail-scroll">
             {/* the free week of Pro, offered where people actually are.
                 Hidden once they're on a paid plan or the trial is spent —
-                a dead offer in the rail is just clutter. */}
+                a dead offer in the rail is just clutter.
+
+                It rides with the stats rather than in the rail below so it
+                travels with them: on a phone and a tablet those pin to the
+                top of the screen, and the offer goes up there with them
+                instead of being left behind under the map. */}
             {!hasPlan && (!trial.started || trial.active) && (
               <button type="button" className={"lp-trial" + (trial.active ? " on" : "")} onClick={onOpenPlans}>
                 <span className="lp-trial-mark">
@@ -786,7 +766,9 @@ export default function LessonPath({
                 </svg>
               </button>
             )}
+          </div>
 
+          <div className="lp-rail-scroll">
             <section className="lp-block">
               <h2>{t("lp.rail.progress")}</h2>
               <div className="lp-bar"><span style={{ width: `${Math.round(pct * 100)}%` }} /></div>
@@ -818,9 +800,6 @@ export default function LessonPath({
               </button>
             </section>
 
-            {/* the running Pomo session — appears when the ticket is torn,
-                renders nothing while nothing is running */}
-            <PomoStatusBox session={session} onFinish={finish} />
           </div>
         </aside>
       </div>

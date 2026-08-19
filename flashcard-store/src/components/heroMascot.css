@@ -1,0 +1,209 @@
+/* ---------- store hero mascot ----------
+The panda is painted onto a canvas by PandaWalk, over a drawn scene, with
+a speech bubble that rides on its head. This sheet owns the stack and the
+bubble; the bubble's position comes in as --hp-x / --hp-y, written by the
+render loop rather than by React.
+
+Nothing here paints a background. The scene has no panel, no border and no
+corners — it fades out at both ends instead, so what lands on the page is
+a grove with a panda walking through it rather than another box.
+
+Every selector is scoped under .hp-root; the `hp-` prefix was checked
+against every sheet in src before use — `.sp-` is already taken by
+studyPlan.css, which silently restyles anything that borrows it.
+--------------------------------- */
+
+/* ---------- runway ----------
+Lives here rather than with the hero's other layout classes because it
+exists for one reason: to give the walk somewhere to finish. Sits on the
+hero's art column in Store.jsx.
+
+That column is inside a centred max-w-6xl section, so reaching the right
+edge of the screen means reclaiming the gap between the section's content
+edge and the viewport — half the difference between the two widths, plus
+the section's own padding. The section clips rather than scrolls, so the
+last of the panda leaving the page never adds a scrollbar. */
+@media (min-width: 768px) {
+  .hp-bleed {
+    margin-right: calc(-24px - max(0px, 50vw - 576px));
+  }
+}
+
+.hp-root {
+  position: relative;
+  width: 100%;
+  display: block;
+  /* until the first frame lands, so nothing jumps in from a corner */
+  --hp-x: 50%;
+  --hp-y: 20%;
+}
+
+/* No frame: no border, no corners, no panel behind it. The scene has to
+   finish itself instead, which the range and the grass do by tapering to
+   nothing at both ends — an edge that was drawn rather than one that was
+   ruled or faded. */
+.hp-frame {
+  position: relative;
+  width: 100%;
+  /* matches the scene's 420x280 viewBox and PandaWalk's canvas */
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+}
+
+.hp-scene,
+.hp-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* No fade on the scene. Fading the edges out is the obvious way to avoid
+   ending on a hard vertical line, but everything inside the fade is drawn
+   at part opacity, and a pale band that is neither scene nor page reads
+   as the picture washing out. The ranges and the grass are shaped to
+   taper to nothing at both ends instead — an edge that was drawn rather
+   than one that was faded. */
+
+/* The panda gets its own, far narrower fade. Under the scene's wide one it
+   spends most of the crossing half transparent, and a panda you can see
+   the bamboo through looks broken rather than distant — so it stays solid
+   until the last few percent, where there is nothing behind it to show. */
+.hp-canvas {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+}
+
+/* The clip is a source of pixels, never a picture: everything on screen
+   is the canvas. It stays laid out and decoding — `display: none` would
+   let the browser stop feeding frames — but is parked out of the way at a
+   size nothing can be read from. */
+.hp-source {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- speech bubble ----------
+Anchored to the top of the panda's head, so it travels with it. The
+wrapper holds the tracking and centring transform, leaving the button free
+to own `transform` for its pop, its idle bob and its press state. The left
+edge is clamped so a panda halfway out of the scene cannot drag the bubble
+off with it. */
+.hp-say {
+  position: absolute;
+  top: var(--hp-y);
+  left: clamp(24%, var(--hp-x), 76%);
+  transform: translate(-50%, calc(-100% - 6px));
+  max-width: 80%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+
+/* The panda says hi on its way past rather than the whole crossing, so the
+   bubble is only there — and only clickable — while it is being said. */
+.hp-root[data-panda="hi"] .hp-say {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hp-bubble {
+  display: block;
+  margin: 0;
+  padding: 9px 16px;
+  background: #FFFFFF;
+  border: 3px solid #1A1A1A;
+  border-radius: 16px;
+  color: #1A1A1A;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transform-origin: 50% 120%;
+}
+.hp-bubble:hover { background: #FFFDF6; }
+.hp-bubble:active { transform: translateY(1px) scale(.97); animation: none; }
+.hp-bubble:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(214, 95, 66, .45);
+}
+
+/* Set on the state, not the element, so flipping to "hi" restarts it: the
+   bubble pops with a little overshoot, then idles until the panda has
+   walked on far enough to take it away again. */
+.hp-root[data-panda="hi"] .hp-bubble {
+  animation: hp-pop .34s cubic-bezier(.2, .9, .3, 1.4) both,
+             hp-bob 2.4s ease-in-out .34s infinite;
+}
+
+/* the tail: an outlined square rotated to a diamond, pointing down at the
+   head, with its top half covered by the bubble's own background */
+.hp-bubble::before,
+.hp-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  background: #FFFFFF;
+  border: 3px solid #1A1A1A;
+  border-top: 0;
+  border-right: 0;
+  transform: rotate(-45deg);
+  border-bottom-left-radius: 3px;
+}
+.hp-bubble::after {
+  border: 0;
+  bottom: -4px;
+  width: 18px;
+  height: 10px;
+  margin-left: -9px;
+  transform: none;
+}
+
+@keyframes hp-pop {
+  from { transform: translateY(7px) scale(.6); }
+  to { transform: none; }
+}
+
+/* just enough to keep it alive while it rides along */
+@keyframes hp-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* ---------- weather ----------
+The camera is locked off and the grove is rooted, so the only thing moving
+behind the panda is the sky. Each cloud crosses on its own clock, and the
+negative delays start them mid-crossing rather than queued up off the left
+edge. */
+.hp-cloud { animation: hp-drift linear infinite; }
+.hp-cloud-1 { animation-duration: 62s; animation-delay: -8s; }
+.hp-cloud-2 { animation-duration: 86s; animation-delay: -44s; }
+.hp-cloud-3 { animation-duration: 108s; animation-delay: -70s; }
+
+@keyframes hp-drift {
+  from { transform: translateX(-72px); }
+  to { transform: translateX(472px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-root *, .hp-root *::before, .hp-root *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  /* the still frame has the panda mid-scene, so it is mid-greeting */
+  .hp-root .hp-say { opacity: 1; pointer-events: auto; }
+}

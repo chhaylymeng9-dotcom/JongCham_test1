@@ -14,6 +14,7 @@ import CounterSection from "../components/CounterSection.jsx";
 import WhatYouGetSection from "../components/WhatYouGetSection.jsx";
 import Reveal from "../components/Reveal.jsx";
 import CommunitySection from "../components/CommunitySection.jsx";
+import HeroMascot from "../components/HeroMascot.jsx";
 // Reviewer photos for the testimonials rail — they live next to the
 // TESTIMONIALS copy they belong to; the rail falls back to a deck-coloured
 // initial circle for any entry without one.
@@ -165,7 +166,7 @@ const HERO_ITEM = {
   show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.2, 0.7, 0.3, 1] } },
 };
 
-export default function Store({ build, setBuild, onAddToCart, onBuyNow, onGoToCart, onGoToCustomize }) {
+export default function Store({ build, setBuild, onAddToCart, onBuyNow, onGoToCart, onGoToCustomize, onGoToAccount }) {
   const { t, pick } = useI18n();
   const [activeCard, setActiveCard] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -267,8 +268,7 @@ export default function Store({ build, setBuild, onAddToCart, onBuyNow, onGoToCa
 
   // A subtle hero parallax: the flashcard preview drifts upward a little
   // slower than the page scrolls, so it visually separates from the text
-  // column as you scroll past — classic differential-speed parallax, not
-  // the eased "catch up to a target" motion CounterSection's truck uses.
+  // column as you scroll past — classic differential-speed parallax.
   // Purely decorative and capped small; off entirely under reduced motion.
   useEffect(() => {
     const card = heroCardRef.current;
@@ -314,7 +314,12 @@ export default function Store({ build, setBuild, onAddToCart, onBuyNow, onGoToCa
   return (
     <>
       {/* ---------- hero ---------- */}
-      <section className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-6 pb-16 md:pt-12 md:pb-24 grid md:grid-cols-[1.05fr_1fr] gap-10 lg:gap-16 items-center">
+      {/* Holds one screen exactly: the sticky header sits in flow above it
+          and is 82px tall, so that comes off the viewport. `svh` rather
+          than `vh` or `dvh` — the small viewport is the one that is always
+          there, so the hero never hides under a phone's toolbar and never
+          resizes as that toolbar comes and goes. */}
+      <section className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-6 pb-16 md:pt-12 md:pb-24 min-h-[calc(100svh-82px)] overflow-x-clip grid md:grid-cols-[1fr_1.18fr] gap-10 lg:gap-16 items-center">
         <motion.div
           className="relative"
           variants={HERO_STAGGER}
@@ -357,31 +362,29 @@ export default function Store({ build, setBuild, onAddToCart, onBuyNow, onGoToCa
           </motion.div>
         </motion.div>
 
-        <div className="relative flex flex-col items-center gap-4">
+        {/* `hp-bleed` runs this column out to the right edge of the screen
+            so the panda has the whole width to cross; the section clips
+            rather than scrolls. It has to sit on the grid item itself —
+            put it on the flex child below and the child, being centred
+            rather than stretched, collapses to nothing. */}
+        <div className="relative flex flex-col items-center gap-4 hp-bleed">
           {/* Entrance lives on this outer wrapper while the scroll-parallax
               transform writes to the inner ref'd div — two elements, so the
               two transforms never fight over the same style. */}
           <motion.div
-            className="w-full max-w-[380px]"
+            className="w-full"
             initial={reduceMotion ? false : { opacity: 0, y: 26, scale: 0.96, rotate: -1.5 }}
             animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
             transition={{ duration: 0.75, delay: 0.4, ease: [0.2, 0.7, 0.3, 1] }}
           >
             <div ref={heroCardRef} className="w-full">
-              {/* The hero showcase is always the History card, regardless of
-                  which deck is selected below — the deck grid still drives
-                  pricing, features and cart independently of this preview. */}
-              <HistoryQuizCard flipped={flipped} onFlip={() => setFlipped((f) => !f)} />
+              {/* The hero is the mascot rather than a sample card — the deck
+                  grid below still drives pricing, features and cart, and the
+                  real card previews live in the showcase further down. */}
+              {/* the mascot's speech bubble is the shortcut to signing in */}
+              <HeroMascot onSayClick={onGoToAccount} />
             </div>
           </motion.div>
-          <motion.span
-            className="label text-ink/45"
-            initial={reduceMotion ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.95 }}
-          >
-            {t("hero.flipHint")}
-          </motion.span>
         </div>
 
         {/* Scroll cue — settles in once the entrance finishes, then keeps

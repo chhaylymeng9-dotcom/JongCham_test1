@@ -229,6 +229,29 @@ utility classes instead of bespoke CSS like this.
 }
 .ja-swap button:hover{ border-color: var(--ink); }
 
+/* ---------------- coming soon ----------------
+Shown in place of the tabs + form when a not-yet-built sign-in route is
+clicked. Deliberately one column of content, no cards or panels — the
+illustration carries the weight instead of another border. */
+.ja-soon{ text-align: center; padding: 6px 0 4px; }
+.ja-soon-art{ display: block; width: 100%; max-width: 300px; height: auto; margin: 0 auto 24px; }
+.ja-soon .ja-label{ display: block; margin-bottom: 9px; }
+.ja-soon h2{
+  font-family: var(--type); font-weight: 700; font-size: 26px;
+  letter-spacing: -.03em; margin: 0 0 8px;
+}
+.ja-soon p{ color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 auto 26px; max-width: 34ch; }
+.ja-soon-back{
+  width: 100%; height: 44px; margin-top: 10px; border: 0; background: none;
+  border-radius: 12px; cursor: pointer; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--muted);
+  transition: color .18s var(--e), background-color .18s var(--e);
+}
+.ja-soon-back:hover{ color: var(--ink); background: #F1EDE4; }
+
+.ja-lamp{ animation: ja-flash 1.6s var(--e) infinite; transform-origin: center; }
+.ja-lamp-2{ animation-delay: .8s; }
+@keyframes ja-flash{ 0%,100%{ opacity: 1; } 50%{ opacity: .35; } }
+
 .ja-pane{ display: none; animation: ja-rise .32s var(--e); }
 .ja-pane.ja-on{ display: block; }
 @keyframes ja-rise{ from{ opacity: 0; transform: translateY(8px); } to{ opacity: 1; transform: none; } }

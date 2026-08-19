@@ -390,10 +390,14 @@ export default function LessonStatus({ chapters = [], exam, numerals = "km", onO
   const done = all.filter((l) => l.state === "done").length;
   const pct = all.length ? (done / all.length) * 100 : 0;
 
-  const [shut, setShut] = React.useState(() => chapters.map((c) => ["done", "locked"].includes(chapState(c))));
+  /* Every chapter starts folded, so the page opens as a list of chapters
+     you can take in at a glance and read down. Auto-opening the one in
+     progress spilled its lessons into the list on arrival, which buried
+     the chapters below it and made the page read as though it were already
+     part-way into something. Opening one is a click. */
+  const [shut, setShut] = React.useState(() => chapters.map(() => true));
   React.useEffect(() => {
-    setShut(chapters.map((c) => ["done", "locked"].includes(chapState(c))));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setShut(chapters.map(() => true));
   }, [chapters.length]);
 
   return (

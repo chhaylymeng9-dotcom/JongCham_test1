@@ -99,7 +99,7 @@ export default function DailyTasks({
     <div className="dt-root">
       <div className="dt-wrap">
         <div className="dt-bar-top">
-          <button type="button" className="dt-close" aria-label="Back to dashboard" onClick={onBack}>
+          <button type="button" className="dt-close" aria-label="Back" onClick={onBack}>
             <CloseIcon />
           </button>
           <h1>Daily tasks</h1>
